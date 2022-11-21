@@ -1,0 +1,28 @@
+name: Feature Request
+description: Create a feature request to help us improve.
+title: "[Feature]: "
+labels: ["enhancement"]
+assignees:
+  - GogoVega
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to fill out this feature request!
+  - type: textarea
+    id: feature_description
+    attributes:
+      label: What is your idea?
+      description: "Please describe your feature here:"
+      placeholder: Tell us what you want!
+      value: "I have an idea!"
+    validations:
+      required: true
+  - type: textarea
+    id: other
+    attributes:
+      label: Additional comments?
+      placeholder: expected
+      value: Additional comments here, if any.
+    validations:
+      required: false

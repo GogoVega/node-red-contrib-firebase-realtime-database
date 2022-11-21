@@ -1,0 +1,17 @@
+### macOS ###
+# General
+.DS_Store
+
+### Node ###
+# Build folder
+build
+
+# Dependency directories
+node_modules
+
+# dotenv environment variables file
+.env
+
+### VisualStudioCode ###
+# Folder config file
+config.json

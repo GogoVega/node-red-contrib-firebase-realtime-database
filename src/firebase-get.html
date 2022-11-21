@@ -1,0 +1,55 @@
+<script type="text/javascript">
+  RED.nodes.registerType('firebase-get', {
+    align: "left",
+    category: 'function',
+    color: '#FFFF00',
+    defaults: {
+      name: { value: "" },
+      database: { value: '', type: 'database' },
+      outputType: { value: "auto" },
+      path: { value: 'topic', validate: (RED.validators.hasOwnProperty('typedInput') ? RED.validators.typedInput('pathType') : function (v) { return true }) },
+      pathType: { value: 'msg' },
+    },
+    inputs: 1,
+    outputs: 1,
+    icon: "firebase.png",
+    paletteLabel: "Firebase get",
+    label: function () {
+      return this.name || "Firebase get";
+    },
+    oneditprepare: function () {
+      $('#node-input-path').typedInput({
+        default: 'str',
+        typeField: $("#node-input-pathType"),
+        types: ['str', 'msg']
+      });
+    }
+  });
+</script>
+
+<script type="text/html" data-template-name="firebase-get">
+  <div class="form-row">
+    <label for="node-input-database"><i class="fa fa-database"></i> Database</label>
+    <input type="text" id="node-input-database" style="width:70%">
+  </div>
+  <div class="form-row">
+    <label for="node-input-path"><i class="fa fa-server"></i> Path</label>
+    <input type="text" id="node-input-path" style="width:70%">
+    <input type="hidden" id="node-input-pathType">
+</div>
+<div class="form-row">
+  <label for="node-input-outputType"><i class="fa fa-sign-out"></i> Output</label>
+  <select id="node-input-outputType" style="width:70%;">
+    <option value="auto">auto-detect</option>
+    <option value="string">a String</option>
+  </select>
+</div>
+<div class="form-row">
+  <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
+  <input type="text" id="node-input-name" placeholder="Name">
+</div>
+</script>
+
+<script type="text/html" data-help-name="firebase-get">
+  <p>A simple node that converts the message payloads into all lower-case characters</p>
+</script>

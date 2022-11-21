@@ -1,0 +1,143 @@
+<script type="text/javascript">
+  RED.nodes.registerType('database', {
+    category: 'config',
+    credentials: {
+      apiKey: { type: "text" },
+      email: { type: "text" },
+      json: { type: "password" },
+      password: { type: "password" },
+      secret: { type: "password" },
+      url: { type: "text" },
+    },
+    defaults: {
+      name: { value: "My Database" },
+      authType: { value: "anonymous" },
+    },
+    label: function () {
+      return this.name || "My Database";
+    },
+    oneditprepare: function () {
+      const authType = $('#node-config-input-authType');
+      authType.on("change", (() => HideShow(authType.val())));
+
+      $("#node-config-input-json").typedInput({
+        type: "json",
+        types: ["json"]
+      });
+    }
+  })
+
+  function HideShow(Value) {
+    switch (Value) {
+      case "anonymous":
+        $(".form-row-base").show();
+        $(".form-row-json").hide();
+        $(".form-row-email").hide();
+        $(".form-row-secret").hide();
+        break
+
+      case "privateKey":
+        $(".form-row-base").hide();
+        $(".form-row-json").show();
+        $(".form-row-email").hide();
+        $(".form-row-secret").hide();
+        break;
+
+      case "email":
+        $(".form-row-base").show();
+        $(".form-row-json").hide();
+        $(".form-row-email").show();
+        $(".form-row-secret").hide();
+        break;
+
+      case "customGenerated":
+        $(".form-row-base").show();
+        $(".form-row-json").hide();
+        $(".form-row-email").hide();
+        $(".form-row-secret").show();
+        break;
+    }
+  }
+
+</script>
+
+<script type="text/html" data-template-name="database">
+  <div class="form-row">
+    <label for="node-config-input-name"><i class="fa fa-tag"></i> Name</label>
+    <input type="text" id="node-config-input-name" style="width:70%">
+  </div>
+
+  <div class="firebase-text-divider">Authentification Method</div>
+
+  <div class="form-row">
+    <label for="node-config-input-authType"><i class="fa fa-bars"></i> Type</label>
+    <select id="node-config-input-authType" style="width: 70%;">
+        <option value="anonymous">Anonymous</option>
+        <option value="privateKey">JSON Private Key</option>
+        <option value="email">Email</option>
+        <option value="customGenerated">Custom Token Generated with Secret</option>
+    </select>
+</div>
+
+<div class="firebase-text-divider">Credentials</div>
+
+<div class="form-row form-row-json">
+  <label for="node-config-input-json"><i class="fa fa-file-code-o"></i> JSON Content</label>
+  <input type="text" id="node-config-input-json" style="width:70%" placeholder="Paste JSON file content">
+</div>
+
+<!-- Anonymous login -->
+<div class="form-row form-row-base">
+  <label for="node-config-input-apiKey"><i class="fa fa-key"></i> API Key</label>
+  <input type="text" id="node-config-input-apiKey" style="width:70%" placeholder="Database API Key">
+</div>
+
+<div class="form-row form-row-base">
+  <label for="node-config-input-url"><i class="fa fa-link"></i> URL</label>
+  <input type="text" id="node-config-input-url" style="width:70%" placeholder="Database URL">
+</div>
+
+<!-- Custom login with new token generated from Firebase-->
+<div class="form-row form-row-secret">
+  <label for="node-config-input-secret"><i class="fa fa-user-secret"></i> Secret</label>
+  <input type="password" id="node-config-input-secret" style="width:70%" placeholder="Firebase Secret">
+</div>
+
+<!-- Email login -->
+<div class="form-row form-row-email">
+    <label for="node-config-input-email"><i class="fa fa-envelope"></i> Email</label>
+    <input type="email" id="node-config-input-email" style="width:70%" placeholder="your@email.com">
+</div>
+
+<div class="form-row form-row-email">
+    <label for="node-config-input-password"><i class="fa fa-lock"></i> Password</label>
+    <input type="password" id="node-config-input-password" style="width:70%" placeholder="password">
+</div>
+
+</script>
+
+<style>
+  .firebase-text-divider {
+    display: flex;
+    align-items: center;
+    --text-divider-gap: 1rem;
+    margin-top: 20px;
+    margin-bottom: 10px;
+  }
+
+  .firebase-text-divider::before,
+  .firebase-text-divider::after {
+    content: '';
+    height: 1px;
+    background-color: silver;
+    flex-grow: 1;
+  }
+
+  .firebase-text-divider::before {
+    margin-right: var(--text-divider-gap);
+  }
+
+  .firebase-text-divider::after {
+    margin-left: var(--text-divider-gap);
+  }
+</style>

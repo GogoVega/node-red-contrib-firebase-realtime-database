@@ -1,0 +1,8 @@
+# All permissions
+*       @GogoVega
+
+# Permission by file type
+*.js    @GogoVega
+*.json  @GogoVega
+*.md    @GogoVega
+*.yml   @GogoVega
