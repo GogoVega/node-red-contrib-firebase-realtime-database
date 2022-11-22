@@ -10,7 +10,7 @@ module.exports = function (RED) {
 		this.on("input", function (msg) {
 			if (config.pathType === "msg") {
 				if (msg[config.path] === undefined) {
-					this.error("The msg contains PATH do not exist!");
+					this.error("The msg containing the PATH do not exist!");
 					return;
 				}
 				if (typeof msg[config.path] !== "string") {
@@ -21,19 +21,23 @@ module.exports = function (RED) {
 
 			const path = config.pathType === "msg" ? msg[config.path] : config.path;
 
-			switch (config.queryType) {
-				case "set":
-					set(ref(this.database.db, path), msg.payload).catch((error) => this.warn(error));
-					break;
-				case "push":
-					push(ref(this.database.db, path), msg.payload).catch((error) => this.warn(error));
-					break;
-				case "update":
-					update(ref(this.database.db, path), msg.payload).catch((error) => this.warn(error));
-					break;
-				case "remove":
-					remove(ref(this.database.db, path)).catch((error) => this.warn(error));
-					break;
+			try {
+				switch (config.queryType) {
+					case "set":
+						set(ref(this.database.db, path), msg.payload);
+						break;
+					case "push":
+						push(ref(this.database.db, path), msg.payload);
+						break;
+					case "update":
+						update(ref(this.database.db, path), msg.payload);
+						break;
+					case "remove":
+						remove(ref(this.database.db, path));
+						break;
+				}
+			} catch (error) {
+				this.warn(error);
 			}
 		});
 	}

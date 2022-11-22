@@ -10,7 +10,7 @@ module.exports = function (RED) {
 		this.on("input", function (msg) {
 			if (config.pathType === "msg") {
 				if (msg[config.path] === undefined) {
-					this.error("The msg contains PATH do not exist!");
+					this.error("The msg containing the PATH do not exist!");
 					return;
 				}
 				if (typeof msg[config.path] !== "string") {

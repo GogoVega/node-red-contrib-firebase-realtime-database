@@ -5,7 +5,7 @@
   "main": "src/database.js",
   "scripts": {
     "lint": "eslint . --ext .js",
-    "prettier": "prettier --write \"**/*.js\""
+    "prettier": "prettier --write \"**/*.{js,html,md}\""
   },
   "keywords": [
     "firebase",

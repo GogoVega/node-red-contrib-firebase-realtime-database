@@ -1,47 +1,53 @@
 <script type="text/javascript">
-  RED.nodes.registerType('firebase-in', {
-    align: "right",
-    category: 'function',
-    color: '#FFFF00',
-    defaults: {
-      name: { value: "" },
-      database: { value: '', type: 'database' },
-      outputType: { value: "auto" },
-      path: { value: "test/stream", require: true },
-    },
-    inputs: 0,
-    outputs: 1,
-    icon: "firebase.png",
-    paletteLabel: "Firebase in",
-    label: function () {
-      return this.name || "Firebase in";
-    },
-    oneditprepare: function () { }
-  });
+	RED.nodes.registerType("firebase-in", {
+		align: "left",
+		category: "function",
+		color: "#FFFF00",
+		defaults: {
+			name: { value: "" },
+			database: { value: "", type: "database" },
+			outputType: { value: "auto" },
+			path: { value: "test/stream", require: true },
+		},
+		inputs: 0,
+		outputs: 1,
+		icon: "firebase.png",
+		paletteLabel: "Firebase in",
+		label: function () {
+			return this.name || "Firebase in";
+		},
+		labelStyle: function () {
+			return this.name ? "node_label_italic" : "";
+		},
+		oneditprepare: function () {},
+	});
 </script>
 
 <script type="text/html" data-template-name="firebase-in">
-  <div class="form-row">
-    <label for="node-input-database"><i class="fa fa-database"></i> Database</label>
-    <input type="text" id="node-input-database" style="width:70%">
-  </div>
-  <div class="form-row">
-    <label for="node-input-path"><i class="fa fa-server"></i> Path</label>
-    <input type="text" id="node-input-path" style="width:70%">
-</div>
-<div class="form-row">
-  <label for="node-input-outputType"><i class="fa fa-sign-out"></i> Output</label>
-  <select id="node-input-outputType" style="width:70%;">
-    <option value="auto">auto-detect</option>
-    <option value="string">a String</option>
-  </select>
-</div>
-<div class="form-row">
-  <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
-  <input type="text" id="node-input-name" placeholder="Name">
-</div>
+	<div class="form-row">
+		<label for="node-input-database"><i class="fa fa-database"></i> Database</label>
+		<input type="text" id="node-input-database" style="width:70%" />
+	</div>
+
+	<div class="form-row">
+		<label for="node-input-path"><i class="fa fa-server"></i> Path</label>
+		<input type="text" id="node-input-path" style="width:70%" />
+	</div>
+
+	<div class="form-row">
+		<label for="node-input-outputType"><i class="fa fa-sign-out"></i> Output</label>
+		<select id="node-input-outputType" style="width:70%;">
+			<option value="auto">auto-detect</option>
+			<option value="string">a String</option>
+		</select>
+	</div>
+
+	<div class="form-row">
+		<label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
+		<input type="text" id="node-input-name" placeholder="Name" />
+	</div>
 </script>
 
 <script type="text/html" data-help-name="firebase-in">
-  <p>A simple node that converts the message payloads into all lower-case characters</p>
+	<p>Connects to a Firebase Realtime Database and subscribes to data from the specified path.</p>
 </script>

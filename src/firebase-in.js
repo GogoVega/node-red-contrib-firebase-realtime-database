@@ -17,6 +17,7 @@ module.exports = function (RED) {
 			this.send({ payload: payload, topic: topic });
 		});
 
+		// Remove the old listener to save the new one
 		this.on("close", function () {
 			off(ref(this.database.db, config.path));
 		});
