@@ -1,19 +1,30 @@
 {
-  "name": "node-red-contrib-firebase",
+  "name": "@gogovega/node-red-contrib-firebase-realtime-database",
   "version": "0.0.1",
-  "description": "Communicate with Google Firebase real-time database",
+  "description": "Node-RED nodes to communicate with Google Firebase Realtime Database",
   "main": "src/database.js",
   "scripts": {
     "lint": "eslint . --ext .js",
     "prettier": "prettier --write \"**/*.{js,html,md}\""
   },
+  "repository": {
+		"type": "git",
+		"url": "https://github.com/GogoVega/node-red-contrib-firebase-realtime-database.git"
+	},
   "keywords": [
     "firebase",
     "node-red",
     "realtime-database"
   ],
-  "author": "Gauthier Dandele",
+  "author": {
+		"name": "Gauthier Dandele",
+		"url": "https://github.com/GogoVega"
+	},
   "license": "MIT",
+  "bugs": {
+		"url": "https://github.com/GogoVega/node-red-contrib-firebase-realtime-database/issues"
+	},
+	"homepage": "https://github.com/GogoVega/node-red-contrib-firebase-realtime-database#readme",
   "node-red": {
     "nodes": {
       "database": "src/database.js",
