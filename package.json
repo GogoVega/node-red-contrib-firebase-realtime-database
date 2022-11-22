@@ -27,7 +27,7 @@
 	"homepage": "https://github.com/GogoVega/node-red-contrib-firebase-realtime-database#readme",
   "node-red": {
     "nodes": {
-      "database": "src/database.js",
+      "database-config": "src/database.js",
       "firebase-in": "src/firebase-in.js",
       "firebase-get": "src/firebase-get.js",
       "firebase-out": "src/firebase-out.js"
@@ -43,6 +43,6 @@
     "prettier": "2.7.1"
   },
   "engines": {
-    "node": ">=10.15.0"
+    "node": ">=14.20.0"
   }
 }

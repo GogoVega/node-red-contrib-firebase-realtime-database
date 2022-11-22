@@ -46,7 +46,7 @@ module.exports = function (RED) {
 		this.db = database;
 	}
 
-	RED.nodes.registerType("database", DatabaseNode, {
+	RED.nodes.registerType("database-config", DatabaseNode, {
 		credentials: {
 			apiKey: { type: "text" },
 			email: { type: "text" },
