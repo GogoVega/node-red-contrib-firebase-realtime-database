@@ -23,13 +23,13 @@ There are 3 node included with this contrib:
 
 - From Manage Palette
 
-Find this package `@gogovega/node-red-firebase-realtime-database` and click install.
+Find this package `@gogovega/node-red-contrib-firebase-realtime-database` and click install.
 
 - Install Manually
 
 ```bash
 cd ~/.node-red
-npm install @gogovega/node-red-firebase-realtime-database
+npm install @gogovega/node-red-contrib-firebase-realtime-database
 node-red
 ```
 
