@@ -7,7 +7,12 @@
 			name: { value: "" },
 			database: { value: "", type: "database-config" },
 			outputType: { value: "auto", validate: RED.validators.regex(/(auto|string)/) },
-			path: { value: "topic", validate: RED.validators.regex(/\S/) },
+			path: {
+				value: "topic",
+				validate: function (v) {
+					return v.match(/[.#$\[\]]/g) ? false : true;
+				},
+			},
 			pathType: { value: "msg", validate: RED.validators.regex(/(msg|str)/) },
 		},
 		inputs: 1,

@@ -62,7 +62,7 @@
 		"no-unused-labels": 2,
 		"no-unused-vars": 2,
 		"no-useless-catch": 2,
-		"no-useless-escape": 2,
+		"no-useless-escape": 0,
 		"no-with": 2,
 		"prefer-const": 2,
 		"require-yield": 2,
