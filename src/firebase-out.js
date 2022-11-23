@@ -7,37 +7,43 @@ module.exports = function (RED) {
 		this.database = RED.nodes.getNode(config.database);
 		this.database.nodes.push(this);
 
-		this.on("input", function (msg) {
-			if (config.pathType === "msg") {
-				if (msg[config.path] === undefined) {
-					this.error("The msg containing the PATH do not exist!");
-					return;
-				}
-				if (typeof msg[config.path] !== "string") {
-					this.error("PATH must be a string!");
-					return;
-				}
-			}
-
+		this.on("input", function (msg, send, done) {
 			const path = config.pathType === "msg" ? msg[config.path] : config.path;
+
+			if (path === undefined) {
+				done("The msg containing the PATH do not exist!");
+				return;
+			}
+			if (!path) {
+				done("PATH must be non-empty string!");
+				return;
+			}
+			if (typeof path !== "string") {
+				done("PATH must be a string!");
+				return;
+			}
+			if (path.match(/[.#$\[\]]/g)) {
+				done(`PATH must not contain ".", "#", "$", "[", or "]"`);
+				return;
+			}
 
 			try {
 				switch (config.queryType) {
 					case "set":
-						set(ref(this.database.db, path), msg.payload);
+						set(ref(this.database.db, path), msg.payload).then(() => done());
 						break;
 					case "push":
-						push(ref(this.database.db, path), msg.payload);
+						push(ref(this.database.db, path), msg.payload).then(() => done());
 						break;
 					case "update":
-						update(ref(this.database.db, path), msg.payload);
+						update(ref(this.database.db, path), msg.payload).then(() => done());
 						break;
 					case "remove":
-						remove(ref(this.database.db, path));
+						remove(ref(this.database.db, path)).then(() => done());
 						break;
 				}
 			} catch (error) {
-				this.warn(error);
+				done(error);
 			}
 		});
 	}

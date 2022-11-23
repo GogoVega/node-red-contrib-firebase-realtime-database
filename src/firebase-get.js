@@ -7,19 +7,17 @@ module.exports = function (RED) {
 		this.database = RED.nodes.getNode(config.database);
 		this.database.nodes.push(this);
 
-		this.on("input", function (msg) {
-			if (config.pathType === "msg") {
-				if (msg[config.path] === undefined) {
-					this.error("The msg containing the PATH do not exist!");
-					return;
-				}
-				if (typeof msg[config.path] !== "string") {
-					this.error("PATH must be a string!");
-					return;
-				}
-			}
+		this.on("input", function (msg, send, done) {
+			const path = (config.pathType === "msg" ? msg[config.path] : config.path) || undefined;
 
-			const path = config.pathType === "msg" ? msg[config.path] : config.path;
+			if (path && typeof msg[config.path] !== "string") {
+				done("PATH must be a string!");
+				return;
+			}
+			if (path?.match(/[.#$\[\]]/g)) {
+				done(`PATH must not contain ".", "#", "$", "[", or "]"`);
+				return;
+			}
 
 			get(ref(this.database.db, path))
 				.then((snapshot) => {
@@ -29,9 +27,10 @@ module.exports = function (RED) {
 					const topic = ref.split(snapshot.ref.root.toString()).pop();
 					const payload = config.outputType === "auto" ? snapshot.val() : JSON.stringify(snapshot.val());
 
-					this.send({ payload: payload, topic: topic });
+					send({ payload: payload, topic: topic });
+					done();
 				})
-				.catch((error) => this.warn(error));
+				.catch((error) => done(error));
 		});
 	}
 

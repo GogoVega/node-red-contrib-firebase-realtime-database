@@ -1,14 +1,19 @@
 <script type="text/javascript">
 	RED.nodes.registerType("firebase-get", {
-		align: "right",
-		category: "function",
-		color: "#FFFF00",
+		align: "left",
+		category: "Firebase",
+		color: "#e2a12b",
 		defaults: {
 			name: { value: "" },
-			database: { value: "", type: "database" },
-			outputType: { value: "auto" },
-			path: { value: "topic" },
-			pathType: { value: "msg" },
+			database: { value: "", type: "database-config" },
+			outputType: { value: "auto", validate: RED.validators.regex(/(auto|string)/) },
+			path: {
+				value: "topic",
+				validate: function (v) {
+					return v.match(/[.#$\[\]]/g) ? false : true;
+				},
+			},
+			pathType: { value: "msg", validate: RED.validators.regex(/(msg|str)/) },
 		},
 		inputs: 1,
 		outputs: 1,
@@ -22,7 +27,6 @@
 		},
 		oneditprepare: function () {
 			$("#node-input-path").typedInput({
-				default: "str",
 				typeField: $("#node-input-pathType"),
 				types: ["str", "msg"],
 			});
