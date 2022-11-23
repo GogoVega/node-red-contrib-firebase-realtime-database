@@ -6,9 +6,9 @@
 		defaults: {
 			name: { value: "" },
 			database: { value: "", type: "database-config" },
-			outputType: { value: "auto" },
-			path: { value: "topic" },
-			pathType: { value: "msg" },
+			outputType: { value: "auto", validate: RED.validators.regex(/(auto|string)/) },
+			path: { value: "topic", validate: RED.validators.regex(/\S/) },
+			pathType: { value: "msg", validate: RED.validators.regex(/(msg|str)/) },
 		},
 		inputs: 1,
 		outputs: 1,
@@ -22,7 +22,6 @@
 		},
 		oneditprepare: function () {
 			$("#node-input-path").typedInput({
-				default: "str",
 				typeField: $("#node-input-pathType"),
 				types: ["str", "msg"],
 			});

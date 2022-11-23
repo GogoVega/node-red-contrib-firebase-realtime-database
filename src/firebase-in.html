@@ -6,8 +6,8 @@
 		defaults: {
 			name: { value: "" },
 			database: { value: "", type: "database-config" },
-			outputType: { value: "auto" },
-			path: { value: "test/stream", require: true },
+			outputType: { value: "auto", validate: RED.validators.regex(/(auto|string)/) },
+			path: { value: "test/stream", validate: RED.validators.regex(/\S/) },
 		},
 		inputs: 0,
 		outputs: 1,
