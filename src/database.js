@@ -1,5 +1,12 @@
 const { deleteApp, initializeApp } = require("firebase/app");
-const { getAuth, signInAnonymously, signInWithEmailAndPassword, fetchSignInMethodsForEmail, createUserWithEmailAndPassword } = require("firebase/auth");
+const {
+	createUserWithEmailAndPassword,
+	fetchSignInMethodsForEmail,
+	getAuth,
+	signInAnonymously,
+	signInWithEmailAndPassword,
+	signOut,
+} = require("firebase/auth");
 const { getDatabase } = require("firebase/database");
 
 module.exports = function (RED) {
@@ -39,12 +46,13 @@ module.exports = function (RED) {
 					fetchSignInMethodsForEmail(auth, this.credentials.email).then((method) => {
 						if (method.length === 0) {
 							createUserWithEmailAndPassword(auth, this.credentials.email, this.credentials.password);
-						} else {
+						} else if (method.includes("password")) {
 							// NOTE: Fails with an error if the email address and password do not match!
 							signInWithEmailAndPassword(auth, this.credentials.email, this.credentials.password).then(() =>
 								setNodesConnected()
 							);
 						}
+						//else if (method.includes("link")) {}
 					});
 					break;
 			}
@@ -53,10 +61,9 @@ module.exports = function (RED) {
 			setNodesDisconnected();
 		}
 
-		const database = getDatabase(app);
-
 		this.app = app;
-		this.db = database;
+		this.auth = auth;
+		this.db = getDatabase(app);
 
 		node.on("close", function (done) {
 			if (!node.app) {
@@ -64,8 +71,8 @@ module.exports = function (RED) {
 				return;
 			}
 
-			deleteApp(node.app)
-				.then(() => done())
+			signOut(node.auth)
+				.then(() => deleteApp(node.app).then(() => done()))
 				.catch((error) => done(error));
 		});
 	}
