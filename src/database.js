@@ -35,30 +35,32 @@ module.exports = function (RED) {
 			}
 		}
 
-		try {
-			// TODO: Add other authentication methods
-			switch (config.authType) {
-				case "anonymous":
-					signInAnonymously(auth).then(() => setNodesConnected());
-					break;
-				case "email":
-					// Checks if the user already has an account otherwise it creates one
-					fetchSignInMethodsForEmail(auth, this.credentials.email).then((method) => {
-						if (method.length === 0) {
-							createUserWithEmailAndPassword(auth, this.credentials.email, this.credentials.password);
-						} else if (method.includes("password")) {
-							// NOTE: Fails with an error if the email address and password do not match!
-							signInWithEmailAndPassword(auth, this.credentials.email, this.credentials.password).then(() =>
-								setNodesConnected()
-							);
-						}
-						//else if (method.includes("link")) {}
-					});
-					break;
-			}
-		} catch (error) {
-			node.error(error);
+		function onError(msg) {
+			node.error(msg);
 			setNodesDisconnected();
+		}
+
+		// TODO: Add other authentication methods
+		switch (config.authType) {
+			case "anonymous":
+				signInAnonymously(auth)
+					.then(() => setNodesConnected())
+					.catch((error) => onError(error));
+				break;
+			case "email":
+				// Checks if the user already has an account otherwise it creates one
+				fetchSignInMethodsForEmail(auth, this.credentials.email).then((method) => {
+					if (method.length === 0) {
+						createUserWithEmailAndPassword(auth, this.credentials.email, this.credentials.password)
+							.then(() => setNodesConnected())
+							.catch((error) => onError(error));
+					} else if (method.includes("password")) {
+						signInWithEmailAndPassword(auth, this.credentials.email, this.credentials.password)
+							.then(() => setNodesConnected())
+							.catch((error) => onError(error));
+					} //else if (method.includes("link")) {}
+				});
+				break;
 		}
 
 		this.app = app;
@@ -72,7 +74,11 @@ module.exports = function (RED) {
 			}
 
 			signOut(node.auth)
-				.then(() => deleteApp(node.app).then(() => done()))
+				.then(() =>
+					deleteApp(node.app)
+						.then(() => done())
+						.catch((error) => done(error))
+				)
 				.catch((error) => done(error));
 		});
 	}
