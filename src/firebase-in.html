@@ -55,4 +55,15 @@
 
 <script type="text/html" data-help-name="firebase-in">
 	<p>Connects to a Firebase Realtime Database and subscribes to data from the specified path.</p>
+	<p>This node reads data from a path and will send a message whenever the data, including children, changes.</p>
+	<p>The <strong>Path</strong> determines where the data will be written.</p>
+	<p>The <strong>Path</strong> can be empty, in this case the data sent comes from the root of the database.</p>
+	<p>
+		<strong>Output</strong> can be set to <strong>auto-detect</strong> to send an object containing the data, or
+		<strong>a String</strong> to send the data as a string.
+	</p>
+	<p>
+		The message sent is an object whose <strong>payload</strong> is an object containing the data and
+		<strong>topic</strong> the path of the data.
+	</p>
 </script>
