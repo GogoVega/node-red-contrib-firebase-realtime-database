@@ -1,8 +1,8 @@
 # node-red-contrib-firebase-realtime-database
 
-Node-RED nodes to communicate with Firebase Realtime Database.
+Node-RED nodes to communicate with [Firebase Realtime Database](https://firebase.google.com/).
 
-![demo nodes](./docs/demo-nodes.png)
+![demo nodes](./docs/images/demo-nodes.png)
 
 ## What is it?
 
@@ -11,7 +11,7 @@ It allows to add, modify and get data from database and also to subscribe to dat
 
 ## The Nodes
 
-![nodes screenshot](./docs/nodes-screenshot.png)
+![nodes screenshot](./docs/images/nodes-screenshot.png)
 
 There are 3 node included with this contrib:
 
@@ -33,10 +33,22 @@ npm install @gogovega/node-red-contrib-firebase-realtime-database
 node-red
 ```
 
+## Authentication Methods
+
+- `Anonymous`
+- `Email`
+
+Read more about the different ways to authenticate [here](./docs/Authentication.md).
+
 ## Future Features
 
-- Sign with Custom Token
-- Sign with Credentials
+- Sign in with Custom Token
+- Sign in with Private Key (SDK)
+
+## Getting Started Link
+
+- [Authentication Methods](./docs/Authentication.md): Which method used to connect?
+- [Firebase Site](https://firebase.google.com/): What is Firebase?
 
 ## License
 
