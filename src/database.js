@@ -1,5 +1,5 @@
 const { deleteApp, initializeApp } = require("firebase/app");
-const { getAuth, signInAnonymously, signInWithEmailAndPassword } = require("firebase/auth");
+const { getAuth, signInAnonymously, signInWithEmailAndPassword, fetchSignInMethodsForEmail, createUserWithEmailAndPassword } = require("firebase/auth");
 const { getDatabase } = require("firebase/database");
 
 module.exports = function (RED) {
@@ -35,10 +35,17 @@ module.exports = function (RED) {
 					signInAnonymously(auth).then(() => setNodesConnected());
 					break;
 				case "email":
-					// NOTE: Fails with an error if the email address and password do not match!
-					signInWithEmailAndPassword(auth, this.credentials.email, this.credentials.password).then(() =>
-						setNodesConnected()
-					);
+					// Checks if the user already has an account otherwise it creates one
+					fetchSignInMethodsForEmail(auth, this.credentials.email).then((method) => {
+						if (method.length === 0) {
+							createUserWithEmailAndPassword(auth, this.credentials.email, this.credentials.password);
+						} else {
+							// NOTE: Fails with an error if the email address and password do not match!
+							signInWithEmailAndPassword(auth, this.credentials.email, this.credentials.password).then(() =>
+								setNodesConnected()
+							);
+						}
+					});
 					break;
 			}
 		} catch (error) {
