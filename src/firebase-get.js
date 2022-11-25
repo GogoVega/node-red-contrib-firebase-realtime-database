@@ -10,7 +10,7 @@ module.exports = function (RED) {
 		this.on("input", function (msg, send, done) {
 			const path = (config.pathType === "msg" ? msg[config.path] : config.path) || undefined;
 
-			if (path && typeof msg[config.path] !== "string") {
+			if (path && typeof path !== "string") {
 				done("PATH must be a string!");
 				return;
 			}
