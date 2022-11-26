@@ -71,14 +71,14 @@
 		<input type="text" id="node-config-input-name" style="width:70%" />
 	</div>
 
-	<div class="firebase-text-divider">Authentification Method</div>
+	<div class="firebase-text-divider">Authentication Method</div>
 
 	<div class="form-row">
 		<label for="node-config-input-authType"><i class="fa fa-bars"></i> Type</label>
 		<select id="node-config-input-authType" style="width: 70%;">
 			<option value="anonymous">Anonymous</option>
-			<!--<option value="privateKey">JSON Private Key</option>-->
 			<option value="email">Email</option>
+			<!--<option value="privateKey">JSON Private Key</option>-->
 			<!--<option value="customToken">Custom Token Generated with Secret</option>-->
 		</select>
 	</div>
@@ -122,13 +122,50 @@
 	<div class="firebase-text-divider">Tips</div>
 
 	<div class="form-tips" id="database-config-tips">
-		<p>The <code>API Key</code> can be found in the project settings.</p>
+		<p><code>API Key</code> can be found in the project settings.</p>
 		<p>
-			The <code>URL</code> is the URL of Realtime Database, this differs by geographic location, in the United States it
-			has the following structure: <strong>https://&#x3C;projet-id&#x3E;.firebaseio.com</strong> and in Europe:
+			<code>URL</code> can be found in the Realtime Database console, this differs by geographic location, in the United
+			States it has the following link: <strong>https://&#x3C;projet-id&#x3E;.firebaseio.com</strong> and in Europe:
 			<strong>https://&#x3C;projet-id&#x3E;-default-rtdb.europe-west1.firebasedatabase.app/</strong>.
 		</p>
+		<div class="form-row form-row-email">
+			<p>
+				If you have already created a Firebase user with an email address and password, just fill in your credentials.
+				On the other hand, if you have not yet created one, you can do so in two ways:
+			</p>
+			<ul>
+				<li>
+					Go to Firebase in the <strong>Authenticate</strong> section and click on "Add User" then enter your
+					credentials in the configuration node.
+				</li>
+				<li>
+					Enter directly into the configuration node, an email address and a password, the node will create a user for
+					you. This user will appear after login in the <strong>Authenticate</strong> section.
+				</li>
+			</ul>
+		</div>
 	</div>
+</script>
+
+<script type="text/html" data-help-name="database-config">
+	<p>This node is used to authenticate with Firebase.</p>
+	<p>The authentication methods are as follows:</p>
+	<ul>
+		<li>Anonymous</li>
+		<li>Email and Pasword</li>
+	</ul>
+	<p><strong>API Key</strong>: can be found in the project settings.</p>
+	<p><strong>URL</strong>: can be found in the Realtime Database console.</p>
+	<p>
+		<strong>Email and Password</strong>: you must create a user either in the <code>Authentication</code> section or the
+		node does it for you.
+	</p>
+	<p>
+		Read more about the different ways to authenticate
+		<a href="https://github.com/GogoVega/node-red-contrib-firebase-realtime-database/blob/master/docs/Authentication.md"
+			>here</a
+		>.
+	</p>
 </script>
 
 <style>
