@@ -5,21 +5,31 @@ module.exports = function (RED) {
 		RED.nodes.createNode(this, config);
 
 		this.database = RED.nodes.getNode(config.database);
+
+		if (!this.database) {
+			this.error("Database not configured!");
+			return;
+		}
+
 		this.database.nodes.push(this);
 
 		this.on("input", function (msg, send, done) {
 			const path = (config.pathType === "msg" ? msg[config.path] : config.path) || undefined;
+			const { isPathValid } = require("./lib/firebaseNode");
+			const pathNoValid = isPathValid(path, true);
 
-			if (path && typeof path !== "string") {
-				done("PATH must be a string!");
-				return;
-			}
-			if (path?.match(/[.#$\[\]]/g)) {
-				done(`PATH must not contain ".", "#", "$", "[", or "]"`);
+			if (pathNoValid) {
+				done(pathNoValid);
 				return;
 			}
 
-			get(ref(this.database.db, path))
+			const snapshot =
+				this.database.config.authType === "privateKey"
+					? path
+						? this.database.db.ref().child(path).get()
+						: this.database.db.ref().get()
+					: get(ref(this.database.db, path));
+			snapshot
 				.then((snapshot) => {
 					if (!snapshot.exists()) return;
 
