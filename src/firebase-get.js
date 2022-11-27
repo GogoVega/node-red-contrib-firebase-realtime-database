@@ -15,13 +15,11 @@ module.exports = function (RED) {
 
 		this.on("input", function (msg, send, done) {
 			const path = (config.pathType === "msg" ? msg[config.path] : config.path) || undefined;
+			const { isPathValid } = require("./lib/firebaseNode");
+			const pathNoValid = isPathValid(path, true);
 
-			if (path && typeof path !== "string") {
-				done("PATH must be a string!");
-				return;
-			}
-			if (path?.match(/[.#$\[\]]/g)) {
-				done(`PATH must not contain ".", "#", "$", "[", or "]"`);
+			if (pathNoValid) {
+				done(pathNoValid);
 				return;
 			}
 

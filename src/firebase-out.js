@@ -14,22 +14,12 @@ module.exports = function (RED) {
 		this.database.nodes.push(this);
 
 		this.on("input", function (msg, send, done) {
+			const { isPathValid } = require("./lib/firebaseNode");
 			const path = config.pathType === "msg" ? msg[config.path] : config.path;
+			const pathNoValid = isPathValid(path);
 
-			if (path === undefined) {
-				done("The msg containing the PATH do not exist!");
-				return;
-			}
-			if (!path) {
-				done("PATH must be non-empty string!");
-				return;
-			}
-			if (typeof path !== "string") {
-				done("PATH must be a string!");
-				return;
-			}
-			if (path.match(/[.#$\[\]]/g)) {
-				done(`PATH must not contain ".", "#", "$", "[", or "]"`);
+			if (pathNoValid) {
+				done(pathNoValid);
 				return;
 			}
 
