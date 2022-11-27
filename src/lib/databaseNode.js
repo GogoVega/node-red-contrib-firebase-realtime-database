@@ -65,6 +65,9 @@ async function logInWithEmail(self) {
 		await createUserWithEmailAndPassword(self.auth, self.credentials.email, self.credentials.password).catch((error) =>
 			self.onError(error)
 		);
+		self.warn(
+			`The user "${self.credentials.email}" has been successfully created. You can delete it in the Authenticate section if it is an error.`
+		);
 	} else if (method.includes("password")) {
 		await signInWithEmailAndPassword(self.auth, self.credentials.email, self.credentials.password).catch((error) =>
 			self.onError(error)
