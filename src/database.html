@@ -3,7 +3,10 @@
 		category: "config",
 		credentials: {
 			apiKey: { type: "text", validate: RED.validators.regex(/\S/) },
-			email: { type: "text", validate: RED.validators.regex(/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/) },
+			email: {
+				type: "text",
+				validate: RED.validators.regex(/^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/i),
+			},
 			json: { type: "password" },
 			password: { type: "password", validate: RED.validators.regex(/\S/) },
 			secret: { type: "password" },
