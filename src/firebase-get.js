@@ -5,6 +5,12 @@ module.exports = function (RED) {
 		RED.nodes.createNode(this, config);
 
 		this.database = RED.nodes.getNode(config.database);
+
+		if (!this.database) {
+			this.error("Database not configured!");
+			return;
+		}
+
 		this.database.nodes.push(this);
 
 		this.on("input", function (msg, send, done) {
@@ -19,7 +25,13 @@ module.exports = function (RED) {
 				return;
 			}
 
-			get(ref(this.database.db, path))
+			const snapshot =
+				this.database.config.authType === "privateKey"
+					? path
+						? this.database.db.ref().child(path).get()
+						: this.database.db.ref().get()
+					: get(ref(this.database.db, path));
+			snapshot
 				.then((snapshot) => {
 					if (!snapshot.exists()) return;
 

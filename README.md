@@ -37,13 +37,13 @@ node-red
 
 - `Anonymous`
 - `Email`
+- `Private Key`
 
 Read more about the different ways to authenticate [here](./docs/Authentication.md).
 
 ## Future Features
 
 - Sign in with Custom Token
-- Sign in with Private Key (SDK)
 
 ## Getting Started Link
 

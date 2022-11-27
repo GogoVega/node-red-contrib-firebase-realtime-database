@@ -10,3 +10,10 @@ This method allows you to authenticate using an email address and a password. To
 
 - Go to the `Authentication` section and click on "Add User" then fill in your data in the config node.
 - Complete directly in the config node, an email address and a password, the node will create an user for you. This user will also appear in the `Authentication` section.
+
+## Private Key (SDK)
+
+This method allows to authenticate, in an automated way via the unified Admin SDK.
+To generate a Private Key, go to Firebase, in the `Project settings` section, click on
+`Service Accounts` and then "Generate a new private key". This will download a
+JSON file that you will copy and paste into the configuration node.
