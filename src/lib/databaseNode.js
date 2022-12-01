@@ -1,9 +1,14 @@
 function initApp(self) {
 	const { initializeApp } = require("firebase/app");
-	self.app = initializeApp({
-		apiKey: self.credentials.apiKey,
-		databaseURL: self.credentials.url,
-	});
+
+	try {
+		self.app = initializeApp({
+			apiKey: self.credentials.apiKey,
+			databaseURL: self.credentials.url,
+		});
+	} catch (error) {
+		self.onError(error);
+	}
 }
 
 function initAppWithSDK(self) {
@@ -27,7 +32,8 @@ async function logIn(self) {
 			await logInAnonymously(self);
 			break;
 		case "privateKey":
-			logInWithPrivateKey(self);
+			// TODO: find a way to know the connection status
+			logInWithPrivateKey(self).then(() => setNodesConnected(self));
 			break;
 		case "email":
 			await logInWithEmail(self);
@@ -42,7 +48,9 @@ async function logInAnonymously(self) {
 	initApp(self);
 	self.auth = getAuth(self.app);
 	self.db = getDatabase(self.app);
-	await signInAnonymously(self.auth).catch((error) => self.onError(error));
+	await signInAnonymously(self.auth)
+		.then(() => setNodesConnected(self))
+		.catch((error) => self.onError(error));
 }
 
 async function logInWithEmail(self) {
@@ -58,24 +66,29 @@ async function logInWithEmail(self) {
 	self.auth = getAuth(self.app);
 	self.db = getDatabase(self.app);
 
-	// Checks if the user already has an account otherwise it creates one
-	const method = await fetchSignInMethodsForEmail(self.auth, self.credentials.email);
+	try {
+		// Checks if the user already has an account otherwise it creates one
+		const method = await fetchSignInMethodsForEmail(self.auth, self.credentials.email);
 
-	if (method.length === 0) {
-		await createUserWithEmailAndPassword(self.auth, self.credentials.email, self.credentials.password).catch((error) =>
-			self.onError(error)
-		);
-		self.warn(
-			`The user "${self.credentials.email}" has been successfully created. You can delete it in the Authenticate section if it is an error.`
-		);
-	} else if (method.includes("password")) {
-		await signInWithEmailAndPassword(self.auth, self.credentials.email, self.credentials.password).catch((error) =>
-			self.onError(error)
-		);
-	} //else if (method.includes("link")) {}
+		if (method.length === 0) {
+			await createUserWithEmailAndPassword(self.auth, self.credentials.email, self.credentials.password)
+				.then(() => setNodesConnected(self))
+				.catch((error) => self.onError(error));
+
+			self.warn(
+				`The user "${self.credentials.email}" has been successfully created. You can delete it in the Authenticate section if it is an error.`
+			);
+		} else if (method.includes("password")) {
+			await signInWithEmailAndPassword(self.auth, self.credentials.email, self.credentials.password)
+				.then(() => setNodesConnected(self))
+				.catch((error) => self.onError(error));
+		} //else if (method.includes("link")) {}
+	} catch (error) {
+		self.onError(error);
+	}
 }
 
-function logInWithPrivateKey(self) {
+async function logInWithPrivateKey(self) {
 	const { getDatabase } = require("firebase-admin/database");
 	initAppWithSDK(self);
 	self.db = getDatabase(self.app);

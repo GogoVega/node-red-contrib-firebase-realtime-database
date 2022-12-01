@@ -1,6 +1,6 @@
 module.exports = function (RED) {
 	function DatabaseNode(config) {
-		const { logIn, logOut, setNodesConnected, setNodesDisconnected } = require("./lib/databaseNode");
+		const { logIn, logOut, setNodesDisconnected } = require("./lib/databaseNode");
 
 		RED.nodes.createNode(this, config);
 
@@ -12,7 +12,7 @@ module.exports = function (RED) {
 			setNodesDisconnected(this);
 		};
 
-		logIn(this).then(() => setNodesConnected(this));
+		logIn(this);
 
 		this.on("close", (done) =>
 			logOut(this)
