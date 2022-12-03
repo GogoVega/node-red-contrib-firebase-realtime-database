@@ -2,6 +2,8 @@ const firebase = require("firebase/database");
 
 module.exports = function (RED) {
 	function FirebaseOutNode(config) {
+		const { isPathValid, removeNode, setNodeStatus } = require("./lib/firebaseNode");
+
 		RED.nodes.createNode(this, config);
 
 		this.database = RED.nodes.getNode(config.database);
@@ -13,8 +15,9 @@ module.exports = function (RED) {
 
 		this.database.nodes.push(this);
 
+		setNodeStatus(this, this.database.connected);
+
 		this.on("input", function (msg, send, done) {
-			const { isPathValid } = require("./lib/firebaseNode");
 			const path = config.pathType === "msg" ? msg[config.path] : config.path;
 			const pathNoValid = isPathValid(path);
 
@@ -37,6 +40,8 @@ module.exports = function (RED) {
 					.catch((error) => done(error));
 			}
 		});
+
+		this.on("close", () => removeNode(this.database.nodes, this.id));
 	}
 
 	RED.nodes.registerType("firebase-out", FirebaseOutNode);

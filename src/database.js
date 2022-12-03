@@ -4,6 +4,7 @@ module.exports = function (RED) {
 
 		RED.nodes.createNode(this, config);
 
+		this.connected = false;
 		this.config = config;
 		this.nodes = [];
 

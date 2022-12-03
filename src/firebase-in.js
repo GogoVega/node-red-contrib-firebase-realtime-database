@@ -2,6 +2,7 @@ const { onValue, ref, off } = require("firebase/database");
 
 module.exports = function (RED) {
 	function FirebaseInNode(config) {
+		const { isPathValid, removeNode, setNodeStatus } = require("./lib/firebaseNode");
 		const node = this;
 
 		RED.nodes.createNode(this, config);
@@ -15,7 +16,8 @@ module.exports = function (RED) {
 
 		this.database.nodes.push(this);
 
-		const { isPathValid } = require("./lib/firebaseNode");
+		setNodeStatus(this, this.database.connected);
+
 		const path = config.path?.toString() || undefined;
 		const pathNoValid = isPathValid(path, true);
 
@@ -52,6 +54,8 @@ module.exports = function (RED) {
 		// Remove the old listener to save the new one
 		// If the node is disabled/deleted there will be no call to the onValue function
 		this.on("close", function () {
+			removeNode(this.database.nodes, this.id);
+
 			if (this.database.config.authType === "privateKey") {
 				const databaseRef = path ? this.database.db.ref().child(path) : this.database.db.ref();
 				databaseRef.off("value");

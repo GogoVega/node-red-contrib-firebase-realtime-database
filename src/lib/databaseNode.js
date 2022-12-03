@@ -110,12 +110,14 @@ async function logOut(self) {
 }
 
 function setNodesConnected(self) {
+	self.connected = true;
 	for (const node of self.nodes) {
 		node.status({ fill: "green", shape: "dot", text: "connected" });
 	}
 }
 
 function setNodesDisconnected(self) {
+	self.connected = false;
 	for (const node of self.nodes) {
 		node.status({ fill: "red", shape: "dot", text: "disconnected" });
 	}
