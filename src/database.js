@@ -8,13 +8,12 @@ module.exports = function (RED) {
 		this.config = config;
 		this.nodes = [];
 
-		this.onError = function (msg) {
-			this.error(msg);
-			setNodesDisconnected(this);
-		};
-
-		logIn(this);
-		initConnectionStatus(this);
+		logIn(this)
+			.then(() => initConnectionStatus(this))
+			.catch((error) => {
+				this.error(error);
+				setNodesDisconnected(this);
+			});
 
 		this.on("close", (done) =>
 			logOut(this)

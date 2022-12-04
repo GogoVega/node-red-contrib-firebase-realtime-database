@@ -1,40 +1,69 @@
 function initApp(self) {
 	const { initializeApp } = require("firebase/app");
+	const { getAuth } = require("firebase/auth");
+	const { getDatabase } = require("firebase/database");
 
-	try {
-		self.app = initializeApp({
-			apiKey: self.credentials.apiKey,
-			databaseURL: self.credentials.url,
-		});
-	} catch (error) {
-		self.onError(error);
-	}
+	self.app = initializeApp({
+		apiKey: self.credentials.apiKey,
+		databaseURL: self.credentials.url,
+	});
+
+	self.auth = getAuth(self.app);
+	self.db = getDatabase(self.app);
 }
 
 function initAppWithSDK(self) {
 	const { cert, initializeApp } = require("firebase-admin/app");
+	const { getDatabase } = require("firebase-admin/database");
 
 	try {
-		const content = JSON.parse(self.credentials.json);
+		const content = JSON.parse(self.credentials.json || "{}");
+
+		const isContentNotValid = isJSONContentValid(content);
+
+		if (isContentNotValid) throw new Error(isContentNotValid);
+
 		self.app = initializeApp({
 			credential: cert(content),
 			databaseURL: self.credentials.url,
 		});
+
+		self.db = getDatabase(self.app);
 	} catch (error) {
-		self.onError(error);
+		throw Error(error);
 	}
 }
 
 function initConnectionStatus(self) {
 	const { ref, onValue } = require("firebase/database");
 
-	onValue(ref(self.db, ".info/connected"), (snapshot) => {
-		if (snapshot.val() === true) {
-			setNodesConnected(self);
-		} else {
-			setNodesConnecting(self);
-		}
-	});
+	if (!self.db) return;
+
+	onValue(
+		ref(self.db, ".info/connected"),
+		(snapshot) => {
+			if (snapshot.val() === true) {
+				setNodesConnected(self);
+			} else {
+				setNodesConnecting(self);
+			}
+		},
+		(error) => self.error(error)
+	);
+}
+
+function isJSONContentValid(content) {
+	if (Object.keys(content).length === 0) {
+		return "JSON Content must contain 'projectId', 'clientEmail' and 'privateKey'";
+	} else if (!content["project_id"]) {
+		return "JSON Content must contain 'projectId'";
+	} else if (!content["client_email"]) {
+		return "JSON Content must contain 'clientEmail'";
+	} else if (!content["private_key"]) {
+		return "JSON Content must contain 'privateKey'";
+	}
+
+	return;
 }
 
 // TODO: Add other authentication methods
@@ -43,64 +72,47 @@ async function logIn(self) {
 		case "anonymous":
 			await logInAnonymously(self);
 			break;
-		case "privateKey":
-			logInWithPrivateKey(self);
-			break;
 		case "email":
 			await logInWithEmail(self);
+			break;
+		case "privateKey":
+			logInWithPrivateKey(self);
 			break;
 	}
 }
 
 async function logInAnonymously(self) {
-	const { getAuth, signInAnonymously } = require("firebase/auth");
-	const { getDatabase } = require("firebase/database");
+	const { signInAnonymously } = require("firebase/auth");
 
 	initApp(self);
-	self.auth = getAuth(self.app);
-	self.db = getDatabase(self.app);
-	await signInAnonymously(self.auth).catch((error) => self.onError(error));
+	await signInAnonymously(self.auth);
 }
 
 async function logInWithEmail(self) {
 	const {
 		createUserWithEmailAndPassword,
 		fetchSignInMethodsForEmail,
-		getAuth,
 		signInWithEmailAndPassword,
 	} = require("firebase/auth");
-	const { getDatabase } = require("firebase/database");
 
 	initApp(self);
-	self.auth = getAuth(self.app);
-	self.db = getDatabase(self.app);
 
-	try {
-		// Checks if the user already has an account otherwise it creates one
-		const method = await fetchSignInMethodsForEmail(self.auth, self.credentials.email);
+	// Checks if the user already has an account otherwise it creates one
+	const method = await fetchSignInMethodsForEmail(self.auth, self.credentials.email);
 
-		if (method.length === 0) {
-			await createUserWithEmailAndPassword(self.auth, self.credentials.email, self.credentials.password).catch(
-				(error) => self.onError(error)
-			);
+	if (method.length === 0) {
+		await createUserWithEmailAndPassword(self.auth, self.credentials.email, self.credentials.password);
 
-			self.warn(
-				`The user "${self.credentials.email}" has been successfully created. You can delete it in the Authenticate section if it is an error.`
-			);
-		} else if (method.includes("password")) {
-			await signInWithEmailAndPassword(self.auth, self.credentials.email, self.credentials.password).catch((error) =>
-				self.onError(error)
-			);
-		} //else if (method.includes("link")) {}
-	} catch (error) {
-		self.onError(error);
-	}
+		self.warn(
+			`The user "${self.credentials.email}" has been successfully created. You can delete it in the Authenticate section if it is an error.`
+		);
+	} else if (method.includes("password")) {
+		await signInWithEmailAndPassword(self.auth, self.credentials.email, self.credentials.password);
+	} //else if (method.includes("link")) {}
 }
 
-async function logInWithPrivateKey(self) {
-	const { getDatabase } = require("firebase-admin/database");
+function logInWithPrivateKey(self) {
 	initAppWithSDK(self);
-	self.db = getDatabase(self.app);
 }
 
 async function logOut(self) {
@@ -112,9 +124,9 @@ async function logOut(self) {
 	await signOut(self);
 
 	if (self.config.authType === "privateKey") {
-		await firebaseAdmin.deleteApp(self.app).catch((error) => self.onError(error));
+		await firebaseAdmin.deleteApp(self.app);
 	} else {
-		await deleteApp(self.app).catch((error) => self.onError(error));
+		await deleteApp(self.app);
 	}
 }
 
@@ -145,7 +157,7 @@ async function signOut(self) {
 	if (!self.auth) return;
 	if (self.config.authType === "privateKey") return;
 
-	await signOut(self.auth).catch((error) => self.onError(error));
+	await signOut(self.auth);
 }
 
 module.exports = { initConnectionStatus, logIn, logOut, setNodesDisconnected };
