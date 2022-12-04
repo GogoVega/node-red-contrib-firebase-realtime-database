@@ -25,6 +25,18 @@ function initAppWithSDK(self) {
 	}
 }
 
+function initConnectionStatus(self) {
+	const { ref, onValue } = require("firebase/database");
+
+	onValue(ref(self.db, ".info/connected"), (snapshot) => {
+		if (snapshot.val() === true) {
+			setNodesConnected(self);
+		} else {
+			setNodesConnecting(self);
+		}
+	});
+}
+
 // TODO: Add other authentication methods
 async function logIn(self) {
 	switch (self.config.authType) {
@@ -32,8 +44,7 @@ async function logIn(self) {
 			await logInAnonymously(self);
 			break;
 		case "privateKey":
-			// TODO: find a way to know the connection status
-			logInWithPrivateKey(self).then(() => setNodesConnected(self));
+			logInWithPrivateKey(self);
 			break;
 		case "email":
 			await logInWithEmail(self);
@@ -48,9 +59,7 @@ async function logInAnonymously(self) {
 	initApp(self);
 	self.auth = getAuth(self.app);
 	self.db = getDatabase(self.app);
-	await signInAnonymously(self.auth)
-		.then(() => setNodesConnected(self))
-		.catch((error) => self.onError(error));
+	await signInAnonymously(self.auth).catch((error) => self.onError(error));
 }
 
 async function logInWithEmail(self) {
@@ -71,17 +80,17 @@ async function logInWithEmail(self) {
 		const method = await fetchSignInMethodsForEmail(self.auth, self.credentials.email);
 
 		if (method.length === 0) {
-			await createUserWithEmailAndPassword(self.auth, self.credentials.email, self.credentials.password)
-				.then(() => setNodesConnected(self))
-				.catch((error) => self.onError(error));
+			await createUserWithEmailAndPassword(self.auth, self.credentials.email, self.credentials.password).catch(
+				(error) => self.onError(error)
+			);
 
 			self.warn(
 				`The user "${self.credentials.email}" has been successfully created. You can delete it in the Authenticate section if it is an error.`
 			);
 		} else if (method.includes("password")) {
-			await signInWithEmailAndPassword(self.auth, self.credentials.email, self.credentials.password)
-				.then(() => setNodesConnected(self))
-				.catch((error) => self.onError(error));
+			await signInWithEmailAndPassword(self.auth, self.credentials.email, self.credentials.password).catch((error) =>
+				self.onError(error)
+			);
 		} //else if (method.includes("link")) {}
 	} catch (error) {
 		self.onError(error);
@@ -116,6 +125,13 @@ function setNodesConnected(self) {
 	}
 }
 
+function setNodesConnecting(self) {
+	self.connected = false;
+	for (const node of self.nodes) {
+		node.status({ fill: "yellow", shape: "ring", text: "connecting" });
+	}
+}
+
 function setNodesDisconnected(self) {
 	self.connected = false;
 	for (const node of self.nodes) {
@@ -132,4 +148,4 @@ async function signOut(self) {
 	await signOut(self.auth).catch((error) => self.onError(error));
 }
 
-module.exports = { logIn, logOut, setNodesConnected, setNodesDisconnected };
+module.exports = { initConnectionStatus, logIn, logOut, setNodesDisconnected };
