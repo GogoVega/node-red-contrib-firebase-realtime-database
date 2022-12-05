@@ -1,7 +1,10 @@
 function initApp(self) {
-	const { initializeApp } = require("firebase/app");
+	const { initializeApp, onLog } = require("firebase/app");
 	const { getAuth } = require("firebase/auth");
 	const { getDatabase } = require("firebase/database");
+
+	// Get warning message from bad database url configured
+	onLog((log) => self.warn(log.message), { level: "warn" });
 
 	self.app = initializeApp({
 		apiKey: self.credentials.apiKey,
