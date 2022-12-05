@@ -6,4 +6,19 @@ function isPathValid(path, empty = false) {
 	return;
 }
 
-module.exports = { isPathValid };
+function removeNode(nodes = [], nodeId) {
+	nodes.some((node) => {
+		if (node.id !== nodeId) return;
+		nodes.splice(nodes.indexOf(node), 1);
+	});
+}
+
+function setNodeStatus(self, connected = false) {
+	if (connected) {
+		self.status({ fill: "green", shape: "dot", text: "connected" });
+	} else {
+		self.status({ fill: "yellow", shape: "ring", text: "connecting" });
+	}
+}
+
+module.exports = { isPathValid, removeNode, setNodeStatus };
