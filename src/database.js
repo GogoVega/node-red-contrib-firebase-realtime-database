@@ -1,6 +1,6 @@
 module.exports = function (RED) {
 	function DatabaseNode(config) {
-		const { initConnectionStatus, logIn, logOut, setNodesDisconnected } = require("./lib/databaseNode");
+		const { initConnectionStatus, logIn, logOut, parseErrorMsg, setNodesDisconnected } = require("./lib/databaseNode");
 
 		RED.nodes.createNode(this, config);
 
@@ -11,7 +11,7 @@ module.exports = function (RED) {
 		logIn(this)
 			.then(() => initConnectionStatus(this))
 			.catch((error) => {
-				this.error(error);
+				this.error(parseErrorMsg(error.message || error));
 				setNodesDisconnected(this);
 			});
 

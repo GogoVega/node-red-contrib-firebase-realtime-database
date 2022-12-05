@@ -133,6 +133,12 @@ async function logOut(self) {
 	}
 }
 
+function parseErrorMsg(msg) {
+	if (msg.includes("auth/internal-error")) return "Please check your email address and password";
+	if (msg.includes("auth/api-key-not-valid")) return "Please check your API key";
+	return msg;
+}
+
 function setNodesConnected(self) {
 	self.connected = true;
 	for (const node of self.nodes) {
@@ -163,4 +169,4 @@ async function signOut(self) {
 	await signOut(self.auth);
 }
 
-module.exports = { initConnectionStatus, logIn, logOut, setNodesDisconnected };
+module.exports = { initConnectionStatus, logIn, logOut, parseErrorMsg, setNodesDisconnected };
