@@ -6,6 +6,13 @@ function isPathValid(path, empty = false) {
 	return;
 }
 
+function isQueryValid(method) {
+	if (method === undefined) return "msg.method do not exist!";
+	if (!["set", "push", "update", "remove"].includes(method))
+		return "msg.method must be 'set', 'push', 'update' or 'remove'";
+	return;
+}
+
 function removeNode(nodes = [], nodeId) {
 	nodes.some((node) => {
 		if (node.id !== nodeId) return;
@@ -21,4 +28,4 @@ function setNodeStatus(self, connected = false) {
 	}
 }
 
-module.exports = { isPathValid, removeNode, setNodeStatus };
+module.exports = { isPathValid, isQueryValid, removeNode, setNodeStatus };
