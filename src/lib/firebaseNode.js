@@ -6,6 +6,32 @@ function isPathValid(path, empty = false) {
 	return;
 }
 
+function parseQuery(raw = {}) {
+	const database = require("firebase/database");
+	const queryValid = [
+		"endAt",
+		"endBefore",
+		"equalTo",
+		"limitToFirst",
+		"limitToLast",
+		"orderByChild",
+		"orderByKey",
+		"orderByPriority",
+		"orderByValue",
+		"startAfter",
+		"startAt",
+	];
+	const query = [];
+
+	for (const [method, value] of Object.entries(raw)) {
+		if (!queryValid.includes(method))
+			throw new Error(`Query received: '${method}'but must be one of ${queryValid.toString()}`);
+		query.push(database[method](value));
+	}
+
+	return query;
+}
+
 function removeNode(nodes = [], nodeId) {
 	nodes.some((node) => {
 		if (node.id !== nodeId) return;
@@ -21,4 +47,4 @@ function setNodeStatus(self, connected = false) {
 	}
 }
 
-module.exports = { isPathValid, removeNode, setNodeStatus };
+module.exports = { isPathValid, parseQuery, removeNode, setNodeStatus };

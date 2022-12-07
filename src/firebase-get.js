@@ -1,8 +1,8 @@
-const { get, ref } = require("firebase/database");
+const { get, ref, query } = require("firebase/database");
 
 module.exports = function (RED) {
 	function FirebaseGetNode(config) {
-		const { isPathValid, removeNode, setNodeStatus } = require("./lib/firebaseNode");
+		const { isPathValid, parseQuery, removeNode, setNodeStatus } = require("./lib/firebaseNode");
 
 		RED.nodes.createNode(this, config);
 
@@ -19,6 +19,7 @@ module.exports = function (RED) {
 
 		this.on("input", function (msg, send, done) {
 			const path = (config.pathType === "msg" ? msg[config.path] : config.path) || undefined;
+			const queryConstraints = msg.method;
 			const pathNoValid = isPathValid(path, true);
 
 			if (pathNoValid) {
@@ -31,13 +32,12 @@ module.exports = function (RED) {
 					? path
 						? this.database.db.ref().child(path).get()
 						: this.database.db.ref().get()
-					: get(ref(this.database.db, path));
+					: get(query(ref(this.database.db, path), ...parseQuery(queryConstraints)));
 			snapshot
 				.then((snapshot) => {
 					if (!snapshot.exists()) return;
 
-					const ref = snapshot.ref.toString();
-					const topic = ref.split(snapshot.ref.root.toString()).pop();
+					const topic = snapshot.ref.key?.toString() || "";
 					const payload = config.outputType === "auto" ? snapshot.val() : JSON.stringify(snapshot.val());
 
 					send({ payload: payload, topic: topic });
