@@ -2,7 +2,7 @@ const firebase = require("firebase/database");
 
 module.exports = function (RED) {
 	function FirebaseOutNode(config) {
-		const { isPathValid, removeNode, setNodeStatus } = require("./lib/firebaseNode");
+		const { isPathValid, isQueryValid, removeNode, setNodeStatus } = require("./lib/firebaseNode");
 
 		RED.nodes.createNode(this, config);
 
@@ -19,10 +19,12 @@ module.exports = function (RED) {
 
 		this.on("input", function (msg, send, done) {
 			const path = config.pathType === "msg" ? msg[config.path] : config.path;
+			const query = config.query === "none" ? msg.method : config.query;
 			const pathNoValid = isPathValid(path);
+			const queryNoValid = isQueryValid(query);
 
-			if (pathNoValid) {
-				done(pathNoValid);
+			if (pathNoValid || queryNoValid) {
+				done(pathNoValid || queryNoValid);
 				return;
 			}
 
@@ -31,11 +33,11 @@ module.exports = function (RED) {
 				this.database.db
 					.ref()
 					.child(path)
-					[config.queryType](msg.payload)
+					[query](msg.payload)
 					.then(() => done())
 					.catch((error) => done(error));
 			} else {
-				firebase[config.queryType](firebase.ref(this.database.db, path), msg.payload)
+				firebase[query](firebase.ref(this.database.db, path), msg.payload)
 					.then(() => done())
 					.catch((error) => done(error));
 			}
