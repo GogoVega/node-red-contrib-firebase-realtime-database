@@ -6,6 +6,13 @@ function isPathValid(path, empty = false) {
 	return;
 }
 
+function isQueryValid(method) {
+	if (method === undefined) return "msg.method do not exist!";
+	if (!["set", "push", "update", "remove"].includes(method))
+		return "msg.method must be 'set', 'push', 'update' or 'remove'";
+	return;
+}
+
 function parseQuery(raw = {}) {
 	const database = require("firebase/database");
 	const queryValid = [
@@ -47,4 +54,4 @@ function setNodeStatus(self, connected = false) {
 	}
 }
 
-module.exports = { isPathValid, parseQuery, removeNode, setNodeStatus };
+module.exports = { isPathValid, isQueryValid, parseQuery, removeNode, setNodeStatus };
