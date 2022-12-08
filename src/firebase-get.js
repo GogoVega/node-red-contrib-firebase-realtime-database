@@ -1,8 +1,6 @@
-const { get, ref, query } = require("firebase/database");
-
 module.exports = function (RED) {
 	function FirebaseGetNode(config) {
-		const { isPathValid, parseQuery, removeNode, setNodeStatus } = require("./lib/firebaseNode");
+		const { isPathValid, makeGetQuery, removeNode, setNodeStatus } = require("./lib/firebaseNode");
 
 		RED.nodes.createNode(this, config);
 
@@ -18,6 +16,7 @@ module.exports = function (RED) {
 		setNodeStatus(this, this.database.connected);
 
 		this.on("input", function (msg, send, done) {
+			const admin = this.database.config.authType === "privateKey";
 			const path = (config.pathType === "msg" ? msg[config.path] : config.path) || undefined;
 			const queryConstraints = msg.method;
 			const pathNoValid = isPathValid(path, true);
@@ -27,13 +26,7 @@ module.exports = function (RED) {
 				return;
 			}
 
-			const snapshot =
-				this.database.config.authType === "privateKey"
-					? path
-						? this.database.db.ref().child(path).get()
-						: this.database.db.ref().get()
-					: get(query(ref(this.database.db, path), ...parseQuery(queryConstraints)));
-			snapshot
+			makeGetQuery(this.database.db, path, admin, queryConstraints)
 				.then((snapshot) => {
 					if (!snapshot.exists()) return;
 

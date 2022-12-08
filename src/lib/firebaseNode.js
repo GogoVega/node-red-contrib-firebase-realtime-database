@@ -13,21 +13,28 @@ function isQueryValid(method) {
 	return;
 }
 
-function parseQuery(raw = {}) {
+async function makeGetQuery(db, path, admin = false, constraints = {}) {
+	if (admin) {
+		const database = path ? db.ref().child(path) : db.ref();
+		const { queryValid } = require("../const/firebaseNode");
+
+		for (const [method, value] of Object.entries(constraints)) {
+			if (!queryValid.includes(method))
+				throw new Error(`Query received: '${method}'but must be one of ${queryValid.toString()}`);
+			database[method](value);
+		}
+
+		return database.get();
+	} else {
+		const { get, ref, query } = require("firebase/database");
+
+		return get(query(ref(db, path), ...parseQueryConstraints(constraints)));
+	}
+}
+
+function parseQueryConstraints(raw = {}) {
 	const database = require("firebase/database");
-	const queryValid = [
-		"endAt",
-		"endBefore",
-		"equalTo",
-		"limitToFirst",
-		"limitToLast",
-		"orderByChild",
-		"orderByKey",
-		"orderByPriority",
-		"orderByValue",
-		"startAfter",
-		"startAt",
-	];
+	const { queryValid } = require("../const/firebaseNode");
 	const query = [];
 
 	for (const [method, value] of Object.entries(raw)) {
@@ -54,4 +61,4 @@ function setNodeStatus(self, connected = false) {
 	}
 }
 
-module.exports = { isPathValid, isQueryValid, parseQuery, removeNode, setNodeStatus };
+module.exports = { isPathValid, isQueryValid, makeGetQuery, removeNode, setNodeStatus };
