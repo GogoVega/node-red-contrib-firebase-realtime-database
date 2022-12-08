@@ -14,8 +14,10 @@ function isQueryValid(method) {
 }
 
 async function makeGetQuery(db, path, admin = false, constraints = {}) {
+	const pathParsed = parsePath(path, true);
+
 	if (admin) {
-		const database = path ? db.ref().child(path) : db.ref();
+		const database = pathParsed ? db.ref().child(pathParsed) : db.ref();
 		const { queryValid } = require("../const/firebaseNode");
 
 		for (const [method, value] of Object.entries(constraints)) {
@@ -28,8 +30,16 @@ async function makeGetQuery(db, path, admin = false, constraints = {}) {
 	} else {
 		const { get, ref, query } = require("firebase/database");
 
-		return get(query(ref(db, path), ...parseQueryConstraints(constraints)));
+		return get(query(ref(db, pathParsed), ...parseQueryConstraints(constraints)));
 	}
+}
+
+function parsePath(path, empty = false) {
+	if (!empty && path === undefined) throw new Error("The msg containing the PATH do not exist!");
+	if (!empty && !path) throw new Error("PATH must be non-empty string!");
+	if (path && typeof path !== "string") throw new Error("PATH must be a string!");
+	if (path?.match(/[.#$\[\]]/g)) throw new Error(`PATH must not contain ".", "#", "$", "[", or "]"`);
+	return path;
 }
 
 function parseQueryConstraints(raw = {}) {

@@ -1,6 +1,6 @@
 module.exports = function (RED) {
 	function FirebaseGetNode(config) {
-		const { isPathValid, makeGetQuery, removeNode, setNodeStatus } = require("./lib/firebaseNode");
+		const { makeGetQuery, removeNode, setNodeStatus } = require("./lib/firebaseNode");
 
 		RED.nodes.createNode(this, config);
 
@@ -18,15 +18,8 @@ module.exports = function (RED) {
 		this.on("input", function (msg, send, done) {
 			const admin = this.database.config.authType === "privateKey";
 			const path = (config.pathType === "msg" ? msg[config.path] : config.path) || undefined;
-			const queryConstraints = msg.method;
-			const pathNoValid = isPathValid(path, true);
 
-			if (pathNoValid) {
-				done(pathNoValid);
-				return;
-			}
-
-			makeGetQuery(this.database.db, path, admin, queryConstraints)
+			makeGetQuery(this.database.db, path, admin, msg.method)
 				.then((snapshot) => {
 					if (!snapshot.exists()) return;
 
