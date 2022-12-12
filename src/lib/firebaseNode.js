@@ -19,7 +19,16 @@ async function makeGetQuery(db, path = undefined, admin = false, constraints = {
 	}
 }
 
-function makeUnSubscriptionQuery(db, listener, path = undefined, admin = false) {
+function makeUnSubscriptionQuery(node, listener, path = undefined) {
+	const admin = node.database.config.authType === "privateKey";
+	const db = node.database.db;
+
+	// Do not delete the listener if the same path is used several times
+	if (node.database.listeners[path ?? ""] > 1) {
+		node.database.listeners[path ?? ""]--;
+		return;
+	}
+
 	if (admin) {
 		const databaseRef = path ? db.ref().child(path) : db.ref();
 
@@ -56,6 +65,9 @@ function makeSubscriptionQuery(node, listener, path = undefined, string = false)
 			(error) => node.error(error)
 		);
 	}
+
+	if (node.database.listeners[pathParsed ?? ""] === undefined) node.database.listeners[pathParsed ?? ""] = 0;
+	node.database.listeners[pathParsed ?? ""]++;
 }
 
 async function makeWriteQuery(db, path = undefined, query = undefined, payload = null, admin = false) {
@@ -113,7 +125,7 @@ function parseQueryConstraints(raw = {}) {
 }
 
 function removeNodeStatus(nodes = [], nodeId) {
-	nodes.some((node) => {
+	nodes.forEach((node) => {
 		if (node.id !== nodeId) return;
 		nodes.splice(nodes.indexOf(node), 1);
 	});

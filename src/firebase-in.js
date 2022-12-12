@@ -33,9 +33,8 @@ module.exports = function (RED) {
 		// If the node is disabled/deleted there will be no call to the onValue function
 		this.on("close", function () {
 			try {
-				const admin = this.database.config.authType === "privateKey";
 				removeNodeStatus(this.database.nodes, this.id);
-				makeUnSubscriptionQuery(this.database.db, "value", path, admin);
+				makeUnSubscriptionQuery(this, "value", path);
 			} catch (error) {
 				this.error(error);
 			}
