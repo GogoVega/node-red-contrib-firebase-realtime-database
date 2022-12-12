@@ -19,7 +19,7 @@ module.exports = function (RED) {
 
 		this.on("input", function (msg, send, done) {
 			const path = config.pathType === "msg" ? msg[config.path] : config.path;
-			const query = config.query === "none" ? msg.method : config.query;
+			const query = config.queryType === "none" ? msg.method : config.queryType;
 			const pathNoValid = isPathValid(path);
 			const queryNoValid = isQueryValid(query);
 
