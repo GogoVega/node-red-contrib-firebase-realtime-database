@@ -1,20 +1,4 @@
-function isPathValid(path, empty = false) {
-	if (!empty && path === undefined) return "The msg containing the PATH do not exist!";
-	if (!empty && !path) return "PATH must be non-empty string!";
-	if (path && typeof path !== "string") return "PATH must be a string!";
-	if (path?.match(/[.#$\[\]]/g)) return `PATH must not contain ".", "#", "$", "[", or "]"`;
-	return;
-}
-
-function isQueryValid(method) {
-	const { queryMethods } = require("../const/firebaseNode");
-
-	if (method === undefined) return "msg.method do not exist!";
-	if (!queryMethods.includes(method)) return `msg.method must be ${queryMethods.toString()}`;
-	return;
-}
-
-async function makeGetQuery(db, path, admin = false, constraints = {}) {
+async function makeGetQuery(db, path = undefined, admin = false, constraints = {}) {
 	const pathParsed = parsePath(path, true);
 
 	if (admin) {
@@ -35,12 +19,81 @@ async function makeGetQuery(db, path, admin = false, constraints = {}) {
 	}
 }
 
+function makeUnSubscriptionQuery(db, listener, path = undefined, admin = false) {
+	if (admin) {
+		const databaseRef = path ? db.ref().child(path) : db.ref();
+
+		databaseRef.off(listener);
+	} else {
+		const { ref, off } = require("firebase/database");
+
+		off(ref(db, path), listener);
+	}
+}
+
+// TODO: Add the different listeners
+function makeSubscriptionQuery(node, listener, path = undefined, string = false) {
+	const admin = node.database.config.authType === "privateKey";
+	const db = node.database.db;
+	const listenerParsed = parseListener(listener);
+	const pathParsed = parsePath(path, true);
+
+	if (admin) {
+		const databaseRef = pathParsed ? db.ref().child(pathParsed) : db.ref();
+
+		databaseRef.on(
+			listenerParsed,
+			(snapshot) => sendMsg(snapshot, node, string),
+			(error) => node.error(error)
+		);
+	} else {
+		const firebase = require("firebase/database");
+		const { listeners } = require("../const/firebaseNode");
+
+		firebase[listeners[listenerParsed]](
+			firebase.ref(db, pathParsed),
+			(snapshot) => sendMsg(snapshot, node, string),
+			(error) => node.error(error)
+		);
+	}
+}
+
+async function makeWriteQuery(db, path = undefined, query = undefined, payload = null, admin = false) {
+	const pathParsed = parsePath(path);
+	const queryParsed = parseQuery(query);
+
+	if (admin) {
+		/* eslint-disable no-unexpected-multiline */
+		return db.ref().child(pathParsed)[queryParsed](payload);
+	} else {
+		const firebase = require("firebase/database");
+
+		return firebase[queryParsed](firebase.ref(db, pathParsed), payload);
+	}
+}
+
+function parseListener(listener) {
+	const { listeners } = require("../const/firebaseNode");
+	const keys = Object.keys(listeners);
+
+	if (!keys.includes(listener)) throw new Error(`msg.method must be ${keys.toString()}`);
+	return listener;
+}
+
 function parsePath(path, empty = false) {
 	if (!empty && path === undefined) throw new Error("The msg containing the PATH do not exist!");
 	if (!empty && !path) throw new Error("PATH must be non-empty string!");
 	if (path && typeof path !== "string") throw new Error("PATH must be a string!");
 	if (path?.match(/[.#$\[\]]/g)) throw new Error(`PATH must not contain ".", "#", "$", "[", or "]"`);
 	return path;
+}
+
+function parseQuery(method) {
+	const { queryMethods } = require("../const/firebaseNode");
+
+	if (method === undefined) throw new Error("msg.method do not exist!");
+	if (!queryMethods.includes(method)) throw new Error(`msg.method must be ${queryMethods.toString()}`);
+	return method;
 }
 
 function parseQueryConstraints(raw = {}) {
@@ -59,11 +112,24 @@ function parseQueryConstraints(raw = {}) {
 	return query;
 }
 
-function removeNode(nodes = [], nodeId) {
+function removeNodeStatus(nodes = [], nodeId) {
 	nodes.some((node) => {
 		if (node.id !== nodeId) return;
 		nodes.splice(nodes.indexOf(node), 1);
 	});
+}
+
+function sendMsg(snapshot, node, string = false) {
+	try {
+		if (!snapshot.exists()) return;
+
+		const topic = snapshot.ref.key?.toString() || "";
+		const payload = string ? JSON.stringify(snapshot.val()) : snapshot.val();
+
+		node.send({ payload: payload, topic: topic });
+	} catch (error) {
+		node.error(error);
+	}
 }
 
 function setNodeStatus(self, connected = false) {
@@ -74,4 +140,11 @@ function setNodeStatus(self, connected = false) {
 	}
 }
 
-module.exports = { isPathValid, isQueryValid, makeGetQuery, removeNode, setNodeStatus };
+module.exports = {
+	makeGetQuery,
+	makeUnSubscriptionQuery,
+	makeSubscriptionQuery,
+	makeWriteQuery,
+	removeNodeStatus,
+	setNodeStatus,
+};
