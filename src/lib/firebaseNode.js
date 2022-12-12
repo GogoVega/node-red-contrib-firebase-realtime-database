@@ -7,9 +7,10 @@ function isPathValid(path, empty = false) {
 }
 
 function isQueryValid(method) {
+	const { queryMethods } = require("../const/firebaseNode");
+
 	if (method === undefined) return "msg.method do not exist!";
-	if (!["set", "push", "update", "remove"].includes(method))
-		return "msg.method must be 'set', 'push', 'update' or 'remove'";
+	if (!queryMethods.includes(method)) return `msg.method must be ${queryMethods.toString()}`;
 	return;
 }
 
@@ -18,11 +19,11 @@ async function makeGetQuery(db, path, admin = false, constraints = {}) {
 
 	if (admin) {
 		const database = pathParsed ? db.ref().child(pathParsed) : db.ref();
-		const { queryValid } = require("../const/firebaseNode");
+		const { queryConstraints } = require("../const/firebaseNode");
 
 		for (const [method, value] of Object.entries(constraints)) {
-			if (!queryValid.includes(method))
-				throw new Error(`Query constraint received: '${method}' but must be one of ${queryValid.toString()}`);
+			if (!queryConstraints.includes(method))
+				throw new Error(`Query constraint received: '${method}' but must be one of ${queryConstraints.toString()}`);
 			database[method](value);
 		}
 
@@ -44,14 +45,14 @@ function parsePath(path, empty = false) {
 
 function parseQueryConstraints(raw = {}) {
 	const database = require("firebase/database");
-	const { queryValid } = require("../const/firebaseNode");
+	const { queryConstraints } = require("../const/firebaseNode");
 	const query = [];
 
 	if (typeof raw !== "object") throw new Error("Query constraints must be an object!");
 
 	for (const [method, value] of Object.entries(raw)) {
-		if (!queryValid.includes(method))
-			throw new Error(`Query constraint received: '${method}' but must be one of ${queryValid.toString()}.`);
+		if (!queryConstraints.includes(method))
+			throw new Error(`Query constraint received: '${method}' but must be one of ${queryConstraints.toString()}.`);
 		query.push(database[method](value));
 	}
 

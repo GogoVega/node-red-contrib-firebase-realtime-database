@@ -1,4 +1,4 @@
-const queryValid = [
+const queryConstraints = [
 	"endAt",
 	"endBefore",
 	"equalTo",
@@ -12,4 +12,6 @@ const queryValid = [
 	"startAt",
 ];
 
-module.exports = { queryValid };
+const queryMethods = ["set", "push", "update", "remove"];
+
+module.exports = { queryConstraints, queryMethods };
