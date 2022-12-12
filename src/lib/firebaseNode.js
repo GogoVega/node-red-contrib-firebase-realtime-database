@@ -22,7 +22,7 @@ async function makeGetQuery(db, path, admin = false, constraints = {}) {
 
 		for (const [method, value] of Object.entries(constraints)) {
 			if (!queryValid.includes(method))
-				throw new Error(`Query received: '${method}'but must be one of ${queryValid.toString()}`);
+				throw new Error(`Query constraint received: '${method}' but must be one of ${queryValid.toString()}`);
 			database[method](value);
 		}
 
@@ -47,9 +47,11 @@ function parseQueryConstraints(raw = {}) {
 	const { queryValid } = require("../const/firebaseNode");
 	const query = [];
 
+	if (typeof raw !== "object") throw new Error("Query constraints must be an object!");
+
 	for (const [method, value] of Object.entries(raw)) {
 		if (!queryValid.includes(method))
-			throw new Error(`Query received: '${method}'but must be one of ${queryValid.toString()}`);
+			throw new Error(`Query constraint received: '${method}' but must be one of ${queryValid.toString()}.`);
 		query.push(database[method](value));
 	}
 
