@@ -17,6 +17,7 @@ module.exports = function (RED) {
 		}
 
 		this.database.nodes.push(this);
+		this.subscribed = false;
 
 		setNodeStatus(this, this.database.connected);
 
@@ -25,6 +26,7 @@ module.exports = function (RED) {
 
 		try {
 			makeSubscriptionQuery(this, "value", path, string);
+			this.subscribed = true;
 		} catch (error) {
 			this.error(error);
 		}
@@ -34,6 +36,9 @@ module.exports = function (RED) {
 		this.on("close", function () {
 			try {
 				removeNodeStatus(this.database.nodes, this.id);
+
+				if (!this.subscribed) return;
+
 				makeUnSubscriptionQuery(this, "value", path);
 			} catch (error) {
 				this.error(error);
