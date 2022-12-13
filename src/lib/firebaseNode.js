@@ -159,6 +159,8 @@ module.exports = {
 	makeUnSubscriptionQuery,
 	makeSubscriptionQuery,
 	makeWriteQuery,
+	parsePath,
+	parseQueryConstraints,
 	removeNodeStatus,
 	setNodeStatus,
 };

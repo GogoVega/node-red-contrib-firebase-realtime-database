@@ -5,7 +5,8 @@
   "main": "src/database.js",
   "scripts": {
     "lint": "eslint . --ext .js",
-    "prettier": "prettier --write \"**/*.{js,html,md}\""
+    "prettier": "prettier --write \"**/*.{js,html,md}\"",
+    "test": "mocha './test/**/*_spec.js' --exit"
   },
   "repository": {
     "type": "git",
@@ -40,7 +41,9 @@
   },
   "devDependencies": {
     "eslint": "^8.28.0",
-    "node-red": "^2.2.2",
+    "mocha": "^10.2.0",
+    "node-red": "^2.2.3",
+    "node-red-node-test-helper": "^0.3.0",
     "prettier": "2.7.1"
   },
   "engines": {
