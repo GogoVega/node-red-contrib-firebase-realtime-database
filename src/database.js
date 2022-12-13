@@ -6,6 +6,7 @@ module.exports = function (RED) {
 
 		this.connected = false;
 		this.config = config;
+		this.listeners = {};
 		this.nodes = [];
 
 		logIn(this)

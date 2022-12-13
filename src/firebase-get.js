@@ -1,6 +1,6 @@
 module.exports = function (RED) {
 	function FirebaseGetNode(config) {
-		const { makeGetQuery, removeNode, setNodeStatus } = require("./lib/firebaseNode");
+		const { makeGetQuery, removeNodeStatus, setNodeStatus } = require("./lib/firebaseNode");
 
 		RED.nodes.createNode(this, config);
 
@@ -32,7 +32,7 @@ module.exports = function (RED) {
 				.catch((error) => done(error));
 		});
 
-		this.on("close", () => removeNode(this.database.nodes, this.id));
+		this.on("close", () => removeNodeStatus(this.database.nodes, this.id));
 	}
 
 	RED.nodes.registerType("firebase-get", FirebaseGetNode);

@@ -1,3 +1,7 @@
+const listeners = {
+	value: "onValue",
+};
+
 const queryConstraints = [
 	"endAt",
 	"endBefore",
@@ -14,4 +18,4 @@ const queryConstraints = [
 
 const queryMethods = ["set", "push", "update", "remove"];
 
-module.exports = { queryConstraints, queryMethods };
+module.exports = { listeners, queryConstraints, queryMethods };
