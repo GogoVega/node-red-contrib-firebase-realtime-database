@@ -23,7 +23,7 @@ function makeUnSubscriptionQuery(node, listener, path = undefined) {
 	const admin = node.database.config.authType === "privateKey";
 	const db = node.database.db;
 
-	// Do not delete the listener if the same path is used several times
+	// Do not remove the listener if the same path is used several times
 	if (node.database.listeners[path ?? ""] > 1) {
 		node.database.listeners[path ?? ""]--;
 		return;
@@ -38,9 +38,11 @@ function makeUnSubscriptionQuery(node, listener, path = undefined) {
 
 		off(ref(db, path), listener);
 	}
+
+	delete node.database.listeners[path ?? ""];
 }
 
-// TODO: Add the different listeners
+// TODO: Add others listeners
 function makeSubscriptionQuery(node, listener, path = undefined, string = false) {
 	const admin = node.database.config.authType === "privateKey";
 	const db = node.database.db;
@@ -70,12 +72,12 @@ function makeSubscriptionQuery(node, listener, path = undefined, string = false)
 	node.database.listeners[pathParsed ?? ""]++;
 }
 
+// TODO: Add others methods
 async function makeWriteQuery(db, path = undefined, query = undefined, payload = null, admin = false) {
 	const pathParsed = parsePath(path);
 	const queryParsed = parseQuery(query);
 
 	if (admin) {
-		/* eslint-disable no-unexpected-multiline */
 		return db.ref().child(pathParsed)[queryParsed](payload);
 	} else {
 		const firebase = require("firebase/database");
