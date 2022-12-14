@@ -1,5 +1,17 @@
+const defaultListeners = {
+	value: {},
+	child_added: {},
+	child_changed: {},
+	child_moved: {},
+	child_removed: {},
+};
+
 const listeners = {
 	value: "onValue",
+	child_added: "onChildAdded",
+	child_changed: "onChildChanged",
+	child_moved: "onChildMoved",
+	child_removed: "onChildRemoved",
 };
 
 const queryConstraints = [
@@ -18,4 +30,4 @@ const queryConstraints = [
 
 const queryMethods = ["set", "push", "update", "remove"];
 
-module.exports = { listeners, queryConstraints, queryMethods };
+module.exports = { defaultListeners, listeners, queryConstraints, queryMethods };

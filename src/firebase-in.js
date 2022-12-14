@@ -21,29 +21,26 @@ module.exports = function (RED) {
 
 		setNodeStatus(this, this.database.connected);
 
+		const listener = config.listenerType || "value";
 		const path = config.path?.toString() || undefined;
 		const string = config.outputType === "string";
 
 		try {
-			makeSubscriptionQuery(this, "value", path, string);
+			makeSubscriptionQuery(this, listener, path, string);
 			this.subscribed = true;
-		} catch (error) {
-			this.error(error);
-		}
 
-		// Remove the old listener to save the new one
-		// If the node is disabled/deleted there will be no call to the onValue function
-		this.on("close", function () {
-			try {
+			// Remove the old listener to save the new one
+			// If the node is disabled/deleted there will be no call to the onValue function
+			this.on("close", function () {
 				removeNodeStatus(this.database.nodes, this.id);
 
 				if (!this.subscribed) return;
 
-				makeUnSubscriptionQuery(this, "value", path);
-			} catch (error) {
-				this.error(error);
-			}
-		});
+				makeUnSubscriptionQuery(this, listener, path);
+			});
+		} catch (error) {
+			this.error(error);
+		}
 	}
 
 	RED.nodes.registerType("firebase-in", FirebaseInNode);

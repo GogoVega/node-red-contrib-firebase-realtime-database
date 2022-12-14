@@ -1,12 +1,13 @@
 module.exports = function (RED) {
 	function DatabaseNode(config) {
 		const { initConnectionStatus, logIn, logOut, parseErrorMsg, setNodesDisconnected } = require("./lib/databaseNode");
+		const { defaultListeners } = require("./const/firebaseNode");
 
 		RED.nodes.createNode(this, config);
 
 		this.connected = false;
 		this.config = config;
-		this.listeners = {};
+		this.listeners = defaultListeners;
 		this.nodes = [];
 
 		logIn(this)
