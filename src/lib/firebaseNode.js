@@ -24,8 +24,8 @@ function makeUnSubscriptionQuery(node, listener, path = undefined) {
 	const db = node.database.db;
 
 	// Do not remove the listener if the same path is used several times
-	if (node.database.listeners[path ?? ""] > 1) {
-		node.database.listeners[path ?? ""]--;
+	if (node.database.listeners[listener][path ?? ""] > 1) {
+		node.database.listeners[listener][path ?? ""]--;
 		return;
 	}
 
@@ -39,7 +39,7 @@ function makeUnSubscriptionQuery(node, listener, path = undefined) {
 		off(ref(db, path), listener);
 	}
 
-	delete node.database.listeners[path ?? ""];
+	delete node.database.listeners[listener][path ?? ""];
 }
 
 // TODO: Add others listeners
@@ -54,7 +54,7 @@ function makeSubscriptionQuery(node, listener, path = undefined, string = false)
 
 		databaseRef.on(
 			listenerParsed,
-			(snapshot) => sendMsg(snapshot, node, string),
+			(snapshot, child) => sendMsg(snapshot, node, child, string),
 			(error) => node.error(error)
 		);
 	} else {
@@ -63,13 +63,14 @@ function makeSubscriptionQuery(node, listener, path = undefined, string = false)
 
 		firebase[listeners[listenerParsed]](
 			firebase.ref(db, pathParsed),
-			(snapshot) => sendMsg(snapshot, node, string),
+			(snapshot, child) => sendMsg(snapshot, node, child, string),
 			(error) => node.error(error)
 		);
 	}
 
-	if (node.database.listeners[pathParsed ?? ""] === undefined) node.database.listeners[pathParsed ?? ""] = 0;
-	node.database.listeners[pathParsed ?? ""]++;
+	const listenersObject = node.database.listeners[listener];
+	if (listenersObject[pathParsed ?? ""] === undefined) listenersObject[pathParsed ?? ""] = 0;
+	listenersObject[pathParsed ?? ""]++;
 }
 
 // TODO: Add others methods
@@ -133,14 +134,14 @@ function removeNodeStatus(nodes = [], nodeId) {
 	});
 }
 
-function sendMsg(snapshot, node, string = false) {
+function sendMsg(snapshot, node, child = "", string = false) {
 	try {
 		if (!snapshot.exists()) return;
 
 		const topic = snapshot.ref.key?.toString() || "";
 		const payload = string ? JSON.stringify(snapshot.val()) : snapshot.val();
 
-		node.send({ payload: payload, topic: topic });
+		node.send({ payload: payload, previousChildName: child, topic: topic });
 	} catch (error) {
 		node.error(error);
 	}
