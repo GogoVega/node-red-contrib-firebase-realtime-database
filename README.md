@@ -16,7 +16,7 @@ It allows to add, modify and get data from database and also to subscribe to dat
 There are 3 node included with this contrib:
 
 - `Firebase in`: Subscribes to data in the specified path which sends a message whenever a value changes.
-- `Firebase get`: Get data from specified path.
+- `Firebase get`: Get data from specified path. Query constraints can be used to sort and order your data.
 - `Firebase out`: `SET`, `PUSH`, `UPDATE` or `REMOVE` data to Database.
 
 ## How to use?
@@ -37,7 +37,7 @@ node-red
 
 - `Anonymous`
 - `Email`
-- `Private Key`
+- `Private Key` (Firebase Admin Node.js SDK)
 
 Read more about the different ways to authenticate [here](./docs/Authentication.md).
 
