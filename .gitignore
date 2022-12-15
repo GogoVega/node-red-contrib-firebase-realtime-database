@@ -8,10 +8,7 @@ build
 
 # Dependency directories
 node_modules
+package-lock.json
 
 # dotenv environment variables file
 .env
-
-### VisualStudioCode ###
-# Folder config file
-config.json
