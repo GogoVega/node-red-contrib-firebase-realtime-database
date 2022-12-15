@@ -47,8 +47,10 @@ function initConnectionStatus(self) {
 		(snapshot) => {
 			if (snapshot.val() === true) {
 				setNodesConnected(self);
+				self.log(`Connected to Firebase database: ${self.app.options?.databaseURL}`);
 			} else {
 				setNodesConnecting(self);
+				self.log(`Connecting to Firebase database: ${self.app.options?.databaseURL}`);
 			}
 		},
 		(error) => self.error(error)
