@@ -107,7 +107,9 @@ function parseQuery(method) {
 	const { queryMethods } = require("../const/firebaseNode");
 
 	if (method === undefined) throw new Error("msg.method do not exist!");
-	if (!queryMethods.includes(method)) throw new Error(`msg.method must be ${queryMethods.toString()}`);
+	if (typeof method !== "string") throw new Error("msg.method must be a string!");
+	method = method.toLowerCase();
+	if (!queryMethods.includes(method)) throw new Error(`msg.method must be one of ${queryMethods.toString()}`);
 	return method;
 }
 
