@@ -2,7 +2,7 @@
 	RED.nodes.registerType("database-config", {
 		category: "config",
 		credentials: {
-			apiKey: { type: "text", validate: RED.validators.regex(/\S/) },
+			apiKey: { type: "text", validate: RED.validators.regex(/AIza[a-zA-Z0-9]{35}/) },
 			email: {
 				type: "text",
 				validate: RED.validators.regex(/^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/i),
@@ -13,7 +13,7 @@
 			url: {
 				type: "text",
 				validate: RED.validators.regex(
-					/https:\/\/\S{1,256}(-default-rtdb\.europe-west1\.firebasedatabase\.app\/|\.firebaseio.com)/
+					/https:\/\/[a-zA-Z0-9-]{4,30}-default-rtdb\.(europe-west1\.firebasedatabase\.app\/|firebaseio\.com\/)/
 				),
 			},
 		},
@@ -145,8 +145,9 @@
 		<div class="form-row form-row-url">
 			<p>
 				<strong>URL</strong> can be found in the Realtime Database console, this differs by geographic location, in the
-				United States it has the following link: <strong>https://&#x3C;projet-id&#x3E;.firebaseio.com</strong> and in
-				Europe: <strong>https://&#x3C;projet-id&#x3E;-default-rtdb.europe-west1.firebasedatabase.app/</strong>.
+				United States it has the following link:
+				<strong>https://&#x3C;projet-id&#x3E;-default-rtdb.firebaseio.com/</strong> and in Europe:
+				<strong>https://&#x3C;projet-id&#x3E;-default-rtdb.europe-west1.firebasedatabase.app/</strong>.
 			</p>
 		</div>
 		<div class="form-row form-row-email">
