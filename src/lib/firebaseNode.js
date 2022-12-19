@@ -1,6 +1,8 @@
 async function makeGetQuery(db, path = undefined, admin = false, constraints = {}) {
 	const pathParsed = parsePath(path, true);
 
+	if (!db) return;
+
 	if (admin) {
 		const database = pathParsed ? db.ref().child(pathParsed) : db.ref();
 		const { queryConstraints } = require("../const/firebaseNode");
@@ -29,6 +31,10 @@ function makeUnSubscriptionQuery(node, listener, path = undefined) {
 		return;
 	}
 
+	delete node.database.listeners[listener][path ?? ""];
+
+	if (!db) return;
+
 	if (admin) {
 		const databaseRef = path ? db.ref().child(path) : db.ref();
 
@@ -38,16 +44,15 @@ function makeUnSubscriptionQuery(node, listener, path = undefined) {
 
 		off(ref(db, path), listener);
 	}
-
-	delete node.database.listeners[listener][path ?? ""];
 }
 
-// TODO: Add others listeners
 function makeSubscriptionQuery(node, listener, path = undefined, string = false) {
 	const admin = node.database.config.authType === "privateKey";
 	const db = node.database.db;
 	const listenerParsed = parseListener(listener);
 	const pathParsed = parsePath(path, true);
+
+	if (!db) return;
 
 	if (admin) {
 		const databaseRef = pathParsed ? db.ref().child(pathParsed) : db.ref();
@@ -77,6 +82,8 @@ function makeSubscriptionQuery(node, listener, path = undefined, string = false)
 async function makeWriteQuery(db, path = undefined, query = undefined, payload = null, admin = false) {
 	const pathParsed = parsePath(path);
 	const queryParsed = parseQuery(query);
+
+	if (!db) return;
 
 	if (admin) {
 		return db.ref().child(pathParsed)[queryParsed](payload);
@@ -162,8 +169,6 @@ module.exports = {
 	makeUnSubscriptionQuery,
 	makeSubscriptionQuery,
 	makeWriteQuery,
-	parsePath,
-	parseQueryConstraints,
 	removeNodeStatus,
 	setNodeStatus,
 };

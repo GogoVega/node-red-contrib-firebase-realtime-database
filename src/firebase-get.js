@@ -21,7 +21,7 @@ module.exports = function (RED) {
 
 			makeGetQuery(this.database.db, path, admin, msg.method)
 				.then((snapshot) => {
-					if (!snapshot.exists()) return;
+					if (!snapshot || !snapshot.exists()) return;
 
 					const topic = snapshot.ref.key?.toString() || "";
 					const payload = config.outputType === "auto" ? snapshot.val() : JSON.stringify(snapshot.val());
