@@ -8,18 +8,24 @@
 
 ## Changes
 
+- Bump `firebase-admin` from 11.3.0 to 11.4.1
 - The default label of nodes
 - The icon of path
 
+## Fixes
+
+- (Firebase in) Do not remove the listener if it's still used in one or more nodes
+- (Database) Regex rules for `apiKey` and `url`
+
 ### Improves
 
-- data-help description for all nodes
+- `data-help` description for all nodes
 
 ### New Features
 
-- (Database) Add an option to choose whether to create a new user
+- (Database) Add an option to choose whether to create a new user (email)
 - (Firebase get) Support for query constraints to sort and order data
-- (Firebase out) use msg.method to dynamically define the query
+- (Firebase out) Use `msg.method` to dynamically define the query
 
 ## 0.1.2
 
@@ -65,7 +71,7 @@
 
 ## 0.0.2
 
-### Beaking Changes
+### Breaking Changes
 
 - `database` name to `database-config` because already used
 
