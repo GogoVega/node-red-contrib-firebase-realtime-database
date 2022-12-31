@@ -1,11 +1,12 @@
 {
   "name": "@gogovega/node-red-contrib-firebase-realtime-database",
-  "version": "0.1.2",
+  "version": "0.2.0",
   "description": "Node-RED nodes to communicate with Google Firebase Realtime Database",
   "main": "src/database.js",
   "scripts": {
     "lint": "eslint . --ext .js",
-    "prettier": "prettier --write \"**/*.{js,html,md}\""
+    "prettier": "prettier --write \"**/*.{js,html,md}\"",
+    "test": "mocha './test/**/*_spec.js' --exit"
   },
   "repository": {
     "type": "git",
@@ -36,12 +37,14 @@
   },
   "dependencies": {
     "firebase": "^9.14.0",
-    "firebase-admin": "^11.3.0"
+    "firebase-admin": "^11.4.1"
   },
   "devDependencies": {
-    "eslint": "^8.28.0",
-    "node-red": "^2.2.2",
-    "prettier": "2.7.1"
+    "eslint": "^8.30.0",
+    "mocha": "^10.2.0",
+    "node-red": "^2.2.3",
+    "node-red-node-test-helper": "^0.3.0",
+    "prettier": "^2.8.1"
   },
   "engines": {
     "node": ">=14.20.0"

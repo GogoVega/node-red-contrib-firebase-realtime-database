@@ -6,6 +6,10 @@
 		defaults: {
 			name: { value: "" },
 			database: { value: "", type: "database-config" },
+			listenerType: {
+				value: "value",
+				validate: RED.validators.regex(/(value|child_added|child_changed|child_moved|child_removed)/),
+			},
 			outputType: { value: "auto", validate: RED.validators.regex(/(auto|string)/) },
 			path: {
 				value: "test/stream",
@@ -19,7 +23,7 @@
 		icon: "firebase.png",
 		paletteLabel: "Firebase in",
 		label: function () {
-			return this.name || "Firebase in";
+			return this.name || this.path || "root";
 		},
 		labelStyle: function () {
 			return this.name ? "node_label_italic" : "";
@@ -35,8 +39,19 @@
 	</div>
 
 	<div class="form-row">
-		<label for="node-input-path"><i class="fa fa-server"></i> Path</label>
-		<input type="text" id="node-input-path" style="width:70%" />
+		<label for="node-input-listenerType"><i class="fa fa-bars"></i> Listener</label>
+		<select id="node-input-listenerType" style="width:70%;">
+			<option value="value">Value</option>
+			<option value="child_added">Child Added</option>
+			<option value="child_changed">Child Changed</option>
+			<option value="child_moved">Child Moved</option>
+			<option value="child_removed">Child Removed</option>
+		</select>
+	</div>
+
+	<div class="form-row">
+		<label for="node-input-path"><i class="fa fa-sitemap"></i> Path</label>
+		<input type="text" id="node-input-path" style="width:70%;" />
 	</div>
 
 	<div class="form-row">
@@ -54,16 +69,33 @@
 </script>
 
 <script type="text/html" data-help-name="firebase-in">
-	<p>Connects to a Firebase Realtime Database and subscribes to data from the specified path.</p>
+	<p>Connects to a Firebase Realtime Database and subscribes to data at the specified path.</p>
+	<h3>Outputs</h3>
+	<dl class="message-properties">
+		<dt>payload<span class="property-type">string | boolean | number | object</span></dt>
+		<dd>contains the event data from the database.</dd>
+		<dt>previousChildName<span class="property-type">string</span></dt>
+		<dd>contains the key of the previous child, by sort order, or <code>null</code> if it is the first child.</dd>
+		<dt>topic<span class="property-type">string</span></dt>
+		<dd>contains the path where the data comes from.</dd>
+	</dl>
+	<h3>Details</h3>
 	<p>This node reads data from a path and will send a message whenever the data, including children, changes.</p>
-	<p>The <strong>Path</strong> determines where the data will be written.</p>
-	<p>The <strong>Path</strong> can be empty, in this case the data sent comes from the root of the database.</p>
+	<p>The <strong>Listener</strong> allows you to choose what type of change you want to listen to:</p>
+	<ul>
+		<li><code>Value</code></li>
+		<li><code>Child Added</code></li>
+		<li><code>Child Changed</code></li>
+		<li><code>Child Moved</code></li>
+		<li><code>Child Removed</code></li>
+	</ul>
+	<p>
+		The <strong>Path</strong> determines where the data will be written. It can be defined in the node or dynamically
+		with the <code>msg.method</code> property. It can be empty, in this case the data sent comes from the root of the
+		database.
+	</p>
 	<p>
 		<strong>Output</strong> can be set to <strong>auto-detect</strong> to send an object containing the data, or
 		<strong>a String</strong> to send the data as a string.
-	</p>
-	<p>
-		The message sent is an object whose <strong>payload</strong> is an object containing the data and
-		<strong>topic</strong> the path of the data.
 	</p>
 </script>

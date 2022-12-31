@@ -47,8 +47,10 @@ function initConnectionStatus(self) {
 		(snapshot) => {
 			if (snapshot.val() === true) {
 				setNodesConnected(self);
+				self.log(`Connected to Firebase database: ${self.app.options?.databaseURL}`);
 			} else {
 				setNodesConnecting(self);
+				self.log(`Connecting to Firebase database: ${self.app.options?.databaseURL}`);
 			}
 		},
 		(error) => self.error(error)
@@ -103,7 +105,7 @@ async function logInWithEmail(self) {
 	// Checks if the user already has an account otherwise it creates one
 	const method = await fetchSignInMethodsForEmail(self.auth, self.credentials.email);
 
-	if (method.length === 0) {
+	if (method.length === 0 && self.config.createUser) {
 		await createUserWithEmailAndPassword(self.auth, self.credentials.email, self.credentials.password);
 
 		self.warn(
@@ -111,7 +113,10 @@ async function logInWithEmail(self) {
 		);
 	} else if (method.includes("password")) {
 		await signInWithEmailAndPassword(self.auth, self.credentials.email, self.credentials.password);
-	} //else if (method.includes("link")) {}
+		// TODO: to see... else if (method.includes("link")) {}
+	} else {
+		throw new Error("auth/email-not-valid");
+	}
 }
 
 function logInWithPrivateKey(self) {
@@ -136,6 +141,7 @@ async function logOut(self) {
 function parseErrorMsg(msg) {
 	if (msg.includes("auth/internal-error")) return "Please check your email address and password";
 	if (msg.includes("auth/api-key-not-valid")) return "Please check your API key";
+	if (msg.includes("auth/email-not-valid")) return "Please check your email address or select 'create a new user'";
 	return msg;
 }
 

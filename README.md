@@ -1,23 +1,25 @@
 # node-red-contrib-firebase-realtime-database
 
-Node-RED nodes to communicate with [Firebase Realtime Database](https://firebase.google.com/).
+Node RED nodes to communicate with [Firebase Realtime Databases](https://firebase.google.com/).
 
 ![demo nodes](./docs/images/demo-nodes.png)
 
 ## What is it?
 
-This package is used to communicate with Firebase Realtime Database.
-It allows to add, modify and get data from database and also to subscribe to data in the specified path which sends a message whenever a value changes.
+This package is used to communicate with Firebase Realtime Databases.
+It allows to add, modify and fetch data from your databases aswell as subscribing to data at the paths you specify which yields a `payload` whenever a value changes.
 
 ## The Nodes
 
 ![nodes screenshot](./docs/images/nodes-screenshot.png)
 
-There are 3 node included with this contrib:
+There are 3 nodes included with this contrib:
 
-- `Firebase in`: Subscribes to data in the specified path which sends a message whenever a value changes.
-- `Firebase get`: Get data from specified path.
-- `Firebase out`: `SET`, `PUSH`, `UPDATE` or `REMOVE` data to Database.
+| Node         | Purpose                                                                                              |
+| ------------ | ---------------------------------------------------------------------------------------------------- |
+| Firebase in  | Subscribes to data at the specified path,<br /> which yields a `payload` whenever a value changes    |
+| Firebase get | Fetches data from the specified path.<br />Query constraints can be used to sort and order your data |
+| Firebase out | `SET`, `PUSH`, `UPDATE` or `REMOVE` data at the target Database.                                     |
 
 ## How to use?
 
@@ -25,19 +27,20 @@ There are 3 node included with this contrib:
 
 Find this package `@gogovega/node-red-contrib-firebase-realtime-database` and click install.
 
-- Install Manually
+- Install Manually  
+  Rememeber to restart Node RED after using this method.  
+  `.node-red` is usually relative to the users home directory that is running Node RED.
 
 ```bash
 cd ~/.node-red
 npm install @gogovega/node-red-contrib-firebase-realtime-database
-node-red
 ```
 
 ## Authentication Methods
 
 - `Anonymous`
 - `Email`
-- `Private Key`
+- `Private Key` (Firebase Admin Node.js SDK)
 
 Read more about the different ways to authenticate [here](./docs/Authentication.md).
 

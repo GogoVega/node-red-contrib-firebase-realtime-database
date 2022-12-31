@@ -1,9 +1,11 @@
-const { onValue, ref, off } = require("firebase/database");
-
 module.exports = function (RED) {
 	function FirebaseInNode(config) {
-		const { isPathValid, removeNode, setNodeStatus } = require("./lib/firebaseNode");
-		const node = this;
+		const {
+			makeUnSubscriptionQuery,
+			makeSubscriptionQuery,
+			removeNodeStatus,
+			setNodeStatus,
+		} = require("./lib/firebaseNode");
 
 		RED.nodes.createNode(this, config);
 
@@ -15,54 +17,30 @@ module.exports = function (RED) {
 		}
 
 		this.database.nodes.push(this);
+		this.subscribed = false;
 
 		setNodeStatus(this, this.database.connected);
 
+		const listener = config.listenerType || "value";
 		const path = config.path?.toString() || undefined;
-		const pathNoValid = isPathValid(path, true);
+		const string = config.outputType === "string";
 
-		if (pathNoValid) {
-			this.error(pathNoValid);
-			return;
+		try {
+			makeSubscriptionQuery(this, listener, path, string);
+			this.subscribed = true;
+
+			// Remove the old listener to save the new one
+			// If the node is disabled/deleted there will be no call to the onValue function
+			this.on("close", function () {
+				removeNodeStatus(this.database.nodes, this.id);
+
+				if (!this.subscribed) return;
+
+				makeUnSubscriptionQuery(this, listener, path);
+			});
+		} catch (error) {
+			this.error(error);
 		}
-
-		function sendMsg(snapshot) {
-			if (!snapshot.exists()) return;
-
-			const ref = snapshot.ref.toString();
-			const topic = ref.split(snapshot.ref.root.toString()).pop();
-			const payload = config.outputType === "auto" ? snapshot.val() : JSON.stringify(snapshot.val());
-
-			node.send({ payload: payload, topic: topic });
-		}
-
-		if (this.database.config.authType === "privateKey") {
-			const databaseRef = path ? this.database.db.ref().child(path) : this.database.db.ref();
-			databaseRef.on(
-				"value",
-				(snapshot) => sendMsg(snapshot),
-				(error) => this.warn(error)
-			);
-		} else {
-			onValue(
-				ref(this.database.db, path),
-				(snapshot) => sendMsg(snapshot),
-				(error) => this.warn(error)
-			);
-		}
-
-		// Remove the old listener to save the new one
-		// If the node is disabled/deleted there will be no call to the onValue function
-		this.on("close", function () {
-			removeNode(this.database.nodes, this.id);
-
-			if (this.database.config.authType === "privateKey") {
-				const databaseRef = path ? this.database.db.ref().child(path) : this.database.db.ref();
-				databaseRef.off("value");
-			} else {
-				off(ref(this.database.db, path), "value");
-			}
-		});
 	}
 
 	RED.nodes.registerType("firebase-in", FirebaseInNode);

@@ -1,8 +1,6 @@
-const { get, ref } = require("firebase/database");
-
 module.exports = function (RED) {
 	function FirebaseGetNode(config) {
-		const { isPathValid, removeNode, setNodeStatus } = require("./lib/firebaseNode");
+		const { makeGetQuery, removeNodeStatus, setNodeStatus } = require("./lib/firebaseNode");
 
 		RED.nodes.createNode(this, config);
 
@@ -18,26 +16,14 @@ module.exports = function (RED) {
 		setNodeStatus(this, this.database.connected);
 
 		this.on("input", function (msg, send, done) {
+			const admin = this.database.config.authType === "privateKey";
 			const path = (config.pathType === "msg" ? msg[config.path] : config.path) || undefined;
-			const pathNoValid = isPathValid(path, true);
 
-			if (pathNoValid) {
-				done(pathNoValid);
-				return;
-			}
-
-			const snapshot =
-				this.database.config.authType === "privateKey"
-					? path
-						? this.database.db.ref().child(path).get()
-						: this.database.db.ref().get()
-					: get(ref(this.database.db, path));
-			snapshot
+			makeGetQuery(this.database.db, path, admin, msg.method)
 				.then((snapshot) => {
-					if (!snapshot.exists()) return;
+					if (!snapshot || !snapshot.exists()) return;
 
-					const ref = snapshot.ref.toString();
-					const topic = ref.split(snapshot.ref.root.toString()).pop();
+					const topic = snapshot.ref.key?.toString() || "";
 					const payload = config.outputType === "auto" ? snapshot.val() : JSON.stringify(snapshot.val());
 
 					send({ payload: payload, topic: topic });
@@ -46,7 +32,7 @@ module.exports = function (RED) {
 				.catch((error) => done(error));
 		});
 
-		this.on("close", () => removeNode(this.database.nodes, this.id));
+		this.on("close", () => removeNodeStatus(this.database.nodes, this.id));
 	}
 
 	RED.nodes.registerType("firebase-get", FirebaseGetNode);

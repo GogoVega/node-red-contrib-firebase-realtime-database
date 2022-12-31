@@ -20,7 +20,8 @@
 		icon: "firebase.png",
 		paletteLabel: "Firebase get",
 		label: function () {
-			return this.name || "Firebase get";
+			const path = this.pathType === "msg" ? "" : this.path || "root";
+			return this.name || path || "Firebase get";
 		},
 		labelStyle: function () {
 			return this.name ? "node_label_italic" : "";
@@ -40,8 +41,25 @@
 		<input type="text" id="node-input-database" style="width:70%" />
 	</div>
 
+	<!-- TODO: Add container for set Query Constraints from node config -->
+	<!--
 	<div class="form-row">
-		<label for="node-input-path"><i class="fa fa-server"></i> Path</label>
+		<label for="node-input-useQuery"><i class="fa fa-bars"></i> Query</label>
+		<input
+			type="checkbox"
+			id="node-input-useQuery"
+			style="display:inline-block; width:15px; vertical-align:baseline;"
+		/>
+		<span>Use Query Constraints?</span>
+	</div>
+
+	<div class="form-row node-input-query-container-row">
+    <ol id="node-input-query-container"></ol>
+  </div>
+	-->
+
+	<div class="form-row">
+		<label for="node-input-path"><i class="fa fa-sitemap"></i> Path</label>
 		<input type="text" id="node-input-path" style="width:70%" />
 		<input type="hidden" id="node-input-pathType" />
 	</div>
@@ -58,19 +76,68 @@
 		<label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
 		<input type="text" id="node-input-name" placeholder="Name" />
 	</div>
+
+	<div class="form-tips" id="firebase-get-tips">
+		<p>
+			<strong>Tip</strong>: You can use constraint(s) for the query by setting the <code>msg.method</code> property.
+		</p>
+	</div>
 </script>
 
 <script type="text/html" data-help-name="firebase-get">
-	<p>Connects to a Firebase Realtime Database and gets data from the specified path.</p>
-	<p>This node reads data from a path and sends a message containing that data, including child data.</p>
-	<p>The <strong>Path</strong> can be defined either statically in the node or dynamically in the received message.</p>
-	<p>The <strong>Path</strong> can be empty, in this case the data sent comes from the root of the database.</p>
+	<p>
+		Connects to a Firebase Realtime Database and fetches data from the specified path. You can define constraint(s) for
+		the query.
+	</p>
+	<h3>Inputs</h3>
+	<dl class="message-properties">
+		<dt>payload<span class="property-type">string | boolean | number | object</span></dt>
+		<dd>the data that will be sent to the database.</dd>
+		<dt class="optional">method<span class="property-type">object</span></dt>
+		<dd>an object containing the constraint(s) to apply to the query.</dd>
+		<dt class="optional">topic<span class="property-type">string</span></dt>
+		<dd>the path of the data to add/modify. By default 'topic'.</dd>
+	</dl>
+	<h3>Outputs</h3>
+	<dl class="message-properties">
+		<dt>payload<span class="property-type">string | boolean | number | object</span></dt>
+		<dd>contains your query data from the database.</dd>
+		<dt>topic<span class="property-type">string</span></dt>
+		<dd>contains the path where the data comes from.</dd>
+	</dl>
+	<h3>Details</h3>
+	<p>This node reads data from a path and sends it in a message, including child data.</p>
+	<p>
+		The <strong>Path</strong> determines where the data will be written. It can be defined in the node or dynamically
+		with the <code>msg.method</code> property. It can be empty, in this case the data sent comes from the root of the
+		database.
+	</p>
 	<p>
 		<strong>Output</strong> can be set to <strong>auto-detect</strong> to send an object containing the data, or
 		<strong>a String</strong> to send the data as a string.
 	</p>
 	<p>
-		The message sent is an object whose <strong>payload</strong> is an object containing the data and
-		<strong>topic</strong> the path of the data.
+		You can define constraints for the query to sort and order your data. You can define one or more of the following
+		constraints in the <code>msg.method</code> property:
 	</p>
+	<ul>
+		<li><code>endAt</code></li>
+		<li><code>endBefore</code></li>
+		<li><code>equalTo</code></li>
+		<li><code>limitToFirst</code></li>
+		<li><code>limitToLast</code></li>
+		<li><code>orderByChild</code></li>
+		<li><code>orderByKey</code></li>
+		<li><code>orderByPriority</code></li>
+		<li><code>orderByValue</code></li>
+		<li><code>startAfter</code></li>
+		<li><code>startAt</code></li>
+	</ul>
+	<p>The <code>msg.method</code> will look like this:</p>
+	<!-- prettier-ignore -->
+	<pre>
+{
+ "orderByChild": "name",
+ "limitToFirst": 5
+}</pre>
 </script>

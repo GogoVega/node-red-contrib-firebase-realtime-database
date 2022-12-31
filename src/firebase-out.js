@@ -1,8 +1,6 @@
-const firebase = require("firebase/database");
-
 module.exports = function (RED) {
 	function FirebaseOutNode(config) {
-		const { isPathValid, removeNode, setNodeStatus } = require("./lib/firebaseNode");
+		const { makeWriteQuery, removeNodeStatus, setNodeStatus } = require("./lib/firebaseNode");
 
 		RED.nodes.createNode(this, config);
 
@@ -18,30 +16,16 @@ module.exports = function (RED) {
 		setNodeStatus(this, this.database.connected);
 
 		this.on("input", function (msg, send, done) {
+			const admin = this.database.config.authType === "privateKey";
 			const path = config.pathType === "msg" ? msg[config.path] : config.path;
-			const pathNoValid = isPathValid(path);
+			const query = config.queryType === "none" ? msg.method : config.queryType;
 
-			if (pathNoValid) {
-				done(pathNoValid);
-				return;
-			}
-
-			if (this.database.config.authType === "privateKey") {
-				/* eslint-disable no-unexpected-multiline */
-				this.database.db
-					.ref()
-					.child(path)
-					[config.queryType](msg.payload)
-					.then(() => done())
-					.catch((error) => done(error));
-			} else {
-				firebase[config.queryType](firebase.ref(this.database.db, path), msg.payload)
-					.then(() => done())
-					.catch((error) => done(error));
-			}
+			makeWriteQuery(this.database.db, path, query, msg.payload, admin)
+				.then(() => done())
+				.catch((error) => done(error));
 		});
 
-		this.on("close", () => removeNode(this.database.nodes, this.id));
+		this.on("close", () => removeNodeStatus(this.database.nodes, this.id));
 	}
 
 	RED.nodes.registerType("firebase-out", FirebaseOutNode);
