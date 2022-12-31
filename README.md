@@ -7,7 +7,7 @@ Node RED nodes to communicate with [Firebase Realtime Databases](https://firebas
 ## What is it?
 
 This package is used to communicate with Firebase Realtime Databases.
-It allows to add, modify and fetch data from your databases aswell as subscribing to data at the paths you specify which yeilds a ```payload``` whenever a value changes.
+It allows to add, modify and fetch data from your databases aswell as subscribing to data at the paths you specify which yields a `payload` whenever a value changes.
 
 ## The Nodes
 
@@ -17,7 +17,7 @@ There are 3 nodes included with this contrib:
 
 | Node         | Purpose                                                                                                |
 |--------------|--------------------------------------------------------------------------------------------------------|
-| Firebase in  | Subscribes to data at the specified path.<br /> which yeilds a ```payload``` whenever a value changes  |
+| Firebase in  | Subscribes to data at the specified path,<br /> which yields a `payload` whenever a value changes      |
 | Firebase get | Featches data from the specified path.<br />Query constraints can be used to sort and order your data  |
 | Firebase out | `SET`, `PUSH`, `UPDATE` or `REMOVE` data at the target Database.                                       |
 
