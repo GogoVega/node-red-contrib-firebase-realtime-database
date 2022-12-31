@@ -29,7 +29,7 @@ Find this package `@gogovega/node-red-contrib-firebase-realtime-database` and cl
 
 - Install Manually  
   Rememeber to restart Node RED after using this method.  
-  `.node-red` is usually relative to the users how dorectory that is running Node RED 
+  `.node-red` is usually relative to the users home directory that is running Node RED.
 
 ```bash
 cd ~/.node-red
