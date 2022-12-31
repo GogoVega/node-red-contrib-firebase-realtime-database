@@ -18,7 +18,7 @@ There are 3 nodes included with this contrib:
 | Node         | Purpose                                                                                                |
 |--------------|--------------------------------------------------------------------------------------------------------|
 | Firebase in  | Subscribes to data at the specified path,<br /> which yields a `payload` whenever a value changes      |
-| Firebase get | Featches data from the specified path.<br />Query constraints can be used to sort and order your data  |
+| Firebase get | Fetches data from the specified path.<br />Query constraints can be used to sort and order your data  |
 | Firebase out | `SET`, `PUSH`, `UPDATE` or `REMOVE` data at the target Database.                                       |
 
 ## How to use?
