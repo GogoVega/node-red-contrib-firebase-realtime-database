@@ -17,8 +17,8 @@ There are 3 nodes included with this contrib:
 
 | Node         | Purpose                                                                                           |
 |--------------|---------------------------------------------------------------------------------------------------|
-| Firebase in  | Subscribes to data at the specified path which yeilds a ```payload``` whenever a value changes.   |
-| Firebase get | Featches data from the specified path. Query constraints can be used to sort and order your data. |
+| Firebase in  | Subscribes to data at the specified path.                                                         |
+| Firebase get | Featches data from the specified path.                                                            |
 | Firebase out | `SET`, `PUSH`, `UPDATE` or `REMOVE` data at to the target Database.                               |
 
 ## How to use?
@@ -27,8 +27,8 @@ There are 3 nodes included with this contrib:
 
 Find this package `@gogovega/node-red-contrib-firebase-realtime-database` and click install.
 
-- Install Manually
-  Rememeber to restart Node RED after using this method.
+- Install Manually  
+  Rememeber to restart Node RED after using this method.  
   `.node-red` is usually relative to the users how dorectory that is running Node RED 
 
 ```bash
