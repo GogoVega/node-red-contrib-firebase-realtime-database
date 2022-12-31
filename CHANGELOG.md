@@ -2,17 +2,17 @@
 
 ## 0.2.0
 
-## Breaking Changes
+### Breaking Changes
 
 - (Firebase in) Add more listeners (this node will need to be reconfigured)
 
-## Changes
+### Changes
 
 - Bump `firebase-admin` from 11.3.0 to 11.4.1
 - The default label of nodes
 - The icon of path
 
-## Fixes
+### Fixes
 
 - (Firebase in) Do not remove the listener if it's still used in one or more nodes
 - (Database) Regex rules for `apiKey` and `url`
@@ -29,35 +29,35 @@
 
 ## 0.1.2
 
-## Fixes
+### Fixes
 
 - Missing status when deploying modified nodes.
 
-## Improves
+### Improves
 
 - Adapt the node status in real time.
 - Errors Handling.
 
 ## 0.1.1
 
-## Fixes
+### Fixes
 
 - (Database) Crash if `API Key` is invalid.
 
 ## 0.1.0
 
-## New Features
+### New Features
 
 - (Database) `Private Key` (Firebase Admin Node.js SDK) authentication method.
 - Tips and nodes descriptions.
 
-## Fixes
+### Fixes
 
 - (Database) Crash if credentials are incorrect.
 
 ## 0.0.4
 
-## Fixes
+### Fixes
 
 - (Firebase get) Error the path received is not a string.
 - (Database) Error while authenticating with email.
