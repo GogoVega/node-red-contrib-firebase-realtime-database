@@ -1,3 +1,29 @@
+<style>
+	.firebase-text-divider {
+		display: flex;
+		align-items: center;
+		--text-divider-gap: 1rem;
+		margin-top: 20px;
+		margin-bottom: 10px;
+	}
+
+	.firebase-text-divider::before,
+	.firebase-text-divider::after {
+		content: "";
+		height: 1px;
+		background-color: silver;
+		flex-grow: 1;
+	}
+
+	.firebase-text-divider::before {
+		margin-right: var(--text-divider-gap);
+	}
+
+	.firebase-text-divider::after {
+		margin-left: var(--text-divider-gap);
+	}
+</style>
+
 <script type="text/javascript">
 	RED.nodes.registerType("database-config", {
 		category: "config",
@@ -202,28 +228,4 @@
 	</p>
 </script>
 
-<style>
-	.firebase-text-divider {
-		display: flex;
-		align-items: center;
-		--text-divider-gap: 1rem;
-		margin-top: 20px;
-		margin-bottom: 10px;
-	}
 
-	.firebase-text-divider::before,
-	.firebase-text-divider::after {
-		content: "";
-		height: 1px;
-		background-color: silver;
-		flex-grow: 1;
-	}
-
-	.firebase-text-divider::before {
-		margin-right: var(--text-divider-gap);
-	}
-
-	.firebase-text-divider::after {
-		margin-left: var(--text-divider-gap);
-	}
-</style>
