@@ -1,4 +1,4 @@
-const database = require("../src/database");
+const database = require("../src/database.js");
 const helper = require("node-red-node-test-helper");
 const flow = [
 	{ id: "database", type: "database-config", name: "My Database", authType: "anonymous" },
@@ -7,7 +7,7 @@ const flow = [
 
 // TODO: Add more tests
 describe("Firebase IN Node", function () {
-	const firebase = require("../src/firebase-in");
+	const firebase = require("../src/firebase-in.js");
 
 	before(function (done) {
 		helper.startServer(done);
