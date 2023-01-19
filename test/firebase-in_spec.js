@@ -1,4 +1,4 @@
-const database = require("../src/database.js");
+const database = require("../build/nodes/database");
 const helper = require("node-red-node-test-helper");
 const flow = [
 	{ id: "database", type: "database-config", name: "My Database", authType: "anonymous" },
@@ -7,7 +7,7 @@ const flow = [
 
 // TODO: Add more tests
 describe("Firebase IN Node", function () {
-	const firebase = require("../src/firebase-in.js");
+	const firebase = require("../build/nodes/firebase-in");
 
 	before(function (done) {
 		helper.startServer(done);
@@ -150,11 +150,12 @@ describe("Firebase IN Node", function () {
 
 			helper.load([firebase, database], newFlow, function () {
 				const n1 = helper.getNode("firebase");
-				n1.database.listeners.value["test"] = 1;
+				n1.database.subscribedListeners.value["test"] = 1;
+				n1.subscribed = true;
 
 				n1.close(true)
 					.then(() => {
-						const object = n1.database.listeners.value;
+						const object = n1.database.subscribedListeners.value;
 						Object.values(object).should.have.length(0);
 						done();
 					})
