@@ -26,6 +26,7 @@ export enum QueryConstraint {
 	"startAt",
 }
 
+/* eslint-disable no-mixed-spaces-and-tabs */
 export type QueryConstraintType =
 	| Record<"orderByKey" | "orderByPriority" | "orderByValue", undefined>
 	| Record<"limitToFirst" | "limitToLast", number>
