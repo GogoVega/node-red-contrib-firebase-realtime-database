@@ -1,10 +1,10 @@
 import { NodeAPI } from "node-red";
-import { FirebaseInNode } from "../lib/firebaseNode";
+import { FirebaseIn } from "../lib/firebaseNode";
 import { DatabaseNodeType } from "../lib/types/DatabaseNodeType";
 import { FirebaseInConfigType, FirebaseInNodeType } from "../lib/types/FirebaseNodeType";
 
 module.exports = function (RED: NodeAPI) {
-	function FirebaseIn(this: FirebaseInNodeType, config: FirebaseInConfigType) {
+	function FirebaseInNode(this: FirebaseInNodeType, config: FirebaseInConfigType) {
 		RED.nodes.createNode(this, config);
 		const self = this;
 
@@ -20,7 +20,7 @@ module.exports = function (RED: NodeAPI) {
 		self.database.nodes.push(self);
 
 		try {
-			const firebase = new FirebaseInNode(self);
+			const firebase = new FirebaseIn(self);
 
 			firebase.setNodeStatus();
 			firebase.doSubscriptionQuery();
@@ -34,5 +34,5 @@ module.exports = function (RED: NodeAPI) {
 		}
 	}
 
-	RED.nodes.registerType("firebase-in", FirebaseIn);
+	RED.nodes.registerType("firebase-in", FirebaseInNode);
 };

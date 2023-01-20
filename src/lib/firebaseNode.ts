@@ -3,21 +3,23 @@ import firebase from "firebase/database";
 import admin from "firebase-admin";
 import { NodeMessageInFlow } from "node-red";
 import {
+	DBRef,
 	FirebaseGetNodeType,
 	FirebaseInNodeType,
 	FirebaseNodeType,
 	FirebaseOutNodeType,
-	InMessageType,
+	InputMessageType,
 	Listener,
 	Listeners,
-	OutMessageType,
+	OutputMessageType,
 	Query,
 	QueryConstraint,
 	QueryConstraintType,
 } from "./types/FirebaseNodeType";
 import { Entry } from "./types/UtilType";
+import { printEnumKeys } from "./utils";
 
-class FirebaseNode {
+class Firebase {
 	constructor(protected node: FirebaseNodeType) {}
 
 	protected admin = this.node.database?.config.authType === "privateKey";
@@ -45,12 +47,11 @@ class FirebaseNode {
 	protected sendMsg(snapshot: DataSnapshot | admin.database.DataSnapshot, child?: string | null) {
 		try {
 			if (!snapshot.exists()) return;
-			console.log(child);
 
 			const topic = snapshot.ref.key?.toString() || "";
 			const payload = this.node.config.outputType === "string" ? JSON.stringify(snapshot.val()) : snapshot.val();
 
-			this.node.send({ payload: payload, previousChildName: child || "", topic: topic } as OutMessageType);
+			this.node.send({ payload: payload, previousChildName: child || "", topic: topic } as OutputMessageType);
 		} catch (error) {
 			this.node.error(error);
 		}
@@ -65,12 +66,12 @@ class FirebaseNode {
 	}
 }
 
-export class FirebaseGetNode extends FirebaseNode {
+export class FirebaseGet extends Firebase {
 	constructor(protected node: FirebaseGetNodeType) {
 		super(node);
 	}
 
-	private applyQueryConstraints(ref: admin.database.Reference, method: unknown) {
+	private applyQueryConstraints(dbRef: DBRef, method: unknown) {
 		const constraints = this.checkQueryConstraint(method);
 
 		for (const [method, value] of Object.entries(constraints) as Entry<QueryConstraintType | Record<string, never>>[]) {
@@ -80,24 +81,24 @@ export class FirebaseGetNode extends FirebaseNode {
 				case "equalTo":
 				case "startAfter":
 				case "startAt":
-					ref[method](value.value, value.key);
+					dbRef = dbRef[method](value.value, value.key);
 					break;
 				case "limitToFirst":
 				case "limitToLast":
-					ref[method](value);
+					dbRef = dbRef[method](value);
 					break;
 				case "orderByChild":
-					ref[method](value);
+					dbRef = dbRef[method](value);
 					break;
 				case "orderByKey":
 				case "orderByPriority":
 				case "orderByValue":
-					ref[method]();
+					dbRef = dbRef[method]();
 					break;
 			}
 		}
 
-		return ref;
+		return dbRef;
 	}
 
 	private checkQueryConstraint(constraints: unknown): QueryConstraintType | Record<string, never> {
@@ -105,46 +106,45 @@ export class FirebaseGetNode extends FirebaseNode {
 		if (typeof constraints !== "object") throw new Error("Query Constraint must be an Object!");
 
 		for (const [method, value] of Object.entries(constraints)) {
-			if (method in QueryConstraint) {
-				switch (method) {
-					case "endAt":
-					case "endBefore":
-					case "equalTo":
-					case "startAfter":
-					case "startAt":
-						if (typeof value !== "object") throw new Error(`The "${method}" Constraint must be an Object!`);
-						if (value.value === undefined)
-							if (
-								typeof value.value !== "string" &&
-								typeof value.value !== "boolean" &&
-								typeof value.value !== "number"
-							)
-								throw new Error();
+			switch (method) {
+				case "endAt":
+				case "endBefore":
+				case "equalTo":
+				case "startAfter":
+				case "startAt":
+					if (typeof value !== "object") throw new Error(`The value of the "${method}" constraint must be an object!`);
+					if (value.value === undefined)
+						throw new Error(`The value of the "${method}" constraint must be an object containing 'value' as key.`);
+					if (typeof value.value !== "string" && typeof value.value !== "boolean" && typeof value.value !== "number")
+						throw new Error(`The value of the "${method}.value" constraint must be a boolean or number or string!`);
 
-						if (value.key && typeof value.key !== "string") throw new Error();
-						break;
-					case "limitToFirst":
-					case "limitToLast":
-						if (typeof value !== "number") throw new Error();
-						break;
-					case "orderByChild":
-						if (typeof value !== "string") throw new Error();
-						break;
-					case "orderByKey":
-					case "orderByPriority":
-					case "orderByValue":
-						if (value !== undefined) throw new Error();
-						break;
-					default:
-						throw new Error(`Query constraint received: '${method}' but must be one of ${QueryConstraint.toString()}`);
-				}
+					if (value.key && typeof value.key !== "string")
+						throw new Error(`The value of the "${method}.key" constraint must be a string!`);
+					break;
+				case "limitToFirst":
+				case "limitToLast":
+					if (typeof value !== "number") throw new Error(`The value of the "${method}" constraint must be a number!`);
+					break;
+				case "orderByChild":
+					if (typeof value !== "string") throw new Error(`The value of the "${method}" constraint must be a string!`);
+					break;
+				case "orderByKey":
+				case "orderByPriority":
+				case "orderByValue":
+					if (value !== undefined && value !== null)
+						throw new Error(`The value of the "${method}" constraint must be null or undefined!`);
+					break;
+				default:
+					throw new Error(
+						`Query constraint received: '${method}' but must be one of ${printEnumKeys(QueryConstraint)}.`
+					);
 			}
 		}
 
 		return constraints as QueryConstraintType;
 	}
 
-	public async doGetQuery(msg: InMessageType) {
+	public async doGetQuery(msg: InputMessageType) {
 		const path = this.getPath(msg);
 		let snapshot;
 
@@ -154,9 +154,8 @@ export class FirebaseGetNode extends FirebaseNode {
 			const database = path
 				? (this.db as admin.database.Database).ref().child(path)
 				: (this.db as admin.database.Database).ref();
-			this.applyQueryConstraints(database, msg.method);
 
-			snapshot = await database.get();
+			snapshot = await this.applyQueryConstraints(database, msg.method).get();
 		} else {
 			snapshot = await get(query(ref(this.db as Database, path), ...this.getQueryConstraints(msg.method)));
 		}
@@ -175,7 +174,7 @@ export class FirebaseGetNode extends FirebaseNode {
 				path = this.node.config.path;
 				break;
 			default:
-				throw new Error("pathType should be 'msg' or 'str'");
+				throw new Error("pathType should be 'msg' or 'str', please re-configure this node.");
 		}
 
 		return this.checkPath(path || undefined, true);
@@ -213,7 +212,7 @@ export class FirebaseGetNode extends FirebaseNode {
 	}
 }
 
-export class FirebaseInNode extends FirebaseNode {
+export class FirebaseIn extends Firebase {
 	constructor(protected node: FirebaseInNodeType) {
 		super(node);
 	}
@@ -282,22 +281,21 @@ export class FirebaseInNode extends FirebaseNode {
 
 		if (listener in Listener) return listener as Listeners;
 
-		throw new Error(`msg.method must be ${Object.keys(Listener).toString()}`);
+		throw new Error(`msg.method must be one of ${printEnumKeys(Listener)}.`);
 	}
 }
 
 // TODO: Add others methods
-export class FirebaseOutNode extends FirebaseNode {
+export class FirebaseOut extends Firebase {
 	constructor(protected node: FirebaseOutNodeType) {
 		super(node);
 	}
 
-	public doWriteQuery(msg: InMessageType) {
+	public doWriteQuery(msg: InputMessageType) {
 		const path = this.getPath(msg) as string;
 		const query = this.getQuery(msg);
 
-		//if (!this.db) throw new Error();
-		if (!this.db) return;
+		if (!this.db) return Promise.resolve();
 
 		if (this.admin) {
 			return (this.db as admin.database.Database).ref().child(path)[query](msg.payload);
@@ -305,7 +303,7 @@ export class FirebaseOutNode extends FirebaseNode {
 			if (query === "update") {
 				if (msg.payload && typeof msg.payload === "object")
 					return firebase[query](ref(this.db as Database, path), msg.payload);
-				throw new Error();
+				throw new Error("msg.payload must be an object with 'update' query.");
 			} else {
 				return firebase[query](ref(this.db as Database, path), msg.payload);
 			}
@@ -323,13 +321,13 @@ export class FirebaseOutNode extends FirebaseNode {
 				path = this.node.config.path;
 				break;
 			default:
-				throw new Error();
+				throw new Error("pathType should be 'msg' or 'str', please re-configure this node.");
 		}
 
 		return this.checkPath(path, false);
 	}
 
-	private getQuery(msg: InMessageType) {
+	private getQuery(msg: InputMessageType) {
 		const query = this.node.config.queryType === "none" ? msg.method : this.node.config.queryType;
 		return this.checkQuery(query);
 	}
@@ -339,6 +337,6 @@ export class FirebaseOutNode extends FirebaseNode {
 		if (typeof method !== "string") throw new Error("msg.method must be a string!");
 		const query = method.toLowerCase();
 		if (query in Query) return query as keyof typeof Query;
-		throw new Error(`msg.method must be one of ${Query.toString()}`);
+		throw new Error(`msg.method must be one of ${printEnumKeys(Query)}.`);
 	}
 }

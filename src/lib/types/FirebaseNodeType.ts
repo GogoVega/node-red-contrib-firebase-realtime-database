@@ -1,9 +1,10 @@
+import admin from "firebase-admin";
 import { Node, NodeMessageInFlow } from "node-red";
 import { DatabaseNodeType } from "./DatabaseNodeType";
 import { NodeDef } from "node-red";
 
-export type InMessageType = NodeMessageInFlow & { method: unknown };
-export type OutMessageType = NodeMessageInFlow & { previousChildName: string };
+export type InputMessageType = NodeMessageInFlow & { method: unknown };
+export type OutputMessageType = NodeMessageInFlow & { previousChildName: string };
 
 export enum Query {
 	"set",
@@ -28,7 +29,7 @@ export enum QueryConstraint {
 
 /* eslint-disable no-mixed-spaces-and-tabs */
 export type QueryConstraintType =
-	| Record<"orderByKey" | "orderByPriority" | "orderByValue", undefined>
+	| Record<"orderByKey" | "orderByPriority" | "orderByValue", null | undefined>
 	| Record<"limitToFirst" | "limitToLast", number>
 	| Record<"orderByChild", string>
 	| Record<
@@ -38,6 +39,8 @@ export type QueryConstraintType =
 				value: number | string | boolean | null;
 			}
 	  >;
+
+export type DBRef = admin.database.Reference | admin.database.Query;
 
 export enum Listener {
 	value = "onValue",

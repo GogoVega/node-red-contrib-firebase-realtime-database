@@ -1,10 +1,10 @@
 import { NodeAPI } from "node-red";
-import { FirebaseGetNode } from "../lib/firebaseNode";
+import { FirebaseGet } from "../lib/firebaseNode";
 import { DatabaseNodeType } from "../lib/types/DatabaseNodeType";
-import { FirebaseGetConfigType, FirebaseGetNodeType, InMessageType } from "../lib/types/FirebaseNodeType";
+import { FirebaseGetConfigType, FirebaseGetNodeType, InputMessageType } from "../lib/types/FirebaseNodeType";
 
 module.exports = function (RED: NodeAPI) {
-	function FirebaseGet(this: FirebaseGetNodeType, config: FirebaseGetConfigType) {
+	function FirebaseGetNode(this: FirebaseGetNodeType, config: FirebaseGetConfigType) {
 		RED.nodes.createNode(this, config);
 		const self = this;
 
@@ -18,13 +18,13 @@ module.exports = function (RED: NodeAPI) {
 
 		self.database.nodes.push(self);
 
-		const firebase = new FirebaseGetNode(self);
+		const firebase = new FirebaseGet(self);
 
 		firebase.setNodeStatus();
 
 		self.on("input", (msg, _send, done) => {
 			firebase
-				.doGetQuery(msg as InMessageType)
+				.doGetQuery(msg as InputMessageType)
 				.then(() => done())
 				.catch((error) => done(error));
 		});
@@ -32,5 +32,5 @@ module.exports = function (RED: NodeAPI) {
 		self.on("close", () => firebase.removeNodeStatus());
 	}
 
-	RED.nodes.registerType("firebase-get", FirebaseGet);
+	RED.nodes.registerType("firebase-get", FirebaseGetNode);
 };
