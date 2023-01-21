@@ -1,11 +1,13 @@
 {
   "name": "@gogovega/node-red-contrib-firebase-realtime-database",
   "version": "0.2.0",
-  "description": "Node-RED nodes to communicate with Google Firebase Realtime Database",
-  "main": "src/database.js",
+  "description": "Node-RED nodes to communicate with Google Firebase Realtime Databases",
+  "main": "build/nodes/database.js",
   "scripts": {
-    "lint": "eslint . --ext .js",
-    "prettier": "prettier --write \"**/*.{js,html,md}\"",
+    "build": "tsc",
+    "clean": "rm -rf build/lib build/**/*.js",
+    "lint": "eslint . --ext .ts",
+    "prettier": "prettier --write \"**/*.{html,md,ts}\"",
     "test": "mocha './test/**/*_spec.js' --exit"
   },
   "repository": {
@@ -28,10 +30,10 @@
   "homepage": "https://github.com/GogoVega/node-red-contrib-firebase-realtime-database#readme",
   "node-red": {
     "nodes": {
-      "database-config": "src/database.js",
-      "firebase-in": "src/firebase-in.js",
-      "firebase-get": "src/firebase-get.js",
-      "firebase-out": "src/firebase-out.js"
+      "database-config": "build/nodes/database.js",
+      "firebase-in": "build/nodes/firebase-in.js",
+      "firebase-get": "build/nodes/firebase-get.js",
+      "firebase-out": "build/nodes/firebase-out.js"
     },
     "version": ">=1.3.7"
   },
@@ -40,11 +42,15 @@
     "firebase-admin": "^11.4.1"
   },
   "devDependencies": {
-    "eslint": "^8.30.0",
+    "@types/node-red": "^1.2.1",
+    "@typescript-eslint/eslint-plugin": "^5.48.2",
+		"@typescript-eslint/parser": "^5.48.2",
+    "eslint": "^8.32.0",
     "mocha": "^10.2.0",
     "node-red": "^2.2.3",
     "node-red-node-test-helper": "^0.3.0",
-    "prettier": "^2.8.1"
+    "prettier": "^2.8.3",
+    "typescript": "^4.9.4"
   },
   "engines": {
     "node": ">=14.20.0"
