@@ -1,5 +1,5 @@
 import { Database, DataSnapshot, get, off, ref, query } from "firebase/database";
-import firebase from "firebase/database";
+import * as firebase from "firebase/database";
 import admin from "firebase-admin";
 import {
 	DBRef,
@@ -150,7 +150,7 @@ export class FirebaseGet extends Firebase {
 
 		if (!this.db) return;
 
-		if (admin) {
+		if (this.admin) {
 			const database = path
 				? (this.db as admin.database.Database).ref().child(path)
 				: (this.db as admin.database.Database).ref();
@@ -265,7 +265,7 @@ export class FirebaseIn extends Firebase {
 
 		if (!this.db) return;
 
-		if (admin) {
+		if (this.admin) {
 			const databaseRef = this.path
 				? (this.db as admin.database.Database).ref().child(this.path)
 				: (this.db as admin.database.Database).ref();
