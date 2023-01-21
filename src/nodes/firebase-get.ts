@@ -22,9 +22,9 @@ module.exports = function (RED: NodeAPI) {
 
 		firebase.setNodeStatus();
 
-		self.on("input", (msg, _send, done) => {
+		self.on("input", (msg: InputMessageType, _send, done) => {
 			firebase
-				.doGetQuery(msg as InputMessageType)
+				.doGetQuery(msg)
 				.then(() => done())
 				.catch((error) => done(error));
 		});

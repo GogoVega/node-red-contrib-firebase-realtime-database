@@ -1,7 +1,6 @@
 import { Database, DataSnapshot, get, off, ref, query } from "firebase/database";
 import firebase from "firebase/database";
 import admin from "firebase-admin";
-import { NodeMessageInFlow } from "node-red";
 import {
 	DBRef,
 	FirebaseGetNodeType,
@@ -50,8 +49,9 @@ class Firebase {
 
 			const topic = snapshot.ref.key?.toString() || "";
 			const payload = this.node.config.outputType === "string" ? JSON.stringify(snapshot.val()) : snapshot.val();
+			const previousChildName = child !== undefined ? { previousChildName: child || "" } : {};
 
-			this.node.send({ payload: payload, previousChildName: child || "", topic: topic } as OutputMessageType);
+			this.node.send({ payload: payload, ...previousChildName, topic: topic } as OutputMessageType);
 		} catch (error) {
 			this.node.error(error);
 		}
@@ -163,7 +163,7 @@ export class FirebaseGet extends Firebase {
 		this.sendMsg(snapshot);
 	}
 
-	private getPath(msg: NodeMessageInFlow) {
+	private getPath(msg: InputMessageType) {
 		let path;
 
 		switch (this.node.config.pathType) {
@@ -310,7 +310,7 @@ export class FirebaseOut extends Firebase {
 		}
 	}
 
-	private getPath(msg: NodeMessageInFlow) {
+	private getPath(msg: InputMessageType) {
 		let path;
 
 		switch (this.node.config.pathType) {

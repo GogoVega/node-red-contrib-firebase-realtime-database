@@ -15,6 +15,7 @@ module.exports = function (RED: NodeAPI) {
 		self.nodes = [];
 
 		const database = new FirebaseDatabase(self);
+
 		database.logIn().catch((error: Error) => {
 			database.setNodesDisconnected();
 			self.error(database.parseErrorMsg(error));

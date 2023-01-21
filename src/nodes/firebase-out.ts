@@ -22,11 +22,11 @@ module.exports = function (RED: NodeAPI) {
 
 		firebase.setNodeStatus();
 
-		self.on("input", (msg, _send, done) => {
+		self.on("input", (msg: InputMessageType, _send, done) => {
 			firebase
-				.doWriteQuery(msg as InputMessageType)
+				.doWriteQuery(msg)
 				.then(() => done())
-				.catch((error) => done(error));
+				.catch((error: Error) => done(error));
 		});
 
 		self.on("close", () => firebase.removeNodeStatus());

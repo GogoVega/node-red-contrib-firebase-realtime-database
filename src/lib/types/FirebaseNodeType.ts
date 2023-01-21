@@ -1,10 +1,7 @@
 import admin from "firebase-admin";
-import { Node, NodeMessageInFlow } from "node-red";
+import { Node, NodeMessage, NodeMessageInFlow } from "node-red";
 import { DatabaseNodeType } from "./DatabaseNodeType";
 import { NodeDef } from "node-red";
-
-export type InputMessageType = NodeMessageInFlow & { method: unknown };
-export type OutputMessageType = NodeMessageInFlow & { previousChildName: string };
 
 export enum Query {
 	"set",
@@ -78,21 +75,29 @@ export type FirebaseOutConfigType = NodeDef & {
 	queryType?: QueryType;
 };
 
-type FirebaseNode = Node & {
+interface FirebaseNode extends Node {
 	database: DatabaseNodeType | null;
-};
+}
 
-export type FirebaseGetNodeType = FirebaseNode & {
+export interface FirebaseGetNodeType extends FirebaseNode {
 	config: FirebaseGetConfigType;
-};
+}
 
-export type FirebaseInNodeType = FirebaseNode & {
+export interface FirebaseInNodeType extends FirebaseNode {
 	config: FirebaseInConfigType;
 	subscribed: boolean;
-};
+}
 
-export type FirebaseOutNodeType = FirebaseNode & {
+export interface FirebaseOutNodeType extends FirebaseNode {
 	config: FirebaseOutConfigType;
-};
+}
 
 export type FirebaseNodeType = FirebaseInNodeType | FirebaseGetNodeType | FirebaseOutNodeType;
+
+export interface InputMessageType extends NodeMessageInFlow {
+	method?: unknown;
+}
+
+export interface OutputMessageType extends NodeMessage {
+	previousChildName?: string;
+}
