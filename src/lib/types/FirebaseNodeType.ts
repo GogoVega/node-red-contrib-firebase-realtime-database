@@ -1,7 +1,6 @@
 import admin from "firebase-admin";
-import { Node, NodeMessage, NodeMessageInFlow } from "node-red";
+import { Node, NodeDef, NodeMessage, NodeMessageInFlow } from "node-red";
 import { DatabaseNodeType } from "./DatabaseNodeType";
-import { NodeDef } from "node-red";
 
 export enum Query {
 	"set",
@@ -85,7 +84,6 @@ export interface FirebaseGetNodeType extends FirebaseNode {
 
 export interface FirebaseInNodeType extends FirebaseNode {
 	config: FirebaseInConfigType;
-	subscribed: boolean;
 }
 
 export interface FirebaseOutNodeType extends FirebaseNode {

@@ -144,23 +144,5 @@ describe("Firebase IN Node", function () {
 					.catch((error) => done(error));
 			});
 		});
-
-		it("should do unSubscription Query", function (done) {
-			const newFlow = [{ id: "firebase", type: "firebase-in", database: "database", path: "test" }, ...flow];
-
-			helper.load([firebase, database], newFlow, function () {
-				const n1 = helper.getNode("firebase");
-				n1.database.subscribedListeners.value["test"] = 1;
-				n1.subscribed = true;
-
-				n1.close(true)
-					.then(() => {
-						const object = n1.database.subscribedListeners.value;
-						Object.values(object).should.have.length(0);
-						done();
-					})
-					.catch((error) => done(error));
-			});
-		});
 	});
 });

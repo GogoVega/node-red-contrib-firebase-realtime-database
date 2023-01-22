@@ -2,9 +2,9 @@ import { FirebaseApp } from "firebase/app";
 import { Auth } from "firebase/auth";
 import { Database } from "firebase/database";
 import admin from "firebase-admin";
-import { App } from "firebase-admin/app";
 import { Node } from "node-red";
 import DatabaseConfigType from "./DatabaseConfigType";
+import { FirebaseNodeType } from "./FirebaseNodeType";
 
 type DatabaseCredentials = {
 	apiKey: string;
@@ -15,23 +15,14 @@ type DatabaseCredentials = {
 	secret: string;
 };
 
-type SubscriptionsType = {
-	value: Record<string, number>;
-	child_added: Record<string, number>;
-	child_changed: Record<string, number>;
-	child_moved: Record<string, number>;
-	child_removed: Record<string, number>;
-};
-
 type DatabaseNodeType = Node & {
-	app?: FirebaseApp | App;
+	app?: FirebaseApp | admin.app.App;
 	auth?: Auth | admin.auth.Auth;
 	connected: boolean;
 	config: DatabaseConfigType;
 	credentials: DatabaseCredentials;
 	database?: Database | admin.database.Database;
-	nodes: Array<Node>;
-	subscribedListeners: SubscriptionsType;
+	nodes: Array<FirebaseNodeType>;
 };
 
 type JSONContentType = {
