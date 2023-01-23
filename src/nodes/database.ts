@@ -1,5 +1,4 @@
 import { NodeAPI } from "node-red";
-import { defaultListeners } from "../lib/const/firebaseNode";
 import FirebaseDatabase from "../lib/databaseNode";
 import DatabaseConfigType from "../lib/types/DatabaseConfigType";
 import { DatabaseNodeType } from "../lib/types/DatabaseNodeType";
@@ -11,7 +10,6 @@ module.exports = function (RED: NodeAPI) {
 
 		self.connected = false;
 		self.config = config;
-		self.subscribedListeners = defaultListeners;
 		self.nodes = [];
 
 		const database = new FirebaseDatabase(self);

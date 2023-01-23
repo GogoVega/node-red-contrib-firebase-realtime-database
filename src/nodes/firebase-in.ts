@@ -9,7 +9,6 @@ module.exports = function (RED: NodeAPI) {
 		const self = this;
 
 		self.config = config;
-		self.subscribed = false;
 		self.database = RED.nodes.getNode(config.database) as DatabaseNodeType | null;
 
 		if (!self.database) {

@@ -242,26 +242,17 @@ export class FirebaseIn extends Firebase {
 				(error) => this.node.error(error)
 			);
 		}
-
-		this.node.subscribed = true;
-
-		const listenersObject = this.node.database?.subscribedListeners[this.listener];
-		if (!listenersObject) return;
-		if (listenersObject[pathParsed ?? ""] === undefined) listenersObject[pathParsed ?? ""] = 0;
-		listenersObject[pathParsed ?? ""]++;
 	}
 
 	public doUnSubscriptionQuery() {
-		if (!this.node.subscribed) return;
+		const listeners = this.node.database?.nodes.filter((node) => {
+			if (node.type === "firebase-in") return (node as FirebaseInNodeType).config.listenerType === this.listener;
 
-		// Do not remove the listener if the same path is used several times
-		if (!this.node.database?.subscribedListeners) return;
-		if (this.node.database.subscribedListeners[this.listener][this.path ?? ""] > 1) {
-			this.node.database.subscribedListeners[this.listener][this.path ?? ""]--;
-			return;
-		}
+			return false;
+		});
 
-		delete this.node.database?.subscribedListeners[this.listener][this.path ?? ""];
+		// Do not remove the listener if it's still in use
+		if (listeners && listeners.length > 1) return;
 
 		if (!this.db) return;
 
