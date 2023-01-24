@@ -16,19 +16,28 @@ import { ConnectionStatus, DatabaseNodeType, JSONContentType } from "./types/Dat
 export default class FirebaseDatabase {
 	constructor(private node: DatabaseNodeType) {}
 
+	private admin = this.node.config.authType === "privateKey";
 	private timeoutID: ReturnType<typeof setTimeout> | undefined;
 
-	private initApp() {
-		// Get warning message from bad database url configured
-		// TODO: add filter
-		onLog(
-			(log) => {
-				if (!log.message.match(/(URL of your Firebase Realtime Database instance configured correctly)/gm)) return;
-				this.onError(new FirebaseError("auth/invalid-database-url", ""));
-			},
-			{ level: "warn" }
-		);
+	private checkJSONCredential(content: unknown) {
+		if (!content || typeof content !== "object" || !Object.keys(content).length)
+			throw new Error("JSON Content must contain 'projectId', 'clientEmail' and 'privateKey'");
 
+		const cred = content as Record<string, string>;
+
+		if (!cred["project_id"] && !cred["projectId"]) throw new Error("JSON Content must contain 'projectId'");
+		if (!cred["client_email"] && !cred["clientEmail"]) throw new Error("JSON Content must contain 'clientEmail'");
+		if (!cred["private_key"] && !cred["privateKey"]) throw new Error("JSON Content must contain 'privateKey'");
+
+		return content as JSONContentType;
+	}
+
+	private getJSONCredential() {
+		const content = JSON.parse(this.node.credentials.json || "{}");
+		return this.checkJSONCredential(content);
+	}
+
+	private initApp() {
 		this.node.app = initializeApp({
 			apiKey: this.node.credentials.apiKey,
 			databaseURL: this.node.credentials.url,
@@ -36,18 +45,10 @@ export default class FirebaseDatabase {
 
 		this.node.auth = getAuth(this.node.app as FirebaseApp);
 		this.node.database = getDatabase(this.node.app as FirebaseApp);
-		this.initConnectionStatus();
 	}
 
 	private initAppWithSDK() {
-		// TODO
-		//admin.database.enableLogging((msg) => this.node.warn(msg));
-
-		const content = JSON.parse(this.node.credentials.json || "{}");
-
-		const isContentNotValid = this.isJSONContentValid(content);
-
-		if (isContentNotValid) throw new Error(isContentNotValid);
+		const content = this.getJSONCredential();
 
 		this.node.app = admin.initializeApp({
 			credential: admin.credential.cert(content),
@@ -55,7 +56,6 @@ export default class FirebaseDatabase {
 		});
 
 		this.node.database = admin.database(this.node.app as admin.app.App);
-		this.initConnectionStatus();
 	}
 
 	private initConnectionStatus() {
@@ -65,6 +65,7 @@ export default class FirebaseDatabase {
 			ref(this.node.database as Database, ".info/connected"),
 			(snapshot) => {
 				if (snapshot.val() === true) {
+					// Clear timeout for setNodesDisconnected
 					if (this.timeoutID) {
 						clearTimeout(this.timeoutID);
 						this.timeoutID = undefined;
@@ -74,6 +75,7 @@ export default class FirebaseDatabase {
 					this.node.log(`Connected to Firebase database: ${this.node.app?.options.databaseURL}`);
 				} else {
 					this.setNodesConnecting();
+					// Based on maximum time for Firebase admin
 					this.timeoutID = setTimeout(() => this.setNodesDisconnected(), 30000);
 					this.node.log(`Connecting to Firebase database: ${this.node.app?.options.databaseURL}`);
 				}
@@ -82,21 +84,39 @@ export default class FirebaseDatabase {
 		);
 	}
 
-	private isJSONContentValid(content: JSONContentType) {
-		if (Object.keys(content).length === 0) {
-			return "JSON Content must contain 'projectId', 'clientEmail' and 'privateKey'";
-		} else if (!content["project_id"]) {
-			return "JSON Content must contain 'projectId'";
-		} else if (!content["client_email"]) {
-			return "JSON Content must contain 'clientEmail'";
-		} else if (!content["private_key"]) {
-			return "JSON Content must contain 'privateKey'";
-		}
+	private initLogging() {
+		// Get warning message from bad database url configured
+		// Works for both databases
+		onLog(
+			(log) => {
+				if (!log.message.match(/(URL of your Firebase Realtime Database instance configured correctly)/gm)) return;
+				this.onError(new FirebaseError("auth/invalid-database-url", ""));
+			},
+			{ level: "warn" }
+		);
+	}
 
-		return;
+	// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+	// @ts-ignore
+	private isAdmin(db: Database | admin.database.Database): db is admin.database.Database {
+		return this.node.config.authType === "privateKey";
+	}
+
+	private isFirebaseError(error: unknown): error is FirebaseError {
+		return error instanceof FirebaseError || Object.prototype.hasOwnProperty.call(error, "code");
 	}
 
 	public async logIn() {
+		// Initialize Logging
+		this.initLogging();
+
+		// Initialize App
+		this.admin ? this.initAppWithSDK() : this.initApp();
+
+		// Initialize Connection Status
+		this.initConnectionStatus();
+
+		// Log In
 		switch (this.node.config.authType) {
 			case "anonymous":
 				await this.logInAnonymously();
@@ -105,22 +125,18 @@ export default class FirebaseDatabase {
 				await this.logInWithEmail();
 				break;
 			case "privateKey":
-				this.logInWithPrivateKey();
+				// Logged In with Initialize App
 				break;
 		}
 	}
 
-	private async logInAnonymously() {
-		this.initApp();
-
+	private logInAnonymously() {
 		if (!this.node.auth) return;
 
-		await signInAnonymously(this.node.auth as Auth);
+		return signInAnonymously(this.node.auth as Auth);
 	}
 
 	private async logInWithEmail() {
-		this.initApp();
-
 		if (!this.node.auth) return;
 
 		// Checks if the user already has an account otherwise it creates one
@@ -148,28 +164,20 @@ export default class FirebaseDatabase {
 		}
 	}
 
-	private logInWithPrivateKey() {
-		this.initAppWithSDK();
-	}
-
 	public async logOut() {
 		if (!this.node.app) return;
 
 		this.node.log(`Closing connection with Firebase database: ${this.node.app?.options.databaseURL}`);
 
-		await this.signOut();
-
 		if (this.node.database) off(ref(this.node.database as Database, ".info/connected"), "value");
 
-		if (this.node.config.authType === "privateKey") {
-			await admin.app().delete();
-		} else {
-			await deleteApp(this.node.app as FirebaseApp);
-		}
-	}
+		await this.signOut();
 
-	private isFirebaseError(error: unknown): error is FirebaseError {
-		return error instanceof FirebaseError || Object.prototype.hasOwnProperty.call(error, "code");
+		if (this.admin) {
+			return admin.app().delete();
+		} else {
+			return deleteApp(this.node.app as FirebaseApp);
+		}
 	}
 
 	public onError(error: Error | FirebaseError, done?: (error?: unknown) => void) {
@@ -239,8 +247,7 @@ export default class FirebaseDatabase {
 	}
 
 	private signOut() {
-		if (!this.node.auth) return Promise.resolve();
-		if (this.node.config.authType === "privateKey") return Promise.resolve();
+		if (this.admin || !this.node.auth) return Promise.resolve();
 
 		return signOut(this.node.auth as Auth);
 	}

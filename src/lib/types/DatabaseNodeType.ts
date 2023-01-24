@@ -1,7 +1,7 @@
 import { FirebaseApp } from "firebase/app";
 import { Auth } from "firebase/auth";
 import { Database } from "firebase/database";
-import admin from "firebase-admin";
+import admin, { ServiceAccount } from "firebase-admin";
 import { Node } from "node-red";
 import DatabaseConfigType from "./DatabaseConfigType";
 import { FirebaseNodeType } from "./FirebaseNodeType";
@@ -33,7 +33,7 @@ type DatabaseNodeType = Node & {
 	nodes: Array<FirebaseNodeType>;
 };
 
-type JSONContentType = {
+type JSONContentType = ServiceAccount & {
 	project_id?: string;
 	client_email?: string;
 	private_key?: string;
