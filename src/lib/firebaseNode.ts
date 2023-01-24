@@ -35,7 +35,6 @@ class Firebase {
 		};
 	}
 
-	protected admin = this.node.database?.config.authType === "privateKey";
 	protected db = this.node.database?.database;
 	private permissionDeniedStatus = false;
 
@@ -65,6 +64,12 @@ class Firebase {
 		} catch (error) {
 			done(error);
 		}
+	}
+
+	// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+	// @ts-ignore
+	protected isAdmin(db: Database | admin.database.Database): db is admin.database.Database {
+		return this.node.database?.config.authType === "privateKey";
 	}
 
 	public registerNode() {
@@ -203,14 +208,12 @@ export class FirebaseGet extends Firebase {
 
 		if (!this.db) return;
 
-		if (this.admin) {
-			const database = path
-				? (this.db as admin.database.Database).ref().child(path)
-				: (this.db as admin.database.Database).ref();
+		if (this.isAdmin(this.db)) {
+			const database = path ? this.db.ref().child(path) : this.db.ref();
 
 			snapshot = await this.applyQueryConstraints(database, msg.method).get();
 		} else {
-			snapshot = await get(query(ref(this.db as Database, path), ...this.getQueryConstraints(msg.method)));
+			snapshot = await get(query(ref(this.db, path), ...this.getQueryConstraints(msg.method)));
 		}
 
 		this.sendMsg(snapshot);
@@ -278,10 +281,8 @@ export class FirebaseIn extends Firebase {
 
 		if (!this.db) return;
 
-		if (this.admin) {
-			const databaseRef = pathParsed
-				? (this.db as admin.database.Database).ref().child(pathParsed)
-				: (this.db as admin.database.Database).ref();
+		if (this.isAdmin(this.db)) {
+			const databaseRef = pathParsed ? this.db.ref().child(pathParsed) : this.db.ref();
 
 			databaseRef.on(
 				this.listener,
@@ -290,7 +291,7 @@ export class FirebaseIn extends Firebase {
 			);
 		} else {
 			firebase[Listener[this.listener]](
-				firebase.ref(this.db as Database, pathParsed),
+				firebase.ref(this.db, pathParsed),
 				(snapshot: DataSnapshot, child: string | null | undefined) => this.sendMsg(snapshot, child),
 				(error) => this.node.onError(error)
 			);
@@ -309,14 +310,12 @@ export class FirebaseIn extends Firebase {
 
 		if (!this.db) return;
 
-		if (this.admin) {
-			const databaseRef = this.path
-				? (this.db as admin.database.Database).ref().child(this.path)
-				: (this.db as admin.database.Database).ref();
+		if (this.isAdmin(this.db)) {
+			const databaseRef = this.path ? this.db.ref().child(this.path) : this.db.ref();
 
 			databaseRef.off(this.listener);
 		} else {
-			off(ref(this.db as Database, this.path), this.listener);
+			off(ref(this.db, this.path), this.listener);
 		}
 	}
 
@@ -336,20 +335,19 @@ export class FirebaseOut extends Firebase {
 	}
 
 	public doWriteQuery(msg: InputMessageType) {
-		const path = this.getPath(msg) as string;
+		const path = this.getPath(msg);
 		const query = this.getQuery(msg);
 
 		if (!this.db) return Promise.resolve();
 
-		if (this.admin) {
-			return (this.db as admin.database.Database).ref().child(path)[query](msg.payload);
+		if (this.isAdmin(this.db)) {
+			return this.db.ref().child(path)[query](msg.payload);
 		} else {
 			if (query === "update") {
-				if (msg.payload && typeof msg.payload === "object")
-					return firebase[query](ref(this.db as Database, path), msg.payload);
+				if (msg.payload && typeof msg.payload === "object") return firebase[query](ref(this.db, path), msg.payload);
 				throw new Error("msg.payload must be an object with 'update' query.");
 			} else {
-				return firebase[query](ref(this.db as Database, path), msg.payload);
+				return firebase[query](ref(this.db, path), msg.payload);
 			}
 		}
 	}
@@ -368,7 +366,7 @@ export class FirebaseOut extends Firebase {
 				throw new Error("pathType should be 'msg' or 'str', please re-configure this node.");
 		}
 
-		return this.checkPath(path, false);
+		return this.checkPath(path, false) as string;
 	}
 
 	private getQuery(msg: InputMessageType) {
