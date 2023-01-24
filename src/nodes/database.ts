@@ -8,16 +8,13 @@ module.exports = function (RED: NodeAPI) {
 		RED.nodes.createNode(this, config);
 		const self = this;
 
-		self.connected = false;
+		self.connectionStatus = 0;
 		self.config = config;
 		self.nodes = [];
 
 		const database = new FirebaseDatabase(self);
 
-		database.logIn().catch((error: Error) => {
-			database.setNodesDisconnected();
-			self.error(database.parseErrorMsg(error));
-		});
+		database.logIn().catch((error: Error) => database.onError(error));
 
 		self.on("close", (done: (error?: Error) => void) =>
 			database

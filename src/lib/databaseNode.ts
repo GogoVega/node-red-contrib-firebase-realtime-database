@@ -1,4 +1,4 @@
-import { deleteApp, FirebaseApp, initializeApp, onLog } from "firebase/app";
+import { deleteApp, FirebaseApp, FirebaseError, initializeApp, onLog } from "firebase/app";
 import {
 	Auth,
 	createUserWithEmailAndPassword,
@@ -8,16 +8,26 @@ import {
 	signInWithEmailAndPassword,
 	signOut,
 } from "firebase/auth";
-import { Database, getDatabase, onValue, ref } from "firebase/database";
+import { Database, getDatabase, off, onValue, ref } from "firebase/database";
 import admin from "firebase-admin";
-import { DatabaseNodeType, JSONContentType } from "./types/DatabaseNodeType";
+import { firebaseError } from "./const/FirebaseError";
+import { ConnectionStatus, DatabaseNodeType, JSONContentType } from "./types/DatabaseNodeType";
 
 export default class FirebaseDatabase {
 	constructor(private node: DatabaseNodeType) {}
 
+	private timeoutID: ReturnType<typeof setTimeout> | undefined;
+
 	private initApp() {
 		// Get warning message from bad database url configured
-		onLog((log) => this.node.warn(log.message), { level: "warn" });
+		// TODO: add filter
+		onLog(
+			(log) => {
+				if (!log.message.match(/(URL of your Firebase Realtime Database instance configured correctly)/gm)) return;
+				this.onError(new FirebaseError("auth/invalid-database-url", ""));
+			},
+			{ level: "warn" }
+		);
 
 		this.node.app = initializeApp({
 			apiKey: this.node.credentials.apiKey,
@@ -26,9 +36,13 @@ export default class FirebaseDatabase {
 
 		this.node.auth = getAuth(this.node.app as FirebaseApp);
 		this.node.database = getDatabase(this.node.app as FirebaseApp);
+		this.initConnectionStatus();
 	}
 
 	private initAppWithSDK() {
+		// TODO
+		//admin.database.enableLogging((msg) => this.node.warn(msg));
+
 		const content = JSON.parse(this.node.credentials.json || "{}");
 
 		const isContentNotValid = this.isJSONContentValid(content);
@@ -41,6 +55,7 @@ export default class FirebaseDatabase {
 		});
 
 		this.node.database = admin.database(this.node.app as admin.app.App);
+		this.initConnectionStatus();
 	}
 
 	private initConnectionStatus() {
@@ -50,10 +65,16 @@ export default class FirebaseDatabase {
 			ref(this.node.database as Database, ".info/connected"),
 			(snapshot) => {
 				if (snapshot.val() === true) {
+					if (this.timeoutID) {
+						clearTimeout(this.timeoutID);
+						this.timeoutID = undefined;
+					}
+
 					this.setNodesConnected();
 					this.node.log(`Connected to Firebase database: ${this.node.app?.options.databaseURL}`);
 				} else {
 					this.setNodesConnecting();
+					this.timeoutID = setTimeout(() => this.setNodesDisconnected(), 30000);
 					this.node.log(`Connecting to Firebase database: ${this.node.app?.options.databaseURL}`);
 				}
 			},
@@ -87,8 +108,6 @@ export default class FirebaseDatabase {
 				this.logInWithPrivateKey();
 				break;
 		}
-
-		this.initConnectionStatus();
 	}
 
 	private async logInAnonymously() {
@@ -125,7 +144,7 @@ export default class FirebaseDatabase {
 			);
 			// TODO: to see... else if (method.includes("link")) {}
 		} else {
-			throw new Error("auth/email-not-valid");
+			throw new FirebaseError("auth/unknown-email", "");
 		}
 	}
 
@@ -140,6 +159,8 @@ export default class FirebaseDatabase {
 
 		await this.signOut();
 
+		if (this.node.database) off(ref(this.node.database as Database, ".info/connected"), "value");
+
 		if (this.node.config.authType === "privateKey") {
 			await admin.app().delete();
 		} else {
@@ -147,39 +168,80 @@ export default class FirebaseDatabase {
 		}
 	}
 
-	public parseErrorMsg(error: Error) {
-		const msg = error.message || error.toString();
-		if (msg.includes("auth/internal-error")) return "Please check your email address and password";
-		if (msg.includes("auth/api-key-not-valid")) return "Please check your API key";
-		if (msg.includes("auth/email-not-valid")) return "Please check your email address or select 'create a new user'";
-		return msg;
+	private isFirebaseError(error: unknown): error is FirebaseError {
+		return error instanceof FirebaseError || Object.prototype.hasOwnProperty.call(error, "code");
+	}
+
+	public onError(error: Error | FirebaseError, done?: (error?: unknown) => void) {
+		let msg = error.message || error.toString();
+
+		if (this.isFirebaseError(error)) {
+			msg = firebaseError[error.code.split(".")[0]];
+			if (error.code.match(/auth\/network-request-failed/)) {
+				this.setNodesNoNetwork();
+			} else if (error.code.startsWith("auth/")) {
+				// .substring(0, 32)
+				this.setNodesError(error.code.split("auth/").pop()?.split(".")[0].replace(/-/gm, " ").toPascalCase());
+			} else {
+				this.setNodesError();
+			}
+		} else {
+			this.setNodesError();
+		}
+
+		msg = msg || error.message || error.toString();
+
+		if (done) return done(msg);
+
+		this.node.error(msg);
 	}
 
 	public setNodesConnected() {
-		this.node.connected = true;
+		this.node.connectionStatus = ConnectionStatus.CONNECTED;
+
 		for (const node of this.node.nodes) {
-			node.status({ fill: "green", shape: "dot", text: "connected" });
+			node.status({ fill: "green", shape: "dot", text: "Connected" });
 		}
 	}
 
 	public setNodesConnecting() {
-		this.node.connected = false;
+		this.node.connectionStatus = ConnectionStatus.CONNECTING;
+
 		for (const node of this.node.nodes) {
-			node.status({ fill: "yellow", shape: "ring", text: "connecting" });
+			node.status({ fill: "yellow", shape: "ring", text: "Connecting" });
 		}
 	}
 
 	public setNodesDisconnected() {
-		this.node.connected = false;
+		if (this.node.connectionStatus === ConnectionStatus.ERROR) return;
+
+		this.node.connectionStatus = ConnectionStatus.DISCONNECTED;
+
 		for (const node of this.node.nodes) {
-			node.status({ fill: "red", shape: "dot", text: "disconnected" });
+			node.status({ fill: "red", shape: "dot", text: "Disconnected" });
 		}
 	}
 
-	private async signOut() {
-		if (!this.node.auth) return;
-		if (this.node.config.authType === "privateKey") return;
+	public setNodesError(msg?: string) {
+		this.node.connectionStatus = ConnectionStatus.ERROR;
 
-		await signOut(this.node.auth as Auth);
+		for (const node of this.node.nodes) {
+			node.status({ fill: "red", shape: "dot", text: `Error${msg ? ": ".concat(msg) : ""}` });
+		}
+	}
+
+	public setNodesNoNetwork() {
+		this.node.connectionStatus = ConnectionStatus.NO_NETWORK;
+
+		for (const node of this.node.nodes) {
+			node.status({ fill: "red", shape: "ring", text: "No Network" });
+		}
+	}
+
+	private signOut() {
+		if (!this.node.auth) return Promise.resolve();
+		if (this.node.config.authType === "privateKey") return Promise.resolve();
+
+		return signOut(this.node.auth as Auth);
 	}
 }

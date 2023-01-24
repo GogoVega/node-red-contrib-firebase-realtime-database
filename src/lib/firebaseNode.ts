@@ -1,6 +1,8 @@
 import { Database, DataSnapshot, get, off, ref, query } from "firebase/database";
 import * as firebase from "firebase/database";
 import admin from "firebase-admin";
+import { ConnectionStatus } from "./types/DatabaseNodeType";
+import { Listener, ListenerType, Query } from "../lib/types/FirebaseConfigType";
 import {
 	DBRef,
 	FirebaseGetNodeType,
@@ -8,10 +10,7 @@ import {
 	FirebaseNodeType,
 	FirebaseOutNodeType,
 	InputMessageType,
-	Listener,
-	Listeners,
 	OutputMessageType,
-	Query,
 	QueryConstraint,
 	QueryConstraintType,
 } from "./types/FirebaseNodeType";
@@ -19,10 +18,26 @@ import { Entry } from "./types/UtilType";
 import { printEnumKeys } from "./utils";
 
 class Firebase {
-	constructor(protected node: FirebaseNodeType) {}
+	constructor(protected node: FirebaseNodeType) {
+		node.onError = (error: unknown, done?: (error?: unknown) => void) => {
+			const msg = error instanceof Error ? error.message : (error as object | string).toString();
+
+			if (msg.match(/(permission_denied|Permission denied)/gm)) {
+				this.permissionDeniedStatus = true;
+				this.setNodeStatus("Permission Denied");
+			} else {
+				this.setNodeStatus("Error", 5000);
+			}
+
+			if (done) return done(error);
+
+			this.node.error(msg);
+		};
+	}
 
 	protected admin = this.node.database?.config.authType === "privateKey";
 	protected db = this.node.database?.database;
+	private permissionDeniedStatus = false;
 
 	protected checkPath(path?: unknown, empty?: boolean) {
 		if (empty && path === undefined) return;
@@ -33,17 +48,39 @@ class Firebase {
 		return path;
 	}
 
-	public removeNodeStatus() {
-		const nodes = this.node.database?.nodes;
-		if (!nodes) return;
+	public deregisterNode(removed: boolean, done: (error?: unknown) => void) {
+		// Do nothing if node is restart/reconfigure
+		if (!removed) return done();
 
-		nodes.forEach((node) => {
-			if (node.id !== this.node.id) return;
-			nodes.splice(nodes.indexOf(node), 1);
-		});
+		const nodes = this.node.database?.nodes;
+		if (!nodes) return done();
+
+		try {
+			nodes.forEach((node) => {
+				if (node.id !== this.node.id) return;
+				nodes.splice(nodes.indexOf(node), 1);
+			});
+
+			done();
+		} catch (error) {
+			done(error);
+		}
+	}
+
+	public registerNode() {
+		// TODO: Limit properties (Omit)
+		// const { onError, ...newNode } = this.node;
+		if (this.node.database?.nodes.some((node) => node.id === this.node.id)) return;
+		this.node.database?.nodes.push(this.node);
 	}
 
 	protected sendMsg(snapshot: DataSnapshot | admin.database.DataSnapshot, child?: string | null) {
+		// Clear Permission Denied Status
+		if (this.permissionDeniedStatus) {
+			this.permissionDeniedStatus = false;
+			this.setNodeStatus();
+		}
+
 		try {
 			if (!snapshot.exists()) return;
 
@@ -53,15 +90,31 @@ class Firebase {
 
 			this.node.send({ payload: payload, ...previousChildName, topic: topic } as OutputMessageType);
 		} catch (error) {
-			this.node.error(error);
+			this.node.onError(error);
 		}
 	}
 
-	public setNodeStatus() {
-		if (this.node.database?.connected) {
-			this.node.status({ fill: "green", shape: "dot", text: "connected" });
-		} else {
-			this.node.status({ fill: "yellow", shape: "ring", text: "connecting" });
+	public setNodeStatus(msg?: string, time?: number) {
+		if (!this.node.database) return;
+
+		// Corresponds to do a Clear Status
+		if (msg && time) setTimeout(() => this.setNodeStatus(), time);
+
+		if (msg) return this.node.status({ fill: "red", shape: "dot", text: msg });
+
+		switch (this.node.database.connectionStatus) {
+			case ConnectionStatus.DISCONNECTED:
+				this.node.status({ fill: "red", shape: "dot", text: "Disconnected" });
+				break;
+			case ConnectionStatus.CONNECTING:
+				this.node.status({ fill: "yellow", shape: "ring", text: "Connecting" });
+				break;
+			case ConnectionStatus.CONNECTED:
+				this.node.status({ fill: "green", shape: "dot", text: "Connected" });
+				break;
+			case ConnectionStatus.NO_NETWORK:
+				this.node.status({ fill: "red", shape: "ring", text: "No Network" });
+				break;
 		}
 	}
 }
@@ -233,13 +286,13 @@ export class FirebaseIn extends Firebase {
 			databaseRef.on(
 				this.listener,
 				(snapshot, child) => this.sendMsg(snapshot, child),
-				(error) => this.node.error(error)
+				(error) => this.node.onError(error)
 			);
 		} else {
 			firebase[Listener[this.listener]](
 				firebase.ref(this.db as Database, pathParsed),
 				(snapshot: DataSnapshot, child: string | null | undefined) => this.sendMsg(snapshot, child),
-				(error) => this.node.error(error)
+				(error) => this.node.onError(error)
 			);
 		}
 	}
@@ -270,7 +323,7 @@ export class FirebaseIn extends Firebase {
 	private getListener() {
 		const listener = this.node.config.listenerType || "value";
 
-		if (listener in Listener) return listener as Listeners;
+		if (listener in Listener) return listener as ListenerType;
 
 		throw new Error(`msg.method must be one of ${printEnumKeys(Listener)}.`);
 	}

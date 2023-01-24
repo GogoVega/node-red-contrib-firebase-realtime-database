@@ -6,6 +6,14 @@ import { Node } from "node-red";
 import DatabaseConfigType from "./DatabaseConfigType";
 import { FirebaseNodeType } from "./FirebaseNodeType";
 
+export enum ConnectionStatus {
+	DISCONNECTED,
+	CONNECTING,
+	CONNECTED,
+	NO_NETWORK,
+	ERROR,
+}
+
 type DatabaseCredentials = {
 	apiKey: string;
 	email: string;
@@ -18,7 +26,7 @@ type DatabaseCredentials = {
 type DatabaseNodeType = Node & {
 	app?: FirebaseApp | admin.app.App;
 	auth?: Auth | admin.auth.Auth;
-	connected: boolean;
+	connectionStatus: ConnectionStatus;
 	config: DatabaseConfigType;
 	credentials: DatabaseCredentials;
 	database?: Database | admin.database.Database;

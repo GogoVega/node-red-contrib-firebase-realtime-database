@@ -1,13 +1,7 @@
 import admin from "firebase-admin";
-import { Node, NodeDef, NodeMessage, NodeMessageInFlow } from "node-red";
+import { Node, NodeMessage, NodeMessageInFlow } from "node-red";
 import { DatabaseNodeType } from "./DatabaseNodeType";
-
-export enum Query {
-	"set",
-	"push",
-	"update",
-	"remove",
-}
+import { FirebaseGetConfigType, FirebaseInConfigType, FirebaseOutConfigType } from "./FirebaseConfigType";
 
 export enum QueryConstraint {
 	"endAt",
@@ -38,44 +32,17 @@ export type QueryConstraintType =
 
 export type DBRef = admin.database.Reference | admin.database.Query;
 
-export enum Listener {
-	value = "onValue",
-	child_added = "onChildAdded",
-	child_changed = "onChildChanged",
-	child_moved = "onChildMoved",
-	child_removed = "onChildRemoved",
+export interface InputMessageType extends NodeMessageInFlow {
+	method?: unknown;
 }
 
-export type Listeners = keyof typeof Listener;
-
-export type PathType = "msg" | "str";
-export type OutputType = "auto" | "string";
-export type QueryType = "none" | keyof typeof Query;
-
-export type FirebaseGetConfigType = NodeDef & {
-	database: string;
-	outputType?: OutputType;
-	path?: string;
-	pathType?: PathType;
-};
-
-export type FirebaseInConfigType = NodeDef & {
-	database: string;
-	listenerType?: Listeners;
-	outputType?: OutputType;
-	path?: string;
-};
-
-export type FirebaseOutConfigType = NodeDef & {
-	database: string;
-	outputType?: OutputType;
-	path?: string;
-	pathType?: PathType;
-	queryType?: QueryType;
-};
+export interface OutputMessageType extends NodeMessage {
+	previousChildName?: string;
+}
 
 interface FirebaseNode extends Node {
 	database: DatabaseNodeType | null;
+	onError: (error: unknown, done?: () => void) => void;
 }
 
 export interface FirebaseGetNodeType extends FirebaseNode {
@@ -91,11 +58,3 @@ export interface FirebaseOutNodeType extends FirebaseNode {
 }
 
 export type FirebaseNodeType = FirebaseInNodeType | FirebaseGetNodeType | FirebaseOutNodeType;
-
-export interface InputMessageType extends NodeMessageInFlow {
-	method?: unknown;
-}
-
-export interface OutputMessageType extends NodeMessage {
-	previousChildName?: string;
-}
