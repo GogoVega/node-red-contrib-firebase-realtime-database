@@ -1,3 +1,19 @@
+/**
+ * Copyright 2022-2023 Gauthier Dandele
+ *
+ * Licensed under the MIT License,
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * https://opensource.org/licenses/MIT.
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 import { deleteApp, FirebaseApp, FirebaseError, initializeApp, onLog } from "firebase/app";
 import {
 	Auth,
@@ -13,13 +29,41 @@ import admin from "firebase-admin";
 import { firebaseError } from "./const/FirebaseError";
 import { ConnectionStatus, DatabaseNodeType, JSONContentType } from "./types/DatabaseNodeType";
 
+/**
+ * FirebaseDatabase Class
+ *
+ * This class is used to communicate with Google Firebase Realtime Databases.
+ *
+ * The modules used are `firebase` and `firebase-admin`.
+ *
+ * The Authentication Methods are:
+ * - Anonymous
+ * - Email and Password
+ * - Private Key (SDK Admin)
+ *
+ * @param node The `config-node` to associate with this class
+ * @returns A FirebaseDatabase Class
+ */
 export default class FirebaseDatabase {
 	constructor(private node: DatabaseNodeType) {}
 
+	/**
+	 * This property is true if the authentication method used uses the `firebase-admin` module.
+	 */
 	private admin = this.node.config.authType === "privateKey";
+
+	/**
+	 * This property contains the identifier of the timer used to define the status of the nodes linked
+	 * to this database as being `disconnected` and will be used to clear the timeout.
+	 */
 	private timeoutID: ReturnType<typeof setTimeout> | undefined;
 
-	private checkJSONCredential(content: unknown) {
+	/**
+	 * Check if the received JSON content credentials contain the desired elements.
+	 * @param content The JSON content credentials
+	 * @returns The JSON content credentials checked
+	 */
+	private checkJSONCredential(content: unknown): JSONContentType {
 		if (!content || typeof content !== "object" || !Object.keys(content).length)
 			throw new Error("JSON Content must contain 'projectId', 'clientEmail' and 'privateKey'");
 
@@ -32,11 +76,18 @@ export default class FirebaseDatabase {
 		return content as JSONContentType;
 	}
 
+	/**
+	 * Get credentials from JSON content of `config-node`.
+	 * @returns The JSON content credentials
+	 */
 	private getJSONCredential() {
 		const content = JSON.parse(this.node.credentials.json || "{}");
 		return this.checkJSONCredential(content);
 	}
 
+	/**
+	 * Creates and initializes a `@firebase/FirebaseApp` and `@firebase/Database` instance.
+	 */
 	private initApp() {
 		this.node.app = initializeApp({
 			apiKey: this.node.credentials.apiKey,
@@ -47,6 +98,9 @@ export default class FirebaseDatabase {
 		this.node.database = getDatabase(this.node.app as FirebaseApp);
 	}
 
+	/**
+	 * Creates and initializes a `@firebase-admin/FirebaseApp` and `@firebase-admin/Database` instance.
+	 */
 	private initAppWithSDK() {
 		const content = this.getJSONCredential();
 
@@ -58,6 +112,10 @@ export default class FirebaseDatabase {
 		this.node.database = admin.database(this.node.app as admin.app.App);
 	}
 
+	/**
+	 * Creates and initializes a listener to display the connection status with Firebase on nodes linked
+	 * to this database.
+	 */
 	private initConnectionStatus() {
 		if (!this.node.database) return;
 
@@ -84,6 +142,10 @@ export default class FirebaseDatabase {
 		);
 	}
 
+	/**
+	 * Creates and initializes a logging to get warning message from bad database url configured and invalid credentials
+	 * in order to make it an error message.
+	 */
 	private initLogging() {
 		// Get warning message from bad database url configured
 		// Works for both databases
@@ -98,16 +160,30 @@ export default class FirebaseDatabase {
 		);
 	}
 
+	/**
+	 * This method checks if the database uses the `firebase-admin` module.
+	 * @param db The database used
+	 * @returns `true` if the database uses the `firebase-admin` module.
+	 */
 	// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 	// @ts-ignore
 	private isAdmin(db: Database | admin.database.Database): db is admin.database.Database {
 		return this.node.config.authType === "privateKey";
 	}
 
+	/**
+	 * This method checks if the error is instance of FirebaseError.
+	 * @param error The error received
+	 * @returns `true` if the error is instance of FirebaseError
+	 */
 	private isFirebaseError(error: unknown): error is FirebaseError {
 		return error instanceof FirebaseError || Object.prototype.hasOwnProperty.call(error, "code");
 	}
 
+	/**
+	 * Connects to Firebase with the authentication method defined in the `config-node`
+	 * @return A promise for Firebase connection completion
+	 */
 	public async logIn() {
 		// Initialize Logging
 		this.initLogging();
@@ -132,12 +208,21 @@ export default class FirebaseDatabase {
 		}
 	}
 
+	/**
+	 * Logs in as an anonymous user.
+	 * @returns A promise of signing completion
+	 */
 	private logInAnonymously() {
 		if (!this.node.auth) return;
 
 		return signInAnonymously(this.node.auth as Auth);
 	}
 
+	/**
+	 * Logs in using an email and password.
+	 * @remarks An option allows to create or not a new user and will send a warning message when creating a new user.
+	 * @returns A promise of signing completion
+	 */
 	private async logInWithEmail() {
 		if (!this.node.auth) return;
 
@@ -166,6 +251,10 @@ export default class FirebaseDatabase {
 		}
 	}
 
+	/**
+	 * Disconnects from Firebase.
+	 * @returns A promise for Firebase disconnection completion
+	 */
 	public async logOut() {
 		if (!this.node.app) return;
 
@@ -182,6 +271,12 @@ export default class FirebaseDatabase {
 		}
 	}
 
+	/**
+	 * A custom method in case of error allowing to send a predefined error message if this error is known
+	 * otherwise returns the message as it is.
+	 * @param error The error received
+	 * @param done If defined this callback will return the error message
+	 */
 	public onError(error: Error | FirebaseError, done?: (error?: unknown) => void) {
 		let msg = error.message || error.toString();
 
@@ -206,6 +301,9 @@ export default class FirebaseDatabase {
 		this.node.error(msg);
 	}
 
+	/**
+	 * Sets the status of nodes linked to this database as `Connected`.
+	 */
 	public setNodesConnected() {
 		this.node.connectionStatus = ConnectionStatus.CONNECTED;
 
@@ -214,6 +312,9 @@ export default class FirebaseDatabase {
 		}
 	}
 
+	/**
+	 * Sets the status of nodes linked to this database as `Connecting`.
+	 */
 	public setNodesConnecting() {
 		this.node.connectionStatus = ConnectionStatus.CONNECTING;
 
@@ -222,6 +323,9 @@ export default class FirebaseDatabase {
 		}
 	}
 
+	/**
+	 * Sets the status of nodes linked to this database as `Disconnected`.
+	 */
 	public setNodesDisconnected() {
 		if (this.node.connectionStatus === ConnectionStatus.ERROR) return;
 
@@ -232,14 +336,21 @@ export default class FirebaseDatabase {
 		}
 	}
 
-	public setNodesError(msg?: string) {
+	/**
+	 * Sets the status of nodes linked to this database as `Error`. An error code can also be set.
+	 * @param code The error code to add to the status
+	 */
+	public setNodesError(code?: string) {
 		this.node.connectionStatus = ConnectionStatus.ERROR;
 
 		for (const node of this.node.nodes) {
-			node.status({ fill: "red", shape: "dot", text: `Error${msg ? ": ".concat(msg) : ""}` });
+			node.status({ fill: "red", shape: "dot", text: `Error${code ? ": ".concat(code) : ""}` });
 		}
 	}
 
+	/**
+	 * Sets the status of nodes linked to this database as `No Network`.
+	 */
 	public setNodesNoNetwork() {
 		this.node.connectionStatus = ConnectionStatus.NO_NETWORK;
 
@@ -248,6 +359,10 @@ export default class FirebaseDatabase {
 		}
 	}
 
+	/**
+	 * Signs out from Firebase.
+	 * @returns A promise for signout completion
+	 */
 	private signOut() {
 		if (this.admin || !this.node.auth) return Promise.resolve();
 
