@@ -120,6 +120,9 @@ class Firebase {
 			case ConnectionStatus.NO_NETWORK:
 				this.node.status({ fill: "red", shape: "ring", text: "No Network" });
 				break;
+			case ConnectionStatus.ERROR:
+				this.node.status({ fill: "red", shape: "dot", text: "Error" });
+				break;
 		}
 	}
 }

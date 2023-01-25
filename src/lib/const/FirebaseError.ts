@@ -1,5 +1,6 @@
 export const firebaseError: Record<string, string> = {
 	"auth/api-key-not-valid": "Please check your API key.",
+	"auth/invalid-credential": "Please check your JSON Credential",
 	"auth/invalid-database-url": "Please check your database URL",
 	"auth/invalid-email": "The format of your email address is incorrect.",
 	"auth/network-request-failed": "No Network: Please check your network",

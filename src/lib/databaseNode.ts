@@ -89,8 +89,10 @@ export default class FirebaseDatabase {
 		// Works for both databases
 		onLog(
 			(log) => {
-				if (!log.message.match(/(URL of your Firebase Realtime Database instance configured correctly)/gm)) return;
-				this.onError(new FirebaseError("auth/invalid-database-url", ""));
+				if (log.message.includes("URL of your Firebase Realtime Database instance configured correctly"))
+					return this.onError(new FirebaseError("auth/invalid-database-url", ""));
+				if (log.message.includes("app/invalid-credential"))
+					return this.onError(new FirebaseError("auth/invalid-credential", ""));
 			},
 			{ level: "warn" }
 		);
@@ -185,10 +187,10 @@ export default class FirebaseDatabase {
 
 		if (this.isFirebaseError(error)) {
 			msg = firebaseError[error.code.split(".")[0]];
+			// Not working for firebase-admin...
 			if (error.code.match(/auth\/network-request-failed/)) {
 				this.setNodesNoNetwork();
 			} else if (error.code.startsWith("auth/")) {
-				// .substring(0, 32)
 				this.setNodesError(error.code.split("auth/").pop()?.split(".")[0].replace(/-/gm, " ").toPascalCase());
 			} else {
 				this.setNodesError();

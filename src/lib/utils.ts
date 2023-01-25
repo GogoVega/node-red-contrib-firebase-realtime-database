@@ -15,6 +15,7 @@ String.prototype.toPascalCase = function () {
 function printEnumKeys(obj: object) {
 	return Object.keys(obj)
 		.filter((x) => !Number.isInteger(parseInt(x)))
+		.map((x) => `'${x}'`)
 		.join(", ");
 }
 
