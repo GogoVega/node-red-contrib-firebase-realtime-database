@@ -28,8 +28,6 @@ module.exports = function (RED: NodeAPI) {
 		self.config = config;
 		self.database = RED.nodes.getNode(config.database) as DatabaseNodeType | null;
 
-		if (!self.database) return self.error("Database not configured!");
-
 		try {
 			const firebase = new FirebaseIn(self);
 
