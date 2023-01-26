@@ -51,7 +51,10 @@ class Firebase {
 		};
 	}
 
-	protected db = this.node.database?.database;
+	protected get db() {
+		return this.node.database?.database;
+	}
+
 	private permissionDeniedStatus = false;
 
 	protected checkPath(path?: unknown, empty?: boolean) {
@@ -64,10 +67,8 @@ class Firebase {
 	}
 
 	public deregisterNode(removed: boolean, done: (error?: unknown) => void) {
-		// Do nothing if node is restart/reconfigure
-		if (!removed) return done();
-
 		const nodes = this.node.database?.nodes;
+
 		if (!nodes) return done();
 
 		try {
@@ -75,6 +76,8 @@ class Firebase {
 				if (node.id !== this.node.id) return;
 				nodes.splice(nodes.indexOf(node), 1);
 			});
+
+			this.node.database?.destroyUnusedConnection(removed);
 
 			done();
 		} catch (error) {
@@ -90,9 +93,8 @@ class Firebase {
 
 	public registerNode() {
 		// TODO: Limit properties (Omit)
-		// const { onError, ...newNode } = this.node;
-		if (this.node.database?.nodes.some((node) => node.id === this.node.id)) return;
 		this.node.database?.nodes.push(this.node);
+		this.node.database?.restoreDestroyedConnection();
 	}
 
 	protected sendMsg(snapshot: DataSnapshot | admin.database.DataSnapshot, child?: string | null) {

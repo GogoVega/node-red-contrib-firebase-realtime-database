@@ -45,12 +45,21 @@ import { ConnectionStatus, DatabaseNodeType, JSONContentType } from "./types/Dat
  * @returns A FirebaseDatabase Class
  */
 export default class FirebaseDatabase {
-	constructor(private node: DatabaseNodeType) {}
+	constructor(private node: DatabaseNodeType) {
+		node.destroyUnusedConnection = this.destroyUnusedConnection.bind(this);
+		node.restoreDestroyedConnection = this.restoreDestroyedConnection.bind(this);
+	}
 
 	/**
 	 * This property is true if the authentication method used uses the `firebase-admin` module.
 	 */
 	private admin = this.node.config.authType === "privateKey";
+
+	/**
+	 * This property contains the identifier of the timer used to check if the config-node is unused
+	 * and will be used to clear the timeout in case at least one node is linked to this database.
+	 */
+	private destructionTimeouID: ReturnType<typeof setTimeout> | undefined;
 
 	/**
 	 * This property contains the identifier of the timer used to define the status of the nodes linked
@@ -74,6 +83,29 @@ export default class FirebaseDatabase {
 		if (!cred["private_key"] && !cred["privateKey"]) throw new Error("JSON Content must contain 'privateKey'");
 
 		return content as JSONContentType;
+	}
+
+	/**
+	 * Creates and initializes a callback to verify that the config node is in use.
+	 * Otherwise the connection with Firebase will be closed.
+	 * @note Use of a timer is essential because it's necessary to allow time for all nodes to start before checking
+	 * the number of nodes connected to this database.
+	 * @param removed A flag that indicates whether the node is being closed because it has been removed entirely,
+	 * or that it is just being restarted.
+	 * If `true`, execute the callback after 15s otherwise skip it.
+	 */
+	private destroyUnusedConnection(removed: boolean) {
+		if (!removed || this.node.nodes.length > 0) return;
+
+		this.destructionTimeouID = setTimeout(() => {
+			this.node.warn(
+				`WARNING: '${this.node.config.name}' config node is unused! The connection with Firebase will be closed.`
+			);
+
+			this.logOut()
+				.then(() => this.node.log("Connection with Firebase was closed because no node used."))
+				.catch((error) => this.node.error(error));
+		}, 15000);
 	}
 
 	/**
@@ -147,7 +179,6 @@ export default class FirebaseDatabase {
 	 * in order to make it an error message.
 	 */
 	private initLogging() {
-		// Get warning message from bad database url configured
 		// Works for both databases
 		onLog(
 			(log) => {
@@ -206,6 +237,9 @@ export default class FirebaseDatabase {
 				// Logged In with Initialize App
 				break;
 		}
+
+		// Check if the config node is in use. Otherwise the connection with Firebase will be closed.
+		this.destroyUnusedConnection(true);
 	}
 
 	/**
@@ -258,6 +292,9 @@ export default class FirebaseDatabase {
 	public async logOut() {
 		if (!this.node.app) return;
 
+		// If Node-RED is restarted, stop the timeout (avoid double logout request)
+		clearTimeout(this.destructionTimeouID);
+		this.node.connectionStatus = ConnectionStatus.LOG_OUT;
 		this.node.log(`Closing connection with Firebase database: ${this.node.app?.options.databaseURL}`);
 
 		if (this.node.database) off(ref(this.node.database as Database, ".info/connected"), "value");
@@ -299,6 +336,29 @@ export default class FirebaseDatabase {
 		if (done) return done(msg);
 
 		this.node.error(msg);
+	}
+
+	/**
+	 * Restores the connection with Firebase if at least one node is activated.
+	 * @remarks This method should only be used if the connection has been destroyed.
+	 */
+	private restoreDestroyedConnection() {
+		if (this.node.nodes.length > 1) return;
+
+		// If a node is started, stop the timeout
+		clearTimeout(this.destructionTimeouID);
+		this.destructionTimeouID = undefined;
+
+		// Skip if Node-RED re-starts
+		if (this.node.connectionStatus !== ConnectionStatus.LOG_OUT) return;
+
+		(async () => {
+			try {
+				await this.logIn();
+			} catch (error) {
+				this.node.error(error);
+			}
+		})();
 	}
 
 	/**
