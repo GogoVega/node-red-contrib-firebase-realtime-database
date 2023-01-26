@@ -67,7 +67,7 @@ describe("Firebase GET Node", function () {
 						return evt[0].type == "firebase-get";
 					});
 					logEvents.should.have.length(1);
-					logEvents[0][0].should.have.property("msg", "Database not configured!");
+					logEvents[0][0].should.have.property("msg", "Database not configured or disabled!");
 					done();
 				} catch (error) {
 					done(error);

@@ -35,20 +35,12 @@ import { printEnumKeys } from "./utils";
 
 class Firebase {
 	constructor(protected node: FirebaseNodeType) {
-		node.onError = (error: unknown, done?: (error?: unknown) => void) => {
-			const msg = error instanceof Error ? error.message : (error as object | string).toString();
+		node.onError = this.onError.bind(this);
 
-			if (msg.match(/(permission_denied|Permission denied)/gm)) {
-				this.permissionDeniedStatus = true;
-				this.setNodeStatus("Permission Denied");
-			} else {
-				this.setNodeStatus("Error", 5000);
-			}
-
-			if (done) return done(error);
-
-			this.node.error(msg);
-		};
+		if (!node.database) {
+			node.error("Database not configured or disabled!");
+			node.status({ fill: "red", shape: "ring", text: "Database not ready!" });
+		}
 	}
 
 	protected db = this.node.database?.database;
@@ -88,6 +80,21 @@ class Firebase {
 		return this.node.database?.config.authType === "privateKey";
 	}
 
+	protected onError(error: unknown, done?: (error?: unknown) => void) {
+		const msg = error instanceof Error ? error.message : (error as object | string).toString();
+
+		if (msg.match(/(permission_denied|Permission denied)/gm)) {
+			this.permissionDeniedStatus = true;
+			this.setNodeStatus("Permission Denied");
+		} else {
+			this.setNodeStatus("Error", 5000);
+		}
+
+		if (done) return done(error);
+
+		this.node.error(msg);
+	}
+
 	public registerNode() {
 		// TODO: Limit properties (Omit)
 		// const { onError, ...newNode } = this.node;
@@ -111,7 +118,7 @@ class Firebase {
 
 			this.node.send({ payload: payload, ...previousChildName, topic: topic } as OutputMessageType);
 		} catch (error) {
-			this.node.onError(error);
+			this.onError(error);
 		}
 	}
 
@@ -306,13 +313,13 @@ export class FirebaseIn extends Firebase {
 			databaseRef.on(
 				this.listener,
 				(snapshot, child) => this.sendMsg(snapshot, child),
-				(error) => this.node.onError(error)
+				(error) => this.onError(error)
 			);
 		} else {
 			firebase[Listener[this.listener]](
 				firebase.ref(this.db, pathParsed),
 				(snapshot: DataSnapshot, child: string | null | undefined) => this.sendMsg(snapshot, child),
-				(error) => this.node.onError(error)
+				(error) => this.onError(error)
 			);
 		}
 	}
