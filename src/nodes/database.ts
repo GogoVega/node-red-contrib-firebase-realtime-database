@@ -1,3 +1,19 @@
+/**
+ * Copyright 2022-2023 Gauthier Dandele
+ *
+ * Licensed under the MIT License,
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * https://opensource.org/licenses/MIT.
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 import { NodeAPI } from "node-red";
 import FirebaseDatabase from "../lib/databaseNode";
 import DatabaseConfigType from "../lib/types/DatabaseConfigType";
@@ -8,16 +24,13 @@ module.exports = function (RED: NodeAPI) {
 		RED.nodes.createNode(this, config);
 		const self = this;
 
-		self.connected = false;
+		self.connectionStatus = 0;
 		self.config = config;
 		self.nodes = [];
 
 		const database = new FirebaseDatabase(self);
 
-		database.logIn().catch((error: Error) => {
-			database.setNodesDisconnected();
-			self.error(database.parseErrorMsg(error));
-		});
+		database.logIn().catch((error: Error) => database.onError(error));
 
 		self.on("close", (done: (error?: Error) => void) =>
 			database

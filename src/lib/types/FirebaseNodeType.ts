@@ -1,13 +1,23 @@
-import admin from "firebase-admin";
-import { Node, NodeDef, NodeMessage, NodeMessageInFlow } from "node-red";
-import { DatabaseNodeType } from "./DatabaseNodeType";
+/**
+ * Copyright 2022-2023 Gauthier Dandele
+ *
+ * Licensed under the MIT License,
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * https://opensource.org/licenses/MIT.
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
-export enum Query {
-	"set",
-	"push",
-	"update",
-	"remove",
-}
+import admin from "firebase-admin";
+import { Node, NodeMessage, NodeMessageInFlow } from "node-red";
+import { DatabaseNodeType } from "./DatabaseNodeType";
+import { FirebaseGetConfigType, FirebaseInConfigType, FirebaseOutConfigType } from "./FirebaseConfigType";
 
 export enum QueryConstraint {
 	"endAt",
@@ -38,44 +48,23 @@ export type QueryConstraintType =
 
 export type DBRef = admin.database.Reference | admin.database.Query;
 
-export enum Listener {
-	value = "onValue",
-	child_added = "onChildAdded",
-	child_changed = "onChildChanged",
-	child_moved = "onChildMoved",
-	child_removed = "onChildRemoved",
+export interface InputMessageType extends NodeMessageInFlow {
+	method?: unknown;
 }
 
-export type Listeners = keyof typeof Listener;
-
-export type PathType = "msg" | "str";
-export type OutputType = "auto" | "string";
-export type QueryType = "none" | keyof typeof Query;
-
-export type FirebaseGetConfigType = NodeDef & {
-	database: string;
-	outputType?: OutputType;
-	path?: string;
-	pathType?: PathType;
-};
-
-export type FirebaseInConfigType = NodeDef & {
-	database: string;
-	listenerType?: Listeners;
-	outputType?: OutputType;
-	path?: string;
-};
-
-export type FirebaseOutConfigType = NodeDef & {
-	database: string;
-	outputType?: OutputType;
-	path?: string;
-	pathType?: PathType;
-	queryType?: QueryType;
-};
+export interface OutputMessageType extends NodeMessage {
+	previousChildName?: string;
+}
 
 interface FirebaseNode extends Node {
 	database: DatabaseNodeType | null;
+
+	/**
+	 * A custom method on error to set node status as `Error` or `Permission Denied`.
+	 * @param error The error received
+	 * @param done If defined, a function to be called when all the work is complete and return the error message.
+	 */
+	onError: (error: unknown, done?: () => void) => void;
 }
 
 export interface FirebaseGetNodeType extends FirebaseNode {
@@ -91,11 +80,3 @@ export interface FirebaseOutNodeType extends FirebaseNode {
 }
 
 export type FirebaseNodeType = FirebaseInNodeType | FirebaseGetNodeType | FirebaseOutNodeType;
-
-export interface InputMessageType extends NodeMessageInFlow {
-	method?: unknown;
-}
-
-export interface OutputMessageType extends NodeMessage {
-	previousChildName?: string;
-}

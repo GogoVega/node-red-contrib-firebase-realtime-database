@@ -14,25 +14,12 @@
  * limitations under the License.
  */
 
-declare global {
-	interface String {
-		toPascalCase(): string;
-	}
-}
-
-String.prototype.toPascalCase = function () {
-	const words = this.match(/[a-z]+/gi);
-
-	if (!words) return "";
-
-	return words.map((word) => word.charAt(0).toUpperCase() + word.substring(1).toLowerCase()).join(" ");
+export const firebaseError: Record<string, string> = {
+	"auth/api-key-not-valid": "Please check your API key.",
+	"auth/invalid-credential": "Please check your JSON Credential",
+	"auth/invalid-database-url": "Please check your database URL",
+	"auth/invalid-email": "The format of your email address is incorrect.",
+	"auth/network-request-failed": "No Network: Please check your network",
+	"auth/unknown-email": "Please check your email address or select 'create a new user'",
+	"auth/wrong-password": "Wrong Password: Please check your password.",
 };
-
-function printEnumKeys(obj: object) {
-	return Object.keys(obj)
-		.filter((x) => !Number.isInteger(parseInt(x)))
-		.map((x) => `'${x}'`)
-		.join(", ");
-}
-
-export { printEnumKeys };
