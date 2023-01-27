@@ -58,6 +58,12 @@ export interface OutputMessageType extends NodeMessage {
 
 interface FirebaseNode extends Node {
 	database: DatabaseNodeType | null;
+
+	/**
+	 * A custom method on error to set node status as `Error` or `Permission Denied`.
+	 * @param error The error received
+	 * @param done If defined, a function to be called when all the work is complete and return the error message.
+	 */
 	onError: (error: unknown, done?: () => void) => void;
 }
 
