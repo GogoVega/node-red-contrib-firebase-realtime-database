@@ -22,7 +22,7 @@
 		defaults: {
 			name: { value: "" },
 			database: { value: "", type: "database-config" },
-			path: { value: "topic", validate: RED.validators.regex(/\S/) },
+			path: { value: "topic" },
 			pathType: { value: "msg", validate: RED.validators.regex(/(msg|str)/) },
 			queryType: { value: "none", validate: RED.validators.regex(/(none|set|push|update|remove)/) },
 		},
@@ -40,9 +40,15 @@
 			return this.name ? "node_label_italic" : "";
 		},
 		oneditprepare: function () {
+			function isPathValid(x) {
+				if (!x || typeof x !== "string") return false;
+				if (x.match(/^\s|[.#$\[\]]/g)) return false;
+				return true;
+			}
+
 			$("#node-input-path").typedInput({
 				typeField: $("#node-input-pathType"),
-				types: ["str", "msg"],
+				types: ["msg", { value: "str", label: "string", icon: "red/images/typedInput/az.svg", validate: isPathValid }],
 			});
 		},
 	});

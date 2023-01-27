@@ -30,7 +30,7 @@
 			path: {
 				value: "test/stream",
 				validate: function (v) {
-					return v.match(/[.#$\[\]]/g) ? false : true;
+					return v.match(/^\s|[.#$\[\]]/g) ? false : true;
 				},
 			},
 		},

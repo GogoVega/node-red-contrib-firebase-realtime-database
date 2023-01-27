@@ -87,7 +87,7 @@ class Firebase {
 		if (!empty && !path) throw new Error("PATH must be non-empty string!");
 		if (typeof path !== "string") throw new Error("PATH must be a string!");
 		if (path?.match(/[.#$\[\]]/g)) throw new Error(`PATH must not contain ".", "#", "$", "[", or "]"`);
-		return path;
+		return path.trim();
 	}
 
 	/**
