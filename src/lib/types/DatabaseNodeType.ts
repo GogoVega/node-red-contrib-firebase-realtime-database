@@ -26,6 +26,7 @@ export enum ConnectionStatus {
 	DISCONNECTED,
 	CONNECTING,
 	CONNECTED,
+	LOG_OUT,
 	NO_NETWORK,
 	ERROR,
 }
@@ -42,11 +43,28 @@ type DatabaseCredentials = {
 type DatabaseNodeType = Node & {
 	app?: FirebaseApp | admin.app.App;
 	auth?: Auth | admin.auth.Auth;
-	connectionStatus: ConnectionStatus;
 	config: DatabaseConfigType;
+	connectionStatus: ConnectionStatus;
 	credentials: DatabaseCredentials;
 	database?: Database | admin.database.Database;
+
+	/**
+	 * Creates and initializes a callback to verify that the config node is in use.
+	 * Otherwise the connection with Firebase will be closed.
+	 * @note Use of a timer is essential because it's necessary to allow time for all nodes to start before checking
+	 * the number of nodes connected to this database.
+	 * @param removed A flag that indicates whether the node is being closed because it has been removed entirely,
+	 * or that it is just being restarted.
+	 * If `true`, execute the callback after 15s otherwise skip it.
+	 */
+	destroyUnusedConnection(removed: boolean): void;
 	nodes: Array<FirebaseNodeType>;
+
+	/**
+	 * Restores the connection with Firebase if at least one node is activated.
+	 * @remarks This method should only be used if the connection has been destroyed.
+	 */
+	restoreDestroyedConnection(): void;
 };
 
 type JSONContentType = ServiceAccount & {
