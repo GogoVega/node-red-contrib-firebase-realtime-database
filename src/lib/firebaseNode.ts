@@ -507,6 +507,11 @@ export class FirebaseOut extends Firebase {
 		super(node);
 	}
 
+	/**
+	 * Checks if the priority is valid otherwise throws an error.
+	 * @param priority The priority to be checked
+	 * @returns The priority checked
+	 */
 	private checkPriority(priority: unknown) {
 		if (priority === undefined) throw new Error("msg.priority do not exist!");
 		if (typeof priority === "number") return priority;
@@ -527,7 +532,7 @@ export class FirebaseOut extends Firebase {
 	}
 
 	/**
-	 * `SET`, `PUSH`, `UPDATE` or `REMOVE` data at the target Database.
+	 * `SET`, `PUSH`, `UPDATE`, `REMOVE`, `SET PRIORITY` or `SET WITH PRIORITY` data at the target Database.
 	 * @param msg The message to be sent to Firebase Database
 	 * @returns A Promise when write/update on server is complete.
 	 */
@@ -595,6 +600,11 @@ export class FirebaseOut extends Firebase {
 		return this.checkPath(path, false) as string;
 	}
 
+	/**
+	 * Gets the priority from the node or message. Calls `checkPriority` to check the priority.
+	 * @param msg The message received
+	 * @returns The priority checked
+	 */
 	private getPriority(msg: InputMessageType) {
 		const priority = msg.priority !== undefined ? msg.priority : this.node.config.priority;
 		return this.checkPriority(priority);
