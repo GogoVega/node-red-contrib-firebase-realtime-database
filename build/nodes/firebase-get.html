@@ -119,6 +119,10 @@
 	<dl class="message-properties">
 		<dt>payload<span class="property-type">string | boolean | number | object</span></dt>
 		<dd>contains your query data from the database.</dd>
+		<dt class="optional">previousChildName<span class="property-type">string</span></dt>
+		<dd>contains the key of the previous child, by sort order, or <code>null</code> if it is the first child.</dd>
+		<dt class="optional">priority<span class="property-type">number</span></dt>
+		<dd>the priority of the data.</dd>
 		<dt>topic<span class="property-type">string</span></dt>
 		<dd>contains the path where the data comes from.</dd>
 	</dl>
@@ -126,7 +130,7 @@
 	<p>This node reads data from a path and sends it in a message, including child data.</p>
 	<p>
 		The <strong>Path</strong> determines where the data will be written. It can be defined in the node or dynamically
-		with the <code>msg.method</code> property. It can be empty, in this case the data sent comes from the root of the
+		with the <code>msg.topic</code> property. It can be empty, in this case the data sent comes from the root of the
 		database.
 	</p>
 	<p>
@@ -155,6 +159,10 @@
 	<pre>
 {
  "orderByChild": "name",
- "limitToFirst": 5
+ "limitToFirst": 5,
+ "startAt": {
+  "value": "Alex",
+  "key": "name"
+ }
 }</pre>
 </script>
