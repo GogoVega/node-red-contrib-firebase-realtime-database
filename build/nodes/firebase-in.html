@@ -24,9 +24,9 @@
 			database: { value: "", type: "database-config" },
 			listenerType: {
 				value: "value",
-				validate: RED.validators.regex(/(value|child_added|child_changed|child_moved|child_removed)/),
+				validate: RED.validators.regex(/^(value|child_added|child_changed|child_moved|child_removed)$/),
 			},
-			outputType: { value: "auto", validate: RED.validators.regex(/(auto|string)/) },
+			outputType: { value: "auto", validate: RED.validators.regex(/^(auto|string)$/) },
 			path: {
 				value: "test/stream",
 				validate: function (v) {

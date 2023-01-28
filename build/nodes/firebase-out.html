@@ -23,8 +23,11 @@
 			name: { value: "" },
 			database: { value: "", type: "database-config" },
 			path: { value: "topic" },
-			pathType: { value: "msg", validate: RED.validators.regex(/(msg|str)/) },
-			queryType: { value: "none", validate: RED.validators.regex(/(none|set|push|update|remove)/) },
+			pathType: { value: "msg", validate: RED.validators.regex(/^(msg|str)$/) },
+			queryType: {
+				value: "none",
+				validate: RED.validators.regex(/^(none|set|push|update|remove)$/),
+			},
 		},
 		inputs: 1,
 		outputs: 0,

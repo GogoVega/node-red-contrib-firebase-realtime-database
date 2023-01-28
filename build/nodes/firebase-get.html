@@ -22,9 +22,9 @@
 		defaults: {
 			name: { value: "" },
 			database: { value: "", type: "database-config" },
-			outputType: { value: "auto", validate: RED.validators.regex(/(auto|string)/) },
+			outputType: { value: "auto", validate: RED.validators.regex(/^(auto|string)$/) },
 			path: { value: "topic" },
-			pathType: { value: "msg", validate: RED.validators.regex(/(msg|str)/) },
+			pathType: { value: "msg", validate: RED.validators.regex(/^(msg|str)$/) },
 		},
 		inputs: 1,
 		outputs: 1,
