@@ -24,9 +24,10 @@
 			database: { value: "", type: "database-config" },
 			path: { value: "topic" },
 			pathType: { value: "msg", validate: RED.validators.regex(/^(msg|str)$/) },
+			priority: { value: 1 },
 			queryType: {
 				value: "none",
-				validate: RED.validators.regex(/^(none|set|push|update|remove)$/),
+				validate: RED.validators.regex(/^(none|set|push|update|remove|setPriority|setWithPriority)$/),
 			},
 		},
 		inputs: 1,
@@ -53,6 +54,24 @@
 				typeField: $("#node-input-pathType"),
 				types: ["msg", { value: "str", label: "string", icon: "red/images/typedInput/az.svg", validate: isPathValid }],
 			});
+
+			$("#node-input-priority").typedInput({
+				typeField: $("#node-input-priorityType"),
+				types: ["num"],
+			});
+
+			const queryType = $("#node-input-queryType");
+			queryType.on("change", () => {
+				switch (queryType.val()) {
+					case "setPriority":
+					case "setWithPriority":
+						$(".form-row-priority").show();
+						break;
+					default:
+						$(".form-row-priority").hide();
+						break;
+				}
+			});
 		},
 	});
 </script>
@@ -71,7 +90,15 @@
 			<option value="push">PUSH</option>
 			<option value="update">UPDATE</option>
 			<option value="remove">REMOVE</option>
+			<option value="setPriority">SET PRIORITY</option>
+			<option value="setWithPriority">SET WITH PRIORITY</option>
 		</select>
+	</div>
+
+	<div class="form-row form-row-priority">
+		<label for="node-input-priority"><i class="fa fa-list-ol"></i> Priority</label>
+		<input type="text" id="node-input-priority" style="width:70%" />
+		<input type="hidden" id="node-input-priorityType" />
 	</div>
 
 	<div class="form-row">
