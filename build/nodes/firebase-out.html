@@ -24,9 +24,10 @@
 			database: { value: "", type: "database-config" },
 			path: { value: "topic" },
 			pathType: { value: "msg", validate: RED.validators.regex(/^(msg|str)$/) },
+			priority: { value: 1 },
 			queryType: {
 				value: "none",
-				validate: RED.validators.regex(/^(none|set|push|update|remove)$/),
+				validate: RED.validators.regex(/^(none|set|push|update|remove|setPriority|setWithPriority)$/),
 			},
 		},
 		inputs: 1,
@@ -53,6 +54,24 @@
 				typeField: $("#node-input-pathType"),
 				types: ["msg", { value: "str", label: "string", icon: "red/images/typedInput/az.svg", validate: isPathValid }],
 			});
+
+			$("#node-input-priority").typedInput({
+				typeField: $("#node-input-priorityType"),
+				types: ["num"],
+			});
+
+			const queryType = $("#node-input-queryType");
+			queryType.on("change", () => {
+				switch (queryType.val()) {
+					case "setPriority":
+					case "setWithPriority":
+						$(".form-row-priority").show();
+						break;
+					default:
+						$(".form-row-priority").hide();
+						break;
+				}
+			});
 		},
 	});
 </script>
@@ -71,7 +90,15 @@
 			<option value="push">PUSH</option>
 			<option value="update">UPDATE</option>
 			<option value="remove">REMOVE</option>
+			<option value="setPriority">SET PRIORITY</option>
+			<option value="setWithPriority">SET WITH PRIORITY</option>
 		</select>
+	</div>
+
+	<div class="form-row form-row-priority">
+		<label for="node-input-priority"><i class="fa fa-list-ol"></i> Priority</label>
+		<input type="text" id="node-input-priority" style="width:70%" />
+		<input type="hidden" id="node-input-priorityType" />
 	</div>
 
 	<div class="form-row">
@@ -86,9 +113,11 @@
 	</div>
 
 	<div class="form-tips" id="firebase-out-tips">
-		<p>
-			<strong>Tip</strong>: Leave Method blank to dynamically set the query from the <code>msg.method</code> property.
-		</p>
+		<p><strong>Tips</strong>:</p>
+		<ul>
+			<li>Leave Method blank to dynamically set the query from the <code>msg.method</code> property.</li>
+			<li>If <code>msg.priority</code> is set, node Priority will be overridden by message Priority.</li>
+		</ul>
 	</div>
 </script>
 
@@ -97,9 +126,11 @@
 	<h3>Inputs</h3>
 	<dl class="message-properties">
 		<dt>payload<span class="property-type">string | boolean | number | object</span></dt>
-		<dd>the message that will be sent to the database</dd>
+		<dd>the message that will be sent to the database.</dd>
 		<dt class="optional">method<span class="property-type">string</span></dt>
-		<dd>the query to apply to the message (set, push, update or remove)</dd>
+		<dd>the query to apply to the message (set, push, update, remove, setPriority or setWithPriority).</dd>
+		<dt class="optional">priority<span class="property-type">number</span></dt>
+		<dd>the priority to apply to the message. By default 1.</dd>
 		<dt class="optional">topic<span class="property-type">string</span></dt>
 		<dd>the message containing the path of the data to add/modify. By default 'topic'.</dd>
 	</dl>
@@ -110,9 +141,14 @@
 		<li><strong>Push</strong>: add the data to the Firebase reference as a new child reference with a unique key.</li>
 		<li><strong>Update</strong>: update values for each matching key in the database.</li>
 		<li><strong>Remove</strong>: the data at the Firebase reference and all child data is removed.</li>
+		<li>
+			<strong>Set Priority</strong>: the priority is used to sort the children under a specific parent or in a query if
+			no other sort condition is specified.
+		</li>
+		<li><strong>Set With Priority</strong>: the priority and overwrite data.</li>
 	</ul>
 	<p>
 		The <strong>Path</strong> determines where the data will be written. It can be defined in the node or dynamically
-		with the <code>msg.method</code> property
+		with the <code>msg.topic</code> property
 	</p>
 </script>

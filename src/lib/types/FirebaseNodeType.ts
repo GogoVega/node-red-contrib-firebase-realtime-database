@@ -50,10 +50,12 @@ export type DBRef = admin.database.Reference | admin.database.Query;
 
 export interface InputMessageType extends NodeMessageInFlow {
 	method?: unknown;
+	priority?: unknown;
 }
 
 export interface OutputMessageType extends NodeMessage {
 	previousChildName?: string;
+	priority: string | number | null;
 }
 
 interface FirebaseNode extends Node {

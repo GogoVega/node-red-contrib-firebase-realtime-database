@@ -179,8 +179,9 @@ class Firebase {
 			const topic = snapshot.ref.key?.toString() || "";
 			const payload = this.node.config.outputType === "string" ? JSON.stringify(snapshot.val()) : snapshot.val();
 			const previousChildName = child !== undefined ? { previousChildName: child || "" } : {};
+			const priority = snapshot instanceof DataSnapshot ? snapshot.priority : snapshot.getPriority();
 
-			this.node.send({ payload: payload, ...previousChildName, topic: topic } as OutputMessageType);
+			this.node.send({ payload: payload, ...previousChildName, priority: priority, topic: topic } as OutputMessageType);
 		} catch (error) {
 			this.onError(error);
 		}
@@ -507,7 +508,31 @@ export class FirebaseOut extends Firebase {
 	}
 
 	/**
-	 * `SET`, `PUSH`, `UPDATE` or `REMOVE` data at the target Database.
+	 * Checks if the priority is valid otherwise throws an error.
+	 * @param priority The priority to be checked
+	 * @returns The priority checked
+	 */
+	private checkPriority(priority: unknown) {
+		if (priority === undefined) throw new Error("msg.priority do not exist!");
+		if (typeof priority === "number") return priority;
+		if (typeof priority === "string" && Number.isInteger(parseInt(priority))) return parseInt(priority);
+		throw new Error("msg.priority must be a number!");
+	}
+
+	/**
+	 * Checks if the query is valid otherwise throws an error.
+	 * @param method The query to be checked
+	 * @returns The query checked
+	 */
+	private checkQuery(method: unknown) {
+		if (method === undefined) throw new Error("msg.method do not exist!");
+		if (typeof method !== "string") throw new Error("msg.method must be a string!");
+		if (method in Query) return method as keyof typeof Query;
+		throw new Error(`msg.method must be one of ${printEnumKeys(Query)}.`);
+	}
+
+	/**
+	 * `SET`, `PUSH`, `UPDATE`, `REMOVE`, `SET PRIORITY` or `SET WITH PRIORITY` data at the target Database.
 	 * @param msg The message to be sent to Firebase Database
 	 * @returns A Promise when write/update on server is complete.
 	 */
@@ -518,13 +543,37 @@ export class FirebaseOut extends Firebase {
 		if (!this.db) return Promise.resolve();
 
 		if (this.isAdmin(this.db)) {
-			return this.db.ref().child(path)[query](msg.payload);
+			switch (query) {
+				case "update":
+					if (msg.payload && typeof msg.payload === "object") return this.db.ref().child(path)[query](msg.payload);
+					throw new Error("msg.payload must be an object with 'update' query.");
+				case "remove":
+					return this.db.ref().child(path)[query]();
+				case "setPriority":
+					return this.db
+						.ref()
+						.child(path)
+						.setPriority(this.getPriority(msg), (err) => {
+							if (err) this.node.error(err);
+						});
+				case "setWithPriority":
+					return this.db.ref().child(path)[query](msg.payload, this.getPriority(msg));
+				default:
+					return this.db.ref().child(path)[query](msg.payload);
+			}
 		} else {
-			if (query === "update") {
-				if (msg.payload && typeof msg.payload === "object") return firebase[query](ref(this.db, path), msg.payload);
-				throw new Error("msg.payload must be an object with 'update' query.");
-			} else {
-				return firebase[query](ref(this.db, path), msg.payload);
+			switch (query) {
+				case "update":
+					if (msg.payload && typeof msg.payload === "object") return firebase[query](ref(this.db, path), msg.payload);
+					throw new Error("msg.payload must be an object with 'update' query.");
+				case "remove":
+					return firebase[query](ref(this.db, path));
+				case "setPriority":
+					return firebase[query](ref(this.db, path), this.getPriority(msg));
+				case "setWithPriority":
+					return firebase[query](ref(this.db, path), msg.payload, this.getPriority(msg));
+				default:
+					return firebase[query](ref(this.db, path), msg.payload);
 			}
 		}
 	}
@@ -552,6 +601,16 @@ export class FirebaseOut extends Firebase {
 	}
 
 	/**
+	 * Gets the priority from the node or message. Calls `checkPriority` to check the priority.
+	 * @param msg The message received
+	 * @returns The priority checked
+	 */
+	private getPriority(msg: InputMessageType) {
+		const priority = msg.priority !== undefined ? msg.priority : this.node.config.priority;
+		return this.checkPriority(priority);
+	}
+
+	/**
 	 * Gets the query from the node or message. Calls `checkQuery` to check the query.
 	 * @param msg The message received
 	 * @returns The query checked
@@ -559,18 +618,5 @@ export class FirebaseOut extends Firebase {
 	private getQuery(msg: InputMessageType) {
 		const query = this.node.config.queryType === "none" ? msg.method : this.node.config.queryType;
 		return this.checkQuery(query);
-	}
-
-	/**
-	 * Checks if the query is valid otherwise throws an error.
-	 * @param method The query to be checked
-	 * @returns The query checked
-	 */
-	private checkQuery(method: unknown) {
-		if (method === undefined) throw new Error("msg.method do not exist!");
-		if (typeof method !== "string") throw new Error("msg.method must be a string!");
-		const query = method.toLowerCase();
-		if (query in Query) return query as keyof typeof Query;
-		throw new Error(`msg.method must be one of ${printEnumKeys(Query)}.`);
 	}
 }

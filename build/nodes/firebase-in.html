@@ -90,8 +90,10 @@
 	<dl class="message-properties">
 		<dt>payload<span class="property-type">string | boolean | number | object</span></dt>
 		<dd>contains the event data from the database.</dd>
-		<dt>previousChildName<span class="property-type">string</span></dt>
+		<dt class="optional">previousChildName<span class="property-type">string</span></dt>
 		<dd>contains the key of the previous child, by sort order, or <code>null</code> if it is the first child.</dd>
+		<dt class="optional">priority<span class="property-type">number</span></dt>
+		<dd>the priority of the data.</dd>
 		<dt>topic<span class="property-type">string</span></dt>
 		<dd>contains the path where the data comes from.</dd>
 	</dl>
@@ -106,9 +108,8 @@
 		<li><code>Child Removed</code></li>
 	</ul>
 	<p>
-		The <strong>Path</strong> determines where the data will be written. It can be defined in the node or dynamically
-		with the <code>msg.method</code> property. It can be empty, in this case the data sent comes from the root of the
-		database.
+		The <strong>Path</strong> determines where the data will be written. It can be empty, in this case the data sent
+		comes from the root of the database.
 	</p>
 	<p>
 		<strong>Output</strong> can be set to <strong>auto-detect</strong> to send an object containing the data, or

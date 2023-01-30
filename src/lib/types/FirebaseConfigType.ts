@@ -29,6 +29,8 @@ export enum Query {
 	"push",
 	"update",
 	"remove",
+	"setPriority",
+	"setWithPriority",
 }
 
 export type ListenerType = keyof typeof Listener;
@@ -55,5 +57,6 @@ export type FirebaseOutConfigType = NodeDef & {
 	outputType?: OutputType;
 	path?: string;
 	pathType?: PathType;
+	priority?: number;
 	queryType?: QueryType;
 };
