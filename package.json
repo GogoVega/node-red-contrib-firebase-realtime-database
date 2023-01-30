@@ -43,9 +43,9 @@
   },
   "devDependencies": {
     "@types/node-red": "^1.2.1",
-    "@typescript-eslint/eslint-plugin": "^5.48.2",
-		"@typescript-eslint/parser": "^5.48.2",
-    "eslint": "^8.32.0",
+    "@typescript-eslint/eslint-plugin": "^5.49.0",
+		"@typescript-eslint/parser": "^5.49.0",
+    "eslint": "^8.33.0",
     "mocha": "^10.2.0",
     "node-red": "^2.2.3",
     "node-red-node-test-helper": "^0.3.0",
