@@ -1,5 +1,27 @@
 # Change log
 
+## 0.3.0-beta.1
+
+### Changes
+
+- Bump `firebase` and `firebase-admin` to latest
+
+### Fixes
+
+- `validate` function for typedInput (path and regex)
+
+### New Features
+
+- Unused connection management
+- Support for `setPriority` and `setWithPriority` queries
+- `EditableList` to set query constraint in `firebase-get` node
+
+### Refactors
+
+- Transition the codebase to TypeScript
+- Checks active listeners before unsubscription
+- Node status and error handling
+
 ## 0.2.0
 
 ### Breaking Changes

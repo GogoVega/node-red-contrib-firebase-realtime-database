@@ -15,11 +15,11 @@ It allows to add, modify and fetch data from your databases aswell as subscribin
 
 There are 3 nodes included with this contrib:
 
-| Node         | Purpose                                                                                              |
-| ------------ | ---------------------------------------------------------------------------------------------------- |
-| Firebase in  | Subscribes to data at the specified path,<br /> which yields a `payload` whenever a value changes    |
-| Firebase get | Fetches data from the specified path.<br />Query constraints can be used to sort and order your data |
-| Firebase out | `SET`, `PUSH`, `UPDATE` or `REMOVE` data at the target Database.                                     |
+| Node         | Purpose                                                                                               |
+| ------------ | ----------------------------------------------------------------------------------------------------- |
+| Firebase in  | Subscribes to data at the specified path,<br /> which yields a `payload` whenever a value changes.    |
+| Firebase get | Fetches data from the specified path.<br />Query constraints can be used to sort and order your data. |
+| Firebase out | `SET`, `PUSH`, `UPDATE`, `REMOVE`, `SET PRIORITY` or `SET WITH PRIORITY` data at the target Database. |
 
 ## How to use?
 
@@ -57,7 +57,7 @@ Read more about the different ways to authenticate [here](./docs/Authentication.
 
 MIT License
 
-Copyright (c) 2022 Gauthier Dandele
+Copyright (c) 2022-2023 Gauthier Dandele
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
