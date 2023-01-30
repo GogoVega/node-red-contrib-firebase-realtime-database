@@ -39,6 +39,7 @@ export type OutputType = "auto" | "string";
 export type QueryType = "none" | keyof typeof Query;
 
 export type FirebaseGetConfigType = NodeDef & {
+	constraint?: object;
 	database: string;
 	outputType?: OutputType;
 	path?: string;

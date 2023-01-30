@@ -76,6 +76,43 @@ class Firebase {
 	private permissionDeniedStatus = false;
 
 	/**
+	 * Applies the query constraints to the database reference.
+	 * @remarks To be used only on the `firebase-admin` module.
+	 * @param dbRef The database reference
+	 * @param method The object containing the query constraints
+	 * @returns The database reference with the query constraints applied
+	 */
+	protected applyQueryConstraints(dbRef: DBRef, method: unknown) {
+		const constraints = this.checkQueryConstraints(method);
+
+		for (const [method, value] of Object.entries(constraints) as Entry<QueryConstraintType | Record<string, never>>[]) {
+			switch (method) {
+				case "endAt":
+				case "endBefore":
+				case "equalTo":
+				case "startAfter":
+				case "startAt":
+					dbRef = dbRef[method](value.value, value.key);
+					break;
+				case "limitToFirst":
+				case "limitToLast":
+					dbRef = dbRef[method](value);
+					break;
+				case "orderByChild":
+					dbRef = dbRef[method](value);
+					break;
+				case "orderByKey":
+				case "orderByPriority":
+				case "orderByValue":
+					dbRef = dbRef[method]();
+					break;
+			}
+		}
+
+		return dbRef;
+	}
+
+	/**
 	 * Checks path to match Firebase rules. Throws an error if does not match.
 	 * @param path The path to check
 	 * @param empty Can the path be empty. Default: `false`
@@ -88,6 +125,54 @@ class Firebase {
 		if (typeof path !== "string") throw new Error("PATH must be a string!");
 		if (path?.match(/[.#$\[\]]/g)) throw new Error(`PATH must not contain ".", "#", "$", "[", or "]"`);
 		return path.trim();
+	}
+
+	/**
+	 * Checks the query constraints and throws an error if it is invalid.
+	 * @param constraints The query constraints
+	 * @returns The query constraints checked
+	 */
+	protected checkQueryConstraints(constraints: unknown): QueryConstraintType | Record<string, never> {
+		if (constraints === undefined || constraints === null) return {};
+		if (typeof constraints !== "object") throw new Error("Query Constraint must be an Object!");
+
+		for (const [method, value] of Object.entries(constraints)) {
+			switch (method) {
+				case "endAt":
+				case "endBefore":
+				case "equalTo":
+				case "startAfter":
+				case "startAt":
+					if (typeof value !== "object") throw new Error(`The value of the "${method}" constraint must be an object!`);
+					if (value.value === undefined)
+						throw new Error(`The value of the "${method}" constraint must be an object containing 'value' as key.`);
+					if (typeof value.value !== "string" && typeof value.value !== "boolean" && typeof value.value !== "number")
+						throw new Error(`The value of the "${method}.value" constraint must be a boolean or number or string!`);
+
+					if (value.key && typeof value.key !== "string")
+						throw new Error(`The value of the "${method}.key" constraint must be a string!`);
+					break;
+				case "limitToFirst":
+				case "limitToLast":
+					if (typeof value !== "number") throw new Error(`The value of the "${method}" constraint must be a number!`);
+					break;
+				case "orderByChild":
+					if (typeof value !== "string") throw new Error(`The value of the "${method}" constraint must be a string!`);
+					break;
+				case "orderByKey":
+				case "orderByPriority":
+				case "orderByValue":
+					if (value !== undefined && value !== null)
+						throw new Error(`The value of the "${method}" constraint must be null or undefined!`);
+					break;
+				default:
+					throw new Error(
+						`Query constraint received: '${method}' but must be one of ${printEnumKeys(QueryConstraint)}.`
+					);
+			}
+		}
+
+		return constraints as QueryConstraintType;
 	}
 
 	/**
@@ -115,6 +200,43 @@ class Firebase {
 		} catch (error) {
 			done(error);
 		}
+	}
+
+	/**
+	 * Gets the query constraints from the message. Calls `checkQueryConstraint` to check the query constraints.
+	 * @remarks To be used only on the `firebase` module.
+	 * @param method The object containing the query constraints
+	 * @returns An array of query constraints checked
+	 */
+	protected getQueryConstraints(method: unknown) {
+		const constraints = this.checkQueryConstraints(method) || {};
+		const query = [];
+
+		for (const [method, value] of Object.entries(constraints) as Entry<QueryConstraintType | Record<string, never>>[]) {
+			switch (method) {
+				case "endAt":
+				case "endBefore":
+				case "equalTo":
+				case "startAfter":
+				case "startAt":
+					query.push(firebase[method](value.value, value.key));
+					break;
+				case "limitToFirst":
+				case "limitToLast":
+					query.push(firebase[method](value));
+					break;
+				case "orderByChild":
+					query.push(firebase[method](value));
+					break;
+				case "orderByKey":
+				case "orderByPriority":
+				case "orderByValue":
+					query.push(firebase[method]());
+					break;
+			}
+		}
+
+		return query;
 	}
 
 	/**
@@ -238,95 +360,12 @@ export class FirebaseGet extends Firebase {
 	}
 
 	/**
-	 * Applies the query constraints to the database reference.
-	 * @param dbRef The database reference
-	 * @param method The object containing the query constraints
-	 * @returns The database reference with the query constraints applied
-	 */
-	private applyQueryConstraints(dbRef: DBRef, method: unknown) {
-		const constraints = this.checkQueryConstraint(method);
-
-		for (const [method, value] of Object.entries(constraints) as Entry<QueryConstraintType | Record<string, never>>[]) {
-			switch (method) {
-				case "endAt":
-				case "endBefore":
-				case "equalTo":
-				case "startAfter":
-				case "startAt":
-					dbRef = dbRef[method](value.value, value.key);
-					break;
-				case "limitToFirst":
-				case "limitToLast":
-					dbRef = dbRef[method](value);
-					break;
-				case "orderByChild":
-					dbRef = dbRef[method](value);
-					break;
-				case "orderByKey":
-				case "orderByPriority":
-				case "orderByValue":
-					dbRef = dbRef[method]();
-					break;
-			}
-		}
-
-		return dbRef;
-	}
-
-	/**
-	 * Checks the query constraints and throws an error if it is invalid.
-	 * @param constraints The query constraints
-	 * @returns The query constraints checked
-	 */
-	private checkQueryConstraint(constraints: unknown): QueryConstraintType | Record<string, never> {
-		if (constraints === undefined || constraints === null) return {};
-		if (typeof constraints !== "object") throw new Error("Query Constraint must be an Object!");
-
-		for (const [method, value] of Object.entries(constraints)) {
-			switch (method) {
-				case "endAt":
-				case "endBefore":
-				case "equalTo":
-				case "startAfter":
-				case "startAt":
-					if (typeof value !== "object") throw new Error(`The value of the "${method}" constraint must be an object!`);
-					if (value.value === undefined)
-						throw new Error(`The value of the "${method}" constraint must be an object containing 'value' as key.`);
-					if (typeof value.value !== "string" && typeof value.value !== "boolean" && typeof value.value !== "number")
-						throw new Error(`The value of the "${method}.value" constraint must be a boolean or number or string!`);
-
-					if (value.key && typeof value.key !== "string")
-						throw new Error(`The value of the "${method}.key" constraint must be a string!`);
-					break;
-				case "limitToFirst":
-				case "limitToLast":
-					if (typeof value !== "number") throw new Error(`The value of the "${method}" constraint must be a number!`);
-					break;
-				case "orderByChild":
-					if (typeof value !== "string") throw new Error(`The value of the "${method}" constraint must be a string!`);
-					break;
-				case "orderByKey":
-				case "orderByPriority":
-				case "orderByValue":
-					if (value !== undefined && value !== null)
-						throw new Error(`The value of the "${method}" constraint must be null or undefined!`);
-					break;
-				default:
-					throw new Error(
-						`Query constraint received: '${method}' but must be one of ${printEnumKeys(QueryConstraint)}.`
-					);
-			}
-		}
-
-		return constraints as QueryConstraintType;
-	}
-
-	/**
 	 * Fetch data from database. This method calls `sendMsg` to send a `payload` containing the desired data.
 	 * @param msg The message received
 	 * @returns A promise of completion of the request
 	 */
 	public async doGetQuery(msg: InputMessageType) {
+		const constraint = msg.method || this.node.config.constraint;
 		const path = this.getPath(msg);
 		let snapshot;
 
@@ -335,9 +374,9 @@ export class FirebaseGet extends Firebase {
 		if (this.isAdmin(this.db)) {
 			const database = path ? this.db.ref().child(path) : this.db.ref();
 
-			snapshot = await this.applyQueryConstraints(database, msg.method).get();
+			snapshot = await this.applyQueryConstraints(database, constraint).get();
 		} else {
-			snapshot = await get(query(ref(this.db, path), ...this.getQueryConstraints(msg.method)));
+			snapshot = await get(query(ref(this.db, path), ...this.getQueryConstraints(constraint)));
 		}
 
 		this.sendMsg(snapshot);
@@ -363,42 +402,6 @@ export class FirebaseGet extends Firebase {
 		}
 
 		return this.checkPath(path || undefined, true);
-	}
-
-	/**
-	 * Gets the query constraints from the message. Calls `checkQueryConstraint` to check the query constraints.
-	 * @param method The object containing the query constraints
-	 * @returns An array of query constraints checked
-	 */
-	private getQueryConstraints(method: unknown) {
-		const constraints = this.checkQueryConstraint(method) || {};
-		const query = [];
-
-		for (const [method, value] of Object.entries(constraints) as Entry<QueryConstraintType | Record<string, never>>[]) {
-			switch (method) {
-				case "endAt":
-				case "endBefore":
-				case "equalTo":
-				case "startAfter":
-				case "startAt":
-					query.push(firebase[method](value.value, value.key));
-					break;
-				case "limitToFirst":
-				case "limitToLast":
-					query.push(firebase[method](value));
-					break;
-				case "orderByChild":
-					query.push(firebase[method](value));
-					break;
-				case "orderByKey":
-				case "orderByPriority":
-				case "orderByValue":
-					query.push(firebase[method]());
-					break;
-			}
-		}
-
-		return query;
 	}
 }
 
