@@ -15,9 +15,11 @@
     "url": "https://github.com/GogoVega/node-red-contrib-firebase-realtime-database.git"
   },
   "keywords": [
+    "admin",
+    "database",
     "firebase",
     "node-red",
-    "realtime-database"
+    "realtime"
   ],
   "author": {
     "name": "Gauthier Dandele",
