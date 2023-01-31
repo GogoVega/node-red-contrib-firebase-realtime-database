@@ -47,6 +47,7 @@ export type FirebaseGetConfigType = NodeDef & {
 };
 
 export type FirebaseInConfigType = NodeDef & {
+	constraint?: object;
 	database: string;
 	listenerType?: ListenerType;
 	outputType?: OutputType;
