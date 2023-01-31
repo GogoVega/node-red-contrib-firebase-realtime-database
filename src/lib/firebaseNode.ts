@@ -70,6 +70,12 @@ class Firebase {
 	}
 
 	/**
+	 * This property contains the identifier of the timer used to define the error status of the node and will be used
+	 * to clear the timeout.
+	 */
+	private errorTimeoutID: ReturnType<typeof setTimeout> | undefined;
+
+	/**
 	 * This property is used to store the "Permission Denied" state of the node.
 	 * Error received when database rules deny reading/writing data.
 	 */
@@ -318,7 +324,10 @@ class Firebase {
 		if (!this.node.database) return;
 
 		// Corresponds to do a Clear Status
-		if (msg && time) setTimeout(() => this.setNodeStatus(), time);
+		if (msg && time) {
+			clearTimeout(this.errorTimeoutID);
+			this.errorTimeoutID = setTimeout(() => this.setNodeStatus(), time);
+		}
 
 		if (msg) return this.node.status({ fill: "red", shape: "dot", text: msg });
 
