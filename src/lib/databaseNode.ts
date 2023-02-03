@@ -126,10 +126,13 @@ export default class FirebaseDatabase {
 	 * Creates and initializes a `@firebase/FirebaseApp` and `@firebase/Database` instance.
 	 */
 	private initApp() {
-		this.node.app = initializeApp({
-			apiKey: this.node.credentials.apiKey,
-			databaseURL: this.node.credentials.url,
-		});
+		this.node.app = initializeApp(
+			{
+				apiKey: this.node.credentials.apiKey,
+				databaseURL: this.node.credentials.url,
+			},
+			this.node.id
+		);
 
 		this.node.auth = getAuth(this.node.app as FirebaseApp);
 		this.node.database = getDatabase(this.node.app as FirebaseApp);
@@ -141,10 +144,13 @@ export default class FirebaseDatabase {
 	private initAppWithSDK() {
 		const content = this.getJSONCredential();
 
-		this.node.app = admin.initializeApp({
-			credential: admin.credential.cert(content),
-			databaseURL: this.node.credentials.url,
-		});
+		this.node.app = admin.initializeApp(
+			{
+				credential: admin.credential.cert(content),
+				databaseURL: this.node.credentials.url,
+			},
+			this.node.id
+		);
 
 		this.node.database = admin.database(this.node.app as admin.app.App);
 	}
@@ -307,7 +313,7 @@ export default class FirebaseDatabase {
 		await this.signOut();
 
 		if (this.admin) {
-			return admin.app().delete();
+			return admin.app(this.node.id).delete();
 		} else {
 			return deleteApp(this.node.app as FirebaseApp);
 		}
