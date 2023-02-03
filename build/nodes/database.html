@@ -58,14 +58,16 @@
 
 	#file-drop-target {
 		position: absolute;
-		top: 0; bottom: 0;
-		left: 0; right: 0;
+		top: 0;
+		bottom: 0;
+		left: 0;
+		right: 0;
 		background: var(--red-ui-dnd-background);
-		display:table;
+		display: table;
 		width: 100%;
 		height: 100%;
 		display: none;
-		z-index:100;
+		z-index: 100;
 	}
 
 	#file-drop-target div {
@@ -232,7 +234,7 @@
 			$("#json-drop-target").html("The file has been loaded.");
 		} catch (error) {
 			$("#json-drop-target").html("An error has occurred :(");
-			alert(error.message || error.toString())
+			alert(error.message || error.toString());
 		}
 	}
 
@@ -251,7 +253,7 @@
 </script>
 
 <script type="text/html" data-template-name="database-config">
-	<div id="file-drop-target"><div><i class="fa fa-download"></i><br>Drop File Here</div></div>
+	<div id="file-drop-target"><div><i class="fa fa-download"></i><br/>Drop File Here</div></div>
 
 	<div class="form-row">
 		<label for="node-config-input-name"><i class="fa fa-tag"></i> Name</label>
