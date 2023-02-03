@@ -33,9 +33,15 @@ export enum ConnectionStatus {
 
 type DatabaseCredentials = {
 	apiKey: string;
+	clientEmail: string;
 	email: string;
+
+	/**
+	 * @deprecated Replaced by `clientEmail` and `privateKey`
+	 */
 	json: string;
 	password: string;
+	privateKey: string;
 	url: string;
 	secret: string;
 };

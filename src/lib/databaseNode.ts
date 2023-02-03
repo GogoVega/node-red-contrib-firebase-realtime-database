@@ -114,6 +114,22 @@ export default class FirebaseDatabase {
 	 */
 	private getJSONCredential() {
 		const content = JSON.parse(this.node.credentials.json || "{}");
+
+		if (Object.keys(content).length === 0) {
+			const projetId = this.node.credentials.url
+				.split("https://")
+				.pop()
+				?.split(/-default-rtdb\.((asia-southeast1|europe-west1)\.firebasedatabase\.app|firebaseio\.com)(\/)?$/)[0];
+			const privateKey = JSON.stringify(this.node.credentials.privateKey)
+				.replace(/\\\\n/gm, "\n")
+				.replaceAll('"', "")
+				.replaceAll("\\", "");
+
+			content["project_id"] = projetId;
+			content["clientEmail"] = this.node.credentials.clientEmail;
+			content["privateKey"] = privateKey;
+		}
+
 		return this.checkJSONCredential(content);
 	}
 
