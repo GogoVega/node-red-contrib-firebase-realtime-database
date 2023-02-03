@@ -24,7 +24,7 @@ import {
 	signInWithEmailAndPassword,
 	signOut,
 } from "firebase/auth";
-import { Database, getDatabase, off, onValue, ref } from "firebase/database";
+import { Database, getDatabase, onValue, ref, Unsubscribe } from "firebase/database";
 import admin from "firebase-admin";
 import { firebaseError } from "./const/FirebaseError";
 import { ConnectionStatus, DatabaseNodeType, JSONContentType } from "./types/DatabaseNodeType";
@@ -66,6 +66,11 @@ export default class FirebaseDatabase {
 	 * to this database as being `disconnected` and will be used to clear the timeout.
 	 */
 	private timeoutID: ReturnType<typeof setTimeout> | undefined;
+
+	/**
+	 * This property contains the **method to call** for the unsubscribe request.
+	 */
+	private subscriptionCallback?: Unsubscribe;
 
 	/**
 	 * Check if the received JSON content credentials contain the desired elements.
@@ -151,7 +156,7 @@ export default class FirebaseDatabase {
 	private initConnectionStatus() {
 		if (!this.node.database) return;
 
-		onValue(
+		this.subscriptionCallback = onValue(
 			ref(this.node.database as Database, ".info/connected"),
 			(snapshot) => {
 				if (snapshot.val() === true) {
@@ -297,7 +302,7 @@ export default class FirebaseDatabase {
 		this.node.connectionStatus = ConnectionStatus.LOG_OUT;
 		this.node.log(`Closing connection with Firebase database: ${this.node.app?.options.databaseURL}`);
 
-		if (this.node.database) off(ref(this.node.database as Database, ".info/connected"), "value");
+		if (this.node.database && this.subscriptionCallback) this.subscriptionCallback();
 
 		await this.signOut();
 
