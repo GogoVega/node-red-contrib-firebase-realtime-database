@@ -100,7 +100,7 @@
 			url: {
 				type: "text",
 				validate: RED.validators.regex(
-					/https:\/\/[a-zA-Z0-9-]{4,30}-default-rtdb\.(europe-west1\.firebasedatabase\.app\/|firebaseio\.com\/)/
+					/https:\/\/[a-zA-Z0-9-]{4,30}-default-rtdb\.((asia-southeast1|europe-west1)\.firebasedatabase\.app|firebaseio\.com)\//
 				),
 			},
 		},
