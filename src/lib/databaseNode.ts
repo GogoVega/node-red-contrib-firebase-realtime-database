@@ -28,6 +28,7 @@ import { Database, getDatabase, onValue, ref, Unsubscribe } from "firebase/datab
 import admin from "firebase-admin";
 import { firebaseError } from "./const/FirebaseError";
 import { ConnectionStatus, DatabaseNodeType, JSONContentType } from "./types/DatabaseNodeType";
+import { LogCallbackParams } from "@firebase/logger/dist/src/logger";
 
 /**
  * FirebaseDatabase Class
@@ -191,15 +192,10 @@ export default class FirebaseDatabase {
 	 */
 	private initLogging() {
 		// Works for both databases
-		onLog(
-			(log) => {
-				if (log.message.includes("URL of your Firebase Realtime Database instance configured correctly"))
-					return this.onError(new FirebaseError("auth/invalid-database-url", ""));
-				if (log.message.includes("app/invalid-credential"))
-					return this.onError(new FirebaseError("auth/invalid-credential", ""));
-			},
-			{ level: "warn" }
-		);
+		// Known Issue: how to know which module returned the log?
+		if (!this.node.RED.events.eventNames().includes("Firebase:log"))
+			onLog((log) => this.node.RED.events.emit("Firebase:log", log), { level: "warn" });
+		this.node.RED.events.on("Firebase:log", this.onLog);
 	}
 
 	/**
@@ -227,11 +223,11 @@ export default class FirebaseDatabase {
 	 * @return A promise for Firebase connection completion
 	 */
 	public async logIn() {
-		// Initialize Logging
-		this.initLogging();
-
 		// Initialize App
 		this.admin ? this.initAppWithSDK() : this.initApp();
+
+		// Initialize Logging
+		this.initLogging();
 
 		// Initialize Connection Status
 		this.initConnectionStatus();
@@ -310,6 +306,8 @@ export default class FirebaseDatabase {
 
 		if (this.node.database && this.subscriptionCallback) this.subscriptionCallback();
 
+		this.node.RED.events.removeListener("Firebase:log", this.onLog);
+
 		await this.signOut();
 
 		if (this.admin) {
@@ -348,6 +346,20 @@ export default class FirebaseDatabase {
 
 		this.node.error(msg);
 	}
+
+	/**
+	 * Property called by the `Firebase:log` event. Gets the log in order to make it an error and to update the status of
+	 * the nodes.
+	 * @param log The log received
+	 */
+	private onLog = (log: LogCallbackParams) => {
+		if (log.message.includes("URL of your Firebase Realtime Database instance configured correctly")) {
+			if (!log.message.includes(this.node.credentials.url)) return;
+			return this.onError(new FirebaseError("auth/invalid-database-url", ""));
+		}
+		if (log.message.includes("app/invalid-credential"))
+			return this.onError(new FirebaseError("auth/invalid-credential", ""));
+	};
 
 	/**
 	 * Restores the connection with Firebase if at least one node is activated.

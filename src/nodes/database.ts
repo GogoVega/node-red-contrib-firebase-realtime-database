@@ -27,6 +27,7 @@ module.exports = function (RED: NodeAPI) {
 		self.connectionStatus = 0;
 		self.config = config;
 		self.nodes = [];
+		self.RED = RED;
 
 		const database = new FirebaseDatabase(self);
 

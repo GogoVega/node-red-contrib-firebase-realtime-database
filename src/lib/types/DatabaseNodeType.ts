@@ -18,7 +18,7 @@ import { FirebaseApp } from "firebase/app";
 import { Auth } from "firebase/auth";
 import { Database } from "firebase/database";
 import admin, { ServiceAccount } from "firebase-admin";
-import { Node } from "node-red";
+import { Node, NodeAPI } from "node-red";
 import DatabaseConfigType from "./DatabaseConfigType";
 import { FirebaseNodeType } from "./FirebaseNodeType";
 
@@ -47,6 +47,7 @@ type DatabaseNodeType = Node & {
 	connectionStatus: ConnectionStatus;
 	credentials: DatabaseCredentials;
 	database?: Database | admin.database.Database;
+	RED: NodeAPI;
 
 	/**
 	 * Creates and initializes a callback to verify that the config node is in use.
