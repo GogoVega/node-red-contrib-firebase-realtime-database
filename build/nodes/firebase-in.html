@@ -21,18 +21,15 @@
 		color: "#e2a12b",
 		defaults: {
 			name: { value: "" },
+			constraint: { value: {} },
 			database: { value: "", type: "database-config" },
 			listenerType: {
 				value: "value",
 				validate: RED.validators.regex(/^(value|child_added|child_changed|child_moved|child_removed)$/),
 			},
 			outputType: { value: "auto", validate: RED.validators.regex(/^(auto|string)$/) },
-			path: {
-				value: "test/stream",
-				validate: function (v) {
-					return v.match(/^\s|[.#$\[\]]/g) ? false : true;
-				},
-			},
+			path: { value: "test/stream", validate: (v) => !v.match(/^\s+|[.#$\[\]]$/g) },
+			useConstraint: { value: false },
 		},
 		inputs: 0,
 		outputs: 1,
@@ -44,8 +41,176 @@
 		labelStyle: function () {
 			return this.name ? "node_label_italic" : "";
 		},
-		oneditprepare: function () {},
+		oneditprepare: function () {
+			const container = $("#node-input-constraint-container");
+			const useConstraint = $("#node-input-useConstraint");
+
+			useConstraint.on("change", () => {
+				useConstraint.prop("checked") === true ? $(".form-row-constraint").show() : $(".form-row-constraint").hide();
+				if (useConstraint.prop("checked") === false) container.editableList("empty");
+			});
+
+			container.css("min-height", "150px").css("min-width", "300px").editableList({
+				sortable: true,
+				removable: true,
+				addButton: "Add Query Constraint Set",
+				addItem: addItem,
+			});
+
+			Object.entries(this.constraint).forEach((item) => container.editableList("addItem", item));
+		},
+		oneditsave: saveItems,
 	});
+
+	function addItem(container, index, data) {
+		const id = Math.floor((0x99999 - 0x10000) * Math.random()).toString();
+
+		const HTMLBody = `
+			<div style="flex-grow:1">
+				<div style="display: flex;">
+					<input type="text" id="node-input-constraintType-case-${id}" style="width:150px; text-align: center;"">
+					<div style="flex-grow:1; margin-left: 5px;">
+						<input type="text" id="node-input-value-raw-case-${id}" style="width: 100%;" placeholder="Value"/>
+					</div>
+				</div>
+				<div style="display: flex; padding-top: 5px; align-items: center;">
+					<div style="flex-grow:1; margin-left: 155px;">
+						<input type="text" id="node-input-child-raw-case-${id}" style="width: 100%;" placeholder="Child" />
+					</div>
+				</div>
+			</div>`;
+
+		container.css({
+			overflow: "hidden",
+			whiteSpace: "nowrap",
+			display: "flex",
+			"align-items": "center",
+		});
+
+		$(container).html(HTMLBody);
+		$(container)
+			.find(`#node-input-constraintType-case-${id}`)
+			.typedInput({
+				types: [
+					{
+						options: queryConstraintType,
+					},
+				],
+			})
+			.typedInput("value", "limitToFirst")
+			.on("change", (event, type, value) => {
+				const valueRaw = $(container).find(`#node-input-value-raw-case-${id}`);
+				const childRaw = $(container).find(`#node-input-child-raw-case-${id}`);
+				updateTypeOfTypedInput(valueRaw, childRaw, value);
+			});
+
+		$(container)
+			.find(`#node-input-value-raw-case-${id}`)
+			.typedInput({
+				types: ["num"],
+				default: "num",
+			});
+
+		$(container)
+			.find(`#node-input-child-raw-case-${id}`)
+			.typedInput({
+				types: ["str"],
+				default: "str",
+			})
+			.typedInput("hide");
+
+		if (Array.isArray(data)) {
+			const [key, value] = data;
+			const type = $(container).find(`#node-input-constraintType-case-${id}`);
+			const valueRaw = $(container).find(`#node-input-value-raw-case-${id}`);
+			const childRaw = $(container).find(`#node-input-child-raw-case-${id}`);
+
+			type.typedInput("value", key);
+			updateTypeOfTypedInput(valueRaw, childRaw, key);
+
+			if (typeof value === "object") {
+				valueRaw.typedInput("value", value.value);
+				childRaw.typedInput("value", value.key);
+			} else {
+				valueRaw.typedInput("value", value);
+				childRaw.typedInput("value", "");
+			}
+
+			data = {};
+			$(container).data("data", data);
+		}
+
+		data.id = id;
+		data.index = index;
+	}
+
+	function compare(a, b) {
+		return a.index - b.index;
+	}
+
+	function saveItems() {
+		const container = $("#node-input-constraint-container").editableList("items").sort(compare);
+		const node = this;
+
+		node.constraint = {};
+
+		container.each(function () {
+			const id = $(this).data("data").id;
+			const constraintType = $(this).find(`#node-input-constraintType-case-${id}`).typedInput("value");
+			const value = $(this).find(`#node-input-value-raw-case-${id}`).val();
+			const child = $(this).find(`#node-input-child-raw-case-${id}`).val();
+
+			switch (constraintType) {
+				case "endAt":
+				case "endBefore":
+				case "equalTo":
+				case "startAfter":
+				case "startAt":
+					node.constraint[constraintType] = { value: value, child: child };
+					break;
+				case "limitToFirst":
+				case "limitToLast":
+					node.constraint[constraintType] = parseInt(value);
+					break;
+				case "orderByKey":
+				case "orderByPriority":
+				case "orderByValue":
+					node.constraint[constraintType] = null;
+					break;
+				default:
+					node.constraint[constraintType] = value;
+					break;
+			}
+		});
+	}
+
+	function updateTypeOfTypedInput(value, child, key) {
+		value.typedInput("show");
+		child.typedInput("hide");
+
+		switch (key) {
+			case "endAt":
+			case "endBefore":
+			case "equalTo":
+			case "startAfter":
+			case "startAt":
+				value.typedInput("types", ["bool", "num", "str"]);
+				child.typedInput("show");
+				break;
+			case "limitToFirst":
+			case "limitToLast":
+				value.typedInput("types", ["num"]);
+				break;
+			case "orderByChild":
+				value.typedInput("types", ["str"]);
+				break;
+			case "orderByKey":
+			case "orderByPriority":
+			case "orderByValue":
+				value.typedInput("hide");
+				break;
+		}
+	}
 </script>
 
 <script type="text/html" data-template-name="firebase-in">
@@ -63,6 +228,20 @@
 			<option value="child_moved">Child Moved</option>
 			<option value="child_removed">Child Removed</option>
 		</select>
+	</div>
+
+	<div class="form-row">
+		<label for="node-input-useConstraint"><i class="fa fa-sort"></i> Sort data?</label>
+		<input
+			type="checkbox"
+			id="node-input-useConstraint"
+			style="display:inline-block; width:15px; vertical-align:baseline;"
+		/>
+		<span>Use Query Constraint to sort and order your data.</span>
+	</div>
+
+	<div class="form-row form-row-constraint node-input-constraint-container-row">
+		<ol id="node-input-constraint-container"></ol>
 	</div>
 
 	<div class="form-row">
@@ -107,6 +286,7 @@
 		<li><code>Child Moved</code></li>
 		<li><code>Child Removed</code></li>
 	</ul>
+	<p>You can define constraint(s) for the query to sort and order your data.</p>
 	<p>
 		The <strong>Path</strong> determines where the data will be written. It can be empty, in this case the data sent
 		comes from the root of the database.

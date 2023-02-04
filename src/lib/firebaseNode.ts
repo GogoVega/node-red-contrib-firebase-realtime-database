@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { Database, DataSnapshot, get, off, ref, query } from "firebase/database";
+import { Database, DataSnapshot, get, ref, query, Unsubscribe } from "firebase/database";
 import * as firebase from "firebase/database";
 import admin from "firebase-admin";
 import { ConnectionStatus } from "./types/DatabaseNodeType";
@@ -442,10 +442,17 @@ export class FirebaseIn extends Firebase {
 	private path = this.node.config.path?.toString() || undefined;
 
 	/**
+	 * This property contains the **method to call** (`firebase`) or the **subscription callback** to give as an argument
+	 * (`firebase-admin`) for the unsubscribe request.
+	 */
+	private subscriptionCallback?: Unsubscribe | ((a: admin.database.DataSnapshot | null, b?: string | null) => void);
+
+	/**
 	 * Subscribes to a listener and attaches a callback (`sendMsg`) to send a `payload` containing the changed data.
 	 * Calls `checkPath` to check the path.
 	 */
 	public doSubscriptionQuery() {
+		const constraint = this.node.config.constraint;
 		const pathParsed = this.checkPath(this.path, true);
 
 		if (!this.db) return;
@@ -453,14 +460,14 @@ export class FirebaseIn extends Firebase {
 		if (this.isAdmin(this.db)) {
 			const databaseRef = pathParsed ? this.db.ref().child(pathParsed) : this.db.ref();
 
-			databaseRef.on(
+			this.subscriptionCallback = this.applyQueryConstraints(databaseRef, constraint).on(
 				this.listener,
 				(snapshot, child) => this.sendMsg(snapshot, child),
 				(error) => this.onError(error)
 			);
 		} else {
-			firebase[Listener[this.listener]](
-				firebase.ref(this.db, pathParsed),
+			this.subscriptionCallback = firebase[Listener[this.listener]](
+				query(ref(this.db, pathParsed), ...this.getQueryConstraints(constraint)),
 				(snapshot: DataSnapshot, child: string | null | undefined) => this.sendMsg(snapshot, child),
 				(error) => this.onError(error)
 			);
@@ -471,23 +478,14 @@ export class FirebaseIn extends Firebase {
 	 * Unsubscribes from the listener in order to detach a callback (`sendMsg`) previously attached to the listener.
 	 */
 	public doUnSubscriptionQuery() {
-		const listeners = this.node.database?.nodes.filter((node) => {
-			if (node.type === "firebase-in") return (node as FirebaseInNodeType).config.listenerType === this.listener;
-
-			return false;
-		});
-
-		// Do not remove the listener if it's still in use
-		if (listeners && listeners.length > 1) return;
-
 		if (!this.db) return;
 
 		if (this.isAdmin(this.db)) {
 			const databaseRef = this.path ? this.db.ref().child(this.path) : this.db.ref();
 
-			databaseRef.off(this.listener);
+			databaseRef.off(this.listener, this.subscriptionCallback);
 		} else {
-			off(ref(this.db, this.path), this.listener);
+			if (this.subscriptionCallback) (this.subscriptionCallback as () => void)();
 		}
 	}
 
@@ -508,7 +506,7 @@ export class FirebaseIn extends Firebase {
  * `FirebaseOut` Sublass of Parent `Firebase` Class
  *
  * This class is used to write data to Firebase Database.
- * `SET`, `PUSH`, `UPDATE` or `REMOVE` data at the target Database.
+ * `SET`, `PUSH`, `UPDATE`, `REMOVE`, `SET PRIORITY` or `SET WITH PRIORITY` data at the target Database.
  *
  * @param node The node to associate with this class
  * @returns A `FirebaseOut` Class
