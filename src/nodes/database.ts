@@ -44,9 +44,11 @@ module.exports = function (RED: NodeAPI) {
 	RED.nodes.registerType("database-config", DatabaseNode, {
 		credentials: {
 			apiKey: { type: "text" },
+			clientEmail: { type: "password" },
 			email: { type: "text" },
 			json: { type: "password" },
 			password: { type: "password" },
+			privateKey: { type: "password" },
 			secret: { type: "password" },
 			url: { type: "text" },
 		},

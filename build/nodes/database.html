@@ -38,24 +38,71 @@
 	.firebase-text-divider::after {
 		margin-left: var(--text-divider-gap);
 	}
+
+	#json-drop-target {
+		margin: auto;
+		width: 100%;
+		height: 150px;
+		text-align: center;
+		line-height: 150px;
+		background-color: lightgrey;
+		color: darkgray;
+		border-color: darkgray;
+		border-width: 2px;
+		border-style: solid;
+		border-radius: 6px;
+		font-family: "HelveticaNeue-Light", "Calibri Light";
+		font-size: 20px;
+		box-shadow: 11px 10px 17px -12px rgba(0, 0, 0, 0.75);
+	}
+
+	#file-drop-target {
+		position: absolute;
+		top: 0;
+		bottom: 0;
+		left: 0;
+		right: 0;
+		background: var(--red-ui-dnd-background);
+		display: table;
+		width: 100%;
+		height: 100%;
+		display: none;
+		z-index: 100;
+	}
+
+	#file-drop-target div {
+		pointer-events: none;
+		display: table-cell;
+		vertical-align: middle;
+		text-align: center;
+		font-size: 40px;
+		color: var(--red-ui-dnd-color);
+	}
+
+	#file-drop-target i {
+		pointer-events: none;
+		font-size: 80px;
+	}
 </style>
 
 <script type="text/javascript">
 	RED.nodes.registerType("database-config", {
 		category: "config",
 		credentials: {
-			apiKey: { type: "text", validate: RED.validators.regex(/AIza[a-zA-Z0-9]{35}/) },
+			apiKey: { type: "text", validate: RED.validators.regex(/^AIza[a-zA-Z0-9]{35}$/) },
+			clientEmail: { type: "password" },
 			email: {
 				type: "text",
 				validate: RED.validators.regex(/^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/i),
 			},
 			json: { type: "password" },
 			password: { type: "password", validate: RED.validators.regex(/\S/) },
+			privateKey: { type: "password" },
 			secret: { type: "password" },
 			url: {
 				type: "text",
 				validate: RED.validators.regex(
-					/https:\/\/[a-zA-Z0-9-]{4,30}-default-rtdb\.(europe-west1\.firebasedatabase\.app\/|firebaseio\.com\/)/
+					/https:\/\/[a-zA-Z0-9-]{4,30}-default-rtdb\.((asia-southeast1|europe-west1)\.firebasedatabase\.app|firebaseio\.com)\//
 				),
 			},
 		},
@@ -69,14 +116,66 @@
 		},
 		oneditprepare: function () {
 			const authType = $("#node-config-input-authType");
-			authType.on("change", () => HideShow(authType.val()));
 
-			$("#node-config-input-json").typedInput({
-				type: "json",
-				types: ["json"],
-			});
+			authType.on("change", () => HideShow(authType.val()));
+			$("#node-config-input-json").typedInput({ type: "json", types: ["json"] });
+			$("#node-config-input-clientEmail").typedInput({ types: [{ value: "str", validate: RED.validators.regex(/^__PWRD__|\S+\.iam\.gserviceaccount\.com$/) }] });
+			$("#node-config-input-privateKey").typedInput({ types: [{ value: "str", validate: RED.validators.regex(/^__PWRD__|-----BEGIN PRIVATE KEY-----\S+-----END PRIVATE KEY-----/) }] });
+
+			$(".red-ui-tray").on("dragenter", dragEnter);
+			$("#json-drop-target").on("click", filePrompt);
+			$("#file-drop-target").on("dragover", dragOverHandler).on("dragleave", dragLeave).on("drop", dropHandler).hide();
 		},
 	});
+
+	function dragEnter() {
+		event.preventDefault();
+		event.stopPropagation();
+		$("#file-drop-target").css({ display: "table" }).focus();
+	}
+
+	function dragLeave() {
+		event.preventDefault();
+		event.stopPropagation();
+		$("#file-drop-target").hide();
+	}
+
+	// Prevent default behavior (Prevent file from being opened)
+	function dragOverHandler() {
+		event.preventDefault();
+		event.stopPropagation();
+	}
+
+	// Read drag data
+	function dropHandler() {
+		event.preventDefault();
+		event.stopPropagation();
+
+		$("#file-drop-target").hide();
+
+		if (event.dataTransfer.items) {
+			[...event.dataTransfer.items].forEach((item, i) => {
+				if (item.kind === "file") {
+					const file = item.getAsFile();
+					readData(file);
+				} else if (item.kind === "string") {
+					if (item.type !== "text/plain") return;
+					item.getAsString((s) => parseAndUpdateInputs(s));
+				} else {
+					alert("The dropped item must be an file .txt or .json");
+				}
+			});
+		}
+	}
+
+	// Prompt file
+	function filePrompt() {
+		const onChange = (e) => readData(e.target.files[0]);
+		const input = document.createElement("input");
+		input.type = "file";
+		input.onchange = onChange;
+		input.click();
+	}
 
 	function HideShow(Value) {
 		switch (Value) {
@@ -94,6 +193,14 @@
 				$(".form-row-json").show();
 				$(".form-row-email").hide();
 				$(".form-row-secret").hide();
+
+				// DEPRECATED
+				// Disables JSON input if node config uses it (old config)
+				if ($("#node-config-input-json").val()) {
+					$("#node-config-input-json").typedInput("disable");
+				} else {
+					$(".form-row-json-deprecated").hide();
+				}
 				break;
 
 			case "email":
@@ -113,9 +220,41 @@
 				break;
 		}
 	}
+
+	function parseAndUpdateInputs(content) {
+		try {
+			const data = JSON.parse(content);
+			// Need to stringify it because the input does not support line break
+			const privateKey = JSON.stringify(data["privateKey"] || data["private_key"]);
+
+			$("#node-config-input-clientEmail").typedInput("value", data["clientEmail"] || data["client_email"]);
+			$("#node-config-input-privateKey").typedInput("value", privateKey);
+			$("#node-config-input-clientEmail").typedInput("validate");
+			$("#node-config-input-privateKey").typedInput("validate");
+			$("#json-drop-target").html("The file has been loaded.");
+		} catch (error) {
+			$("#json-drop-target").html("An error has occurred :(");
+			alert(error.message || error.toString());
+		}
+	}
+
+	// Read Data
+	function readData(file) {
+		const name = file.name.toLowerCase();
+		const reader = new FileReader();
+
+		if (!name.match(/\.(txt|json)$/)) return alert("The file extension must be .txt or .json");
+
+		reader.readAsText(file);
+		reader.onload = function () {
+			parseAndUpdateInputs(reader.result);
+		};
+	}
 </script>
 
 <script type="text/html" data-template-name="database-config">
+	<div id="file-drop-target"><div><i class="fa fa-download"></i><br/>Drop File Here</div></div>
+
 	<div class="form-row">
 		<label for="node-config-input-name"><i class="fa fa-tag"></i> Name</label>
 		<input type="text" id="node-config-input-name" style="width:70%" />
@@ -124,7 +263,7 @@
 	<div class="firebase-text-divider">Authentication Method</div>
 
 	<div class="form-row">
-		<label for="node-config-input-authType"><i class="fa fa-bars"></i> Type</label>
+		<label for="node-config-input-authType"><i class="fa fa-shield"></i> Type</label>
 		<select id="node-config-input-authType" style="width: 70%;">
 			<option value="anonymous">Anonymous</option>
 			<option value="email">Email</option>
@@ -135,11 +274,7 @@
 
 	<div class="form-row form-row-email">
 		<label for="node-config-input-createUser">&nbsp;</label>
-		<input
-			type="checkbox"
-			id="node-config-input-createUser"
-			style="display:inline-block; width:15px; vertical-align:baseline;"
-		/>
+		<input type="checkbox" id="node-config-input-createUser" style="display:inline-block; width:15px; vertical-align:baseline;"/>
 		<span>Create a new user if this one does not exist?</span>
 	</div>
 
@@ -157,9 +292,20 @@
 	</div>
 
 	<!-- JSON Private Key -->
-	<div class="form-row form-row-json">
+	<!-- DEPRECATED -->
+	<div class="form-row form-row-json form-row-json-deprecated">
 		<label for="node-config-input-json"><i class="fa fa-file-code-o"></i> JSON Content</label>
 		<input type="text" id="node-config-input-json" style="width:70%" placeholder="Paste JSON file content" />
+	</div>
+
+	<div class="form-row form-row-json">
+		<label for="node-config-input-clientEmail"><i class="fa fa-envelope"></i> Client Email</label>
+		<input type="password" id="node-config-input-clientEmail" style="width:70%;" placeholder="service-account-name@project-id.iam.gserviceaccount.com"/>
+	</div>
+
+	<div class="form-row form-row-json">
+		<label for="node-config-input-privateKey"><i class="fa fa-key"></i> Private Key</label>
+		<input type="password" id="node-config-input-privateKey" style="width:70%;" placeholder="-----BEGIN PRIVATE KEY-----<YOUR_KEY>-----END PRIVATE KEY-----"/>
 	</div>
 
 	<!-- Custom login with new token generated from Firebase-->
@@ -178,6 +324,8 @@
 		<label for="node-config-input-password"><i class="fa fa-lock"></i> Password</label>
 		<input type="password" id="node-config-input-password" style="width:70%" placeholder="password" />
 	</div>
+
+	<div class="form-row-json" id="json-drop-target">Click or drag the file here.</div>
 
 	<div class="firebase-text-divider">Tips</div>
 
@@ -213,7 +361,7 @@
 			<p>
 				To generate a JSON file, go to the Firebase, in the <strong>Project Settings</strong> section, click on
 				<strong>Service Accounts</strong> and then on <strong>Generate new private key</strong>. This will download a
-				JSON file that you can copy and paste into the configuration node.
+				JSON file which you can either drop in the area or open and paste into the configuration node.
 			</p>
 		</div>
 	</div>
@@ -239,8 +387,6 @@
 	</p>
 	<p>
 		Read more about the different ways to authenticate
-		<a href="https://github.com/GogoVega/node-red-contrib-firebase-realtime-database/blob/master/docs/Authentication.md"
-			>here</a
-		>.
+		<a href="https://github.com/GogoVega/node-red-contrib-firebase-realtime-database/blob/master/docs/Authentication.md">here</a>.
 	</p>
 </script>
