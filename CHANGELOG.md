@@ -1,25 +1,31 @@
 # Change log
 
-## 0.3.0-beta.1
+## 0.3.0-beta.2
 
 ### Changes
 
-- Bump `firebase` and `firebase-admin` to latest
+- Bump `firebase` from 9.14.0 to 9.17.1
+- Bump `firebase-admin` from 11.4.1 to 11.5.0
+- Uses two new entries for authentication with Private Key
 
 ### Fixes
 
-- `validate` function for typedInput (path and regex)
+- `validate` function for typedInput (input do not turn red and regex rules)
+- Firebase default app already exists error
 
 ### New Features
 
+- New node status (+ error code)
 - Unused connection management
 - Support for `setPriority` and `setWithPriority` queries
-- `EditableList` to set query constraint in `firebase-get` node
+- `EditableList` to set Query Constraint in `firebase-get` node
+- Support Query Constraint for Listener (`EditableList`)
+- Drag and drop file to set `Private Key` and `Client Email` entries
+- Support Asia (Southeast) Database URL
 
 ### Refactors
 
 - Transition the codebase to TypeScript
-- Checks active listeners before unsubscription
 - Node status and error handling
 
 ## 0.2.0

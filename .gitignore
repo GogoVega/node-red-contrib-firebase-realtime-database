@@ -6,5 +6,9 @@
 # Dependency directories
 node_modules
 
+# Build folder
+build
+!build/**/*.html
+
 # dotenv environment variables file
 .env

@@ -1,13 +1,13 @@
 {
   "name": "@gogovega/node-red-contrib-firebase-realtime-database",
-  "version": "0.3.0-beta.1",
+  "version": "0.3.0-beta.2",
   "description": "Node-RED nodes to communicate with Google Firebase Realtime Databases",
   "main": "build/nodes/database.js",
   "scripts": {
     "build": "tsc",
     "clean": "rm -rf build/lib build/**/*.js",
     "lint": "eslint . --ext .ts",
-    "prettier": "prettier --write \"**/*.{html,md,ts}\"",
+    "prettier": "prettier --write \"**/*.{md,ts}\"",
     "test": "mocha './test/**/*_spec.js' --exit"
   },
   "repository": {
@@ -25,6 +25,13 @@
     "name": "Gauthier Dandele",
     "url": "https://github.com/GogoVega"
   },
+  "contributors": [
+    {
+      "name": "Marcus Davies",
+      "email": "marcus.davies83@icloud.com",
+      "url": "https://github.com/marcus-j-davies"
+    }
+  ],
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/GogoVega/node-red-contrib-firebase-realtime-database/issues"
