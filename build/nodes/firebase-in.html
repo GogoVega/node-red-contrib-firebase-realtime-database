@@ -262,37 +262,3 @@
 		<input type="text" id="node-input-name" placeholder="Name" />
 	</div>
 </script>
-
-<script type="text/html" data-help-name="firebase-in">
-	<p>Connects to a Firebase Realtime Database and subscribes to data at the specified path.</p>
-	<h3>Outputs</h3>
-	<dl class="message-properties">
-		<dt>payload<span class="property-type">string | boolean | number | object</span></dt>
-		<dd>contains the event data from the database.</dd>
-		<dt class="optional">previousChildName<span class="property-type">string</span></dt>
-		<dd>contains the key of the previous child, by sort order, or <code>null</code> if it is the first child.</dd>
-		<dt class="optional">priority<span class="property-type">number</span></dt>
-		<dd>the priority of the data.</dd>
-		<dt>topic<span class="property-type">string</span></dt>
-		<dd>contains the path where the data comes from.</dd>
-	</dl>
-	<h3>Details</h3>
-	<p>This node reads data from a path and will send a message whenever the data, including children, changes.</p>
-	<p>The <strong>Listener</strong> allows you to choose what type of change you want to listen to:</p>
-	<ul>
-		<li><code>Value</code></li>
-		<li><code>Child Added</code></li>
-		<li><code>Child Changed</code></li>
-		<li><code>Child Moved</code></li>
-		<li><code>Child Removed</code></li>
-	</ul>
-	<p>You can define constraint(s) for the query to sort and order your data.</p>
-	<p>
-		The <strong>Path</strong> determines where the data will be written. It can be empty, in this case the data sent
-		comes from the root of the database.
-	</p>
-	<p>
-		<strong>Output</strong> can be set to <strong>auto-detect</strong> to send an object containing the data, or
-		<strong>a String</strong> to send the data as a string.
-	</p>
-</script>

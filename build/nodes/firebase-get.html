@@ -276,74 +276,10 @@
 	</div>
 
 	<div class="form-tips" id="firebase-get-tips">
-		<p>
-			<strong>Tip</strong>: You can use constraint(s) for the query by setting the <code>msg.method</code> property.
-		</p>
+		<p><strong>Tips</strong>:</p>
+		<ul>
+			<li>You can use constraint(s) for the query by setting the <code>msg.method</code> property.</li>
+			<li>If <code>msg.method</code> is set, Query Constraints defined in the node will be replaced by those contained in the message.</li>
+		</ul>
 	</div>
-</script>
-
-<script type="text/html" data-help-name="firebase-get">
-	<p>
-		Connects to a Firebase Realtime Database and fetches data from the specified path. You can define constraint(s) for
-		the query.
-	</p>
-	<h3>Inputs</h3>
-	<dl class="message-properties">
-		<dt>payload<span class="property-type">string | boolean | number | object</span></dt>
-		<dd>the data that will be sent to the database.</dd>
-		<dt class="optional">method<span class="property-type">object</span></dt>
-		<dd>an object containing the constraint(s) to apply to the query.</dd>
-		<dt class="optional">topic<span class="property-type">string</span></dt>
-		<dd>the path of the data to add/modify. By default 'topic'.</dd>
-	</dl>
-	<h3>Outputs</h3>
-	<dl class="message-properties">
-		<dt>payload<span class="property-type">string | boolean | number | object</span></dt>
-		<dd>contains your query data from the database.</dd>
-		<dt class="optional">previousChildName<span class="property-type">string</span></dt>
-		<dd>contains the key of the previous child, by sort order, or <code>null</code> if it is the first child.</dd>
-		<dt class="optional">priority<span class="property-type">number</span></dt>
-		<dd>the priority of the data.</dd>
-		<dt>topic<span class="property-type">string</span></dt>
-		<dd>contains the path where the data comes from.</dd>
-	</dl>
-	<h3>Details</h3>
-	<p>This node reads data from a path and sends it in a message, including child data.</p>
-	<p>
-		The <strong>Path</strong> determines where the data will be written. It can be defined in the node or dynamically
-		with the <code>msg.topic</code> property. It can be empty, in this case the data sent comes from the root of the
-		database.
-	</p>
-	<p>
-		<strong>Output</strong> can be set to <strong>auto-detect</strong> to send an object containing the data, or
-		<strong>a String</strong> to send the data as a string.
-	</p>
-	<p>
-		You can define constraints for the query to sort and order your data. You can define one or more of the following
-		constraints in the <code>msg.method</code> property or directly in the node:
-	</p>
-	<ul>
-		<li><code>endAt</code></li>
-		<li><code>endBefore</code></li>
-		<li><code>equalTo</code></li>
-		<li><code>limitToFirst</code></li>
-		<li><code>limitToLast</code></li>
-		<li><code>orderByChild</code></li>
-		<li><code>orderByKey</code></li>
-		<li><code>orderByPriority</code></li>
-		<li><code>orderByValue</code></li>
-		<li><code>startAfter</code></li>
-		<li><code>startAt</code></li>
-	</ul>
-	<p>The <code>msg.method</code> will look like this:</p>
-	<!-- prettier-ignore -->
-	<pre>
-{
- "orderByChild": "name",
- "limitToFirst": 5,
- "startAt": {
-  "value": "Alex",
-  "key": "name"
- }
-}</pre>
 </script>

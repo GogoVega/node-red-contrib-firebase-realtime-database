@@ -1,0 +1,38 @@
+{
+  "database-config": {
+    "label": {
+      "name": "Nom",
+      "type": "Type",
+      "apiKey": "Clé API",
+      "url": "URL",
+      "json": "Contenu JSON",
+      "clientEmail": "Email Client",
+      "privateKey": "Clé Privée",
+      "email": "Email",
+      "password": "MDP"
+    },
+    "divider": {
+      "authMethod": "Méthode d'authentification",
+      "credentials": "Identifiants",
+      "tips": "Astuces"
+    },
+    "value": {
+      "anonymous": "Anonyme",
+      "email": "Email",
+      "privateKey": "Clé Privée JSON"
+    },
+    "placeholder": {
+      "apiKey": "Clé API de la base de données",
+      "url": "URL de la base de données",
+      "json": "Coller le contenu du fichier JSON",
+      "clientEmail": "nom-compte-service@id-projet.iam.gserviceaccount.com",
+      "privateKey": "-----BEGIN PRIVATE KEY-----<VOTRE_CLE>-----END PRIVATE KEY-----",
+      "email": "votre@email.com",
+      "password": "mot de passe"
+    },
+    "createNewUser": "Créer un nouvel utilisateur si celui-ci n'existe pas ?",
+    "clickDragHere": "Cliquer ou faites glisser le fichier ici.",
+    "dropFileHere": "Lacher le fichier ici",
+    "tips": {}
+  }
+}

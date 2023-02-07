@@ -7,8 +7,7 @@
 node_modules
 
 # Build folder
-build
-!build/**/*.html
+build/**/*.js
 
 # dotenv environment variables file
 .env

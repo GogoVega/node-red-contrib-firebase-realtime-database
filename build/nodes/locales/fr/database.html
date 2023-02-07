@@ -1,0 +1,41 @@
+<!--
+  Copyright 2022-2023 Gauthier Dandele
+
+  Licensed under the MIT License,
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+  https://opensource.org/licenses/MIT.
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+
+<script type="text/html" data-help-name="database-config">
+	<p>Ce noeud est utilisé pour s'authentifier auprès de la base de données Firebase.</p>
+	<p>Les méthodes d'authentification sont les suivantes :</p>
+	<ul>
+		<li>Anonyme</li>
+		<li>Email avec Mot de passe</li>
+		<li>Clé Privée (SDK)</li>
+	</ul>
+	<p><strong>Clé API</strong> : peut être trouvé dans les paramètres du projet.</p>
+	<p><strong>URL</strong> : peut être trouvé dans la console de la base de données en temps réel.</p>
+	<p>
+		<strong>Email avec Mot de passe</strong> : vous pouvez créer un utilisateur soit manuellement dans la section
+		<strong>Authentification</strong> de la console soit cocher la case et le noeud créera l'utilisateur pour vous.
+	</p>
+	<p>
+		<strong>Clé Privée JSON</strong>: peut être généré dans les paramètres du projet, dans
+		l'Onglet <strong>Comptes de service</strong> puis sur <strong>Générer une nouvelle clé privée</strong>.
+		Vous pouvez remplir manuellement les champs <strong>Email Client</strong> et <strong>Clé Privée</strong> ou les
+		laisser se compléter automatiquement en glissant le fichier JSON dans la zone grisée.
+	</p>
+	<p>
+		En savoir plus sur les différentes façons de s'authentifier
+		<a href="https://github.com/GogoVega/node-red-contrib-firebase-realtime-database/blob/master/docs/Authentication.md">ici</a>.
+	</p>
+</script>
