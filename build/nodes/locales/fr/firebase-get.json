@@ -1,0 +1,38 @@
+{
+  "firebase-get": {
+    "label": {
+      "database": "Database",
+      "sortData": "Trier ?",
+      "path": "Chemin",
+      "output": "Sortie",
+      "name": "Nom"
+    },
+    "constraint": {
+      "orderByChild": "Trier par enfant",
+      "orderByKey": "Trier par clé",
+      "orderByPriority": "Trier par priorité",
+      "orderByValue": "Trier par valeur",
+      "limitToFirst": "Limiter aux premiers",
+      "limitToLast": "Limiter aux derniers",
+      "endAt": "Terminer à",
+      "endBefore": "Terminer avant",
+      "equalTo": "Égal à",
+      "startAfter": "Commencer après",
+      "startAt": "Commencer à"
+    },
+    "outputType": {
+      "auto": "détection automatique",
+      "string": "une chaîne de caractères"
+    },
+    "placeholder": {
+      "name": "Nom"
+    },
+    "tips": {
+      "tips": "<strong>Astuces</strong> :",
+      "tip0": "Vous pouvez utiliser des contraintes pour la requête en définissant la propriété <code>msg.method</code>.",
+      "tip1": "Si <code>msg.method</code> est défini, les contraintes de la requête définies dans le noeuud seront remplacées par celles contenues dans le message."
+    },
+    "useConstraint": "Souhaitez-vous trier et ordonner vos données ?",
+    "addConstraint": "Ajouter une contrainte de requête"
+  }
+}

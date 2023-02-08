@@ -78,77 +78,45 @@
 
 <script type="text/html" data-template-name="firebase-out">
 	<div class="form-row">
-		<label for="node-input-database"><i class="fa fa-database"></i> Database</label>
+		<label for="node-input-database"><i class="fa fa-database"></i> <span data-i18n="firebase-out.label.database"></span></label>
 		<input type="text" id="node-input-database" style="width:70%" />
 	</div>
 
 	<div class="form-row">
-		<label for="node-input-queryType"><i class="fa fa-bars"></i> Method</label>
+		<label for="node-input-queryType"><i class="fa fa-bars"></i> <span data-i18n="firebase-out.label.query"></span></label>
 		<select id="node-input-queryType" style="width:70%;">
-			<option value="none">- use msg.method -</option>
-			<option value="set">SET</option>
-			<option value="push">PUSH</option>
-			<option value="update">UPDATE</option>
-			<option value="remove">REMOVE</option>
-			<option value="setPriority">SET PRIORITY</option>
-			<option value="setWithPriority">SET WITH PRIORITY</option>
+			<option value="none" data-i18n="firebase-out.queryType.none"></option>
+			<option value="set" data-i18n="firebase-out.queryType.set"></option>
+			<option value="push" data-i18n="firebase-out.queryType.push"></option>
+			<option value="update" data-i18n="firebase-out.queryType.update"></option>
+			<option value="remove" data-i18n="firebase-out.queryType.remove"></option>
+			<option value="setPriority" data-i18n="firebase-out.queryType.setPriority"></option>
+			<option value="setWithPriority" data-i18n="firebase-out.queryType.setWithPriority"></option>
 		</select>
 	</div>
 
 	<div class="form-row form-row-priority">
-		<label for="node-input-priority"><i class="fa fa-list-ol"></i> Priority</label>
+		<label for="node-input-priority"><i class="fa fa-list-ol"></i> <span data-i18n="firebase-out.label.priority"></span></label>
 		<input type="text" id="node-input-priority" style="width:70%" />
 		<input type="hidden" id="node-input-priorityType" />
 	</div>
 
 	<div class="form-row">
-		<label for="node-input-path"><i class="fa fa-sitemap"></i> Path</label>
+		<label for="node-input-path"><i class="fa fa-sitemap"></i> <span data-i18n="firebase-out.label.path"></span></label>
 		<input type="text" id="node-input-path" style="width:70%" />
 		<input type="hidden" id="node-input-pathType" />
 	</div>
 
 	<div class="form-row">
-		<label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
-		<input type="text" id="node-input-name" placeholder="Name" />
+		<label for="node-input-name"><i class="fa fa-tag"></i> <span data-i18n="firebase-out.label.name"></span></label>
+		<input type="text" id="node-input-name" data-i18n="[placeholder]firebase-out.placeholder.name" />
 	</div>
 
 	<div class="form-tips" id="firebase-out-tips">
-		<p><strong>Tips</strong>:</p>
+		<p><span data-i18n="[html]firebase-out.tips.tips"></span></p>
 		<ul>
-			<li>Leave Method blank to dynamically set the query from the <code>msg.method</code> property.</li>
-			<li>If <code>msg.priority</code> is set, node Priority will be overridden by message Priority.</li>
+			<li><span data-i18n="[html]firebase-out.tips.tip0"></span></li>
+			<li><span data-i18n="[html]firebase-out.tips.tip1"></span></li>
 		</ul>
 	</div>
-</script>
-
-<script type="text/html" data-help-name="firebase-out">
-	<p>Connects to a Firebase Realtime Database and add/modify data to database.</p>
-	<h3>Inputs</h3>
-	<dl class="message-properties">
-		<dt>payload<span class="property-type">string | boolean | number | object</span></dt>
-		<dd>the message that will be sent to the database.</dd>
-		<dt class="optional">method<span class="property-type">string</span></dt>
-		<dd>the query to apply to the message (set, push, update, remove, setPriority or setWithPriority).</dd>
-		<dt class="optional">priority<span class="property-type">number</span></dt>
-		<dd>the priority to apply to the message. By default 1.</dd>
-		<dt class="optional">topic<span class="property-type">string</span></dt>
-		<dd>the message containing the path of the data to add/modify. By default 'topic'.</dd>
-	</dl>
-	<h3>Details</h3>
-	<p>This node allows you to add/modify data to the database.</p>
-	<ul>
-		<li><strong>Set</strong>: overwrite data on every write.</li>
-		<li><strong>Push</strong>: add the data to the Firebase reference as a new child reference with a unique key.</li>
-		<li><strong>Update</strong>: update values for each matching key in the database.</li>
-		<li><strong>Remove</strong>: the data at the Firebase reference and all child data is removed.</li>
-		<li>
-			<strong>Set Priority</strong>: the priority is used to sort the children under a specific parent or in a query if
-			no other sort condition is specified.
-		</li>
-		<li><strong>Set With Priority</strong>: the priority and overwrite data.</li>
-	</ul>
-	<p>
-		The <strong>Path</strong> determines where the data will be written. It can be defined in the node or dynamically
-		with the <code>msg.topic</code> property
-	</p>
 </script>

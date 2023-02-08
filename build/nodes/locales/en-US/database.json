@@ -33,6 +33,13 @@
     "createNewUser": "Create a new user if this one does not exist?",
     "clickDragHere": "Click or drag the file here.",
     "dropFileHere": "Drop File Here",
-    "tips": {}
+    "tips": {
+      "apiKey": "<strong>API Key</strong> can be found in the project settings.",
+      "email": "If you have already created a Firebase user with an email address and password, just fill in your credentials.\nOn the other hand, if you have not yet created one, you can do so in two ways:",
+      "emailMethod1": "Go to Firebase in the <strong>Authenticate</strong> section and click on \"Add User\" then enter your credentials in the configuration node.",
+      "emailMethod2": "Enter directly into the configuration node, an email address and a password, the node will create a user for you. This user will appear after login in the <strong>Authenticate</strong> section.",
+      "url": "<strong>URL</strong> can be found in the Realtime Database console, this differs by geographic location, the link structure is as follows: <strong>https://&#x3C;project-id&#x3E;-default-rtdb.&#x3C;continent&#x3E;.firebaseddatabase.app/</strong> or ends with <strong>.firebaseio.com</strong> for the United States.",
+      "json": "To generate a JSON file, go to the Firebase, in the <strong>Project Settings</strong> section, click on <strong>Service Accounts</strong> and then on <strong>Generate new private key</strong>. This will download a JSON file which you can either drop in the area or open and paste into the configuration node."
+    }
   }
 }

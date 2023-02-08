@@ -1,0 +1,28 @@
+{
+  "firebase-out": {
+    "label": {
+      "database": "Database",
+      "query": "Method",
+      "priority": "Priority",
+      "path": "Path",
+      "name": "Name"
+    },
+    "queryType": {
+      "none": "- use msg.method -",
+      "set": "SET",
+      "push": "PUSH",
+      "update": "UPDATE",
+      "remove": "REMOVE",
+      "setPriority": "SET PRIORITY",
+      "setWithPriority": "SET WITH PRIORITY"
+    },
+    "placeholder": {
+      "name": "Name"
+    },
+    "tips": {
+      "tips": "<strong>Tips</strong>:",
+      "tip0": "Leave Method blank to dynamically set the query from the <code>msg.method</code> property.",
+      "tip1": "If <code>msg.priority</code> is set, node Priority will be overridden by message Priority."
+    }
+  }
+}

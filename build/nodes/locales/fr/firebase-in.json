@@ -1,0 +1,41 @@
+{
+  "firebase-in": {
+    "label": {
+      "database": "Database",
+      "listener": "Écouteur",
+      "sortData": "Trier ?",
+      "path": "Chemin",
+      "output": "Sortie",
+      "name": "Nom"
+    },
+    "listenerType": {
+      "value": "Valeur",
+      "child_added": "Enfant ajouté",
+      "child_changed": "Enfant modifié",
+      "child_moved": "Enfant déplacé",
+      "child_removed": "Enfant supprimé"
+    },
+    "constraint": {
+      "orderByChild": "Trier par enfant",
+      "orderByKey": "Trier par clé",
+      "orderByPriority": "Trier par priorité",
+      "orderByValue": "Trier par valeur",
+      "limitToFirst": "Limiter aux premiers",
+      "limitToLast": "Limiter aux derniers",
+      "endAt": "Terminer à",
+      "endBefore": "Terminer avant",
+      "equalTo": "Égal à",
+      "startAfter": "Commencer après",
+      "startAt": "Commencer à"
+    },
+    "outputType": {
+      "auto": "détection automatique",
+      "string": "une chaîne de caractères"
+    },
+    "placeholder": {
+      "name": "Nom"
+    },
+    "useConstraint": "Souhaitez-vous trier et ordonner vos données ?",
+    "addConstraint": "Ajouter une contrainte de requête"
+  }
+}
