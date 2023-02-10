@@ -2,7 +2,7 @@
 
 Node RED nodes to communicate with [Firebase Realtime Databases](https://firebase.google.com/).
 
-![demo nodes](./docs/images/demo-nodes.png)
+![demo nodes](./docs/images/demo-nodes.mov)
 
 ## What is it?
 
@@ -20,6 +20,9 @@ There are 3 nodes included with this contrib:
 | Firebase in  | Subscribes to data at the specified path,<br /> which yields a `payload` whenever a value changes.    |
 | Firebase get | Fetches data from the specified path.<br />Query constraints can be used to sort and order your data. |
 | Firebase out | `SET`, `PUSH`, `UPDATE`, `REMOVE`, `SET PRIORITY` or `SET WITH PRIORITY` data at the target Database. |
+
+The configuration of fields for authentication with `Private Key` can be filled in automatically if you drop the JSON file
+in the gray area (see video above).
 
 ## How to use?
 
@@ -52,6 +55,7 @@ Read more about the different ways to authenticate [here](./docs/Authentication.
 
 - [Authentication Methods](./docs/Authentication.md): Which method used to connect?
 - [Firebase Site](https://firebase.google.com/): What is Firebase?
+- [Change Log](./CHANGELOG.md): whats changed?
 
 ## License
 

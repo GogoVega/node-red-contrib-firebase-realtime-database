@@ -1,6 +1,6 @@
 # Change log
 
-## 0.3.0-beta.2
+## 0.3.0
 
 ### Changes
 
@@ -22,6 +22,7 @@
 - Support Query Constraint for Listener (`EditableList`)
 - Drag and drop file to set `Private Key` and `Client Email` entries
 - Support Asia (Southeast) Database URL
+- Internationalisation
 
 ### Refactors
 
