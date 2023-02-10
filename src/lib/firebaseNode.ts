@@ -306,7 +306,7 @@ class Firebase {
 
 			const topic = snapshot.ref.key?.toString() || "";
 			const payload = this.node.config.outputType === "string" ? JSON.stringify(snapshot.val()) : snapshot.val();
-			const previousChildName = child !== undefined ? { previousChildName: child || "" } : {};
+			const previousChildName = child !== undefined ? { previousChildName: child } : {};
 			const priority = snapshot instanceof DataSnapshot ? snapshot.priority : snapshot.getPriority();
 
 			this.node.send({ payload: payload, ...previousChildName, priority: priority, topic: topic } as OutputMessageType);
