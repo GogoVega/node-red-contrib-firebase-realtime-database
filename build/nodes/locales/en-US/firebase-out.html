@@ -1,0 +1,47 @@
+<!--
+  Copyright 2022-2023 Gauthier Dandele
+
+  Licensed under the MIT License,
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+  https://opensource.org/licenses/MIT.
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+
+<script type="text/html" data-help-name="firebase-out">
+	<p>Connects to a Firebase Realtime Database and add/modify data to database.</p>
+	<h3>Inputs</h3>
+	<dl class="message-properties">
+		<dt>payload<span class="property-type">string | boolean | number | object</span></dt>
+		<dd>the message that will be sent to the database.</dd>
+		<dt class="optional">method<span class="property-type">string</span></dt>
+		<dd>the query to apply to the message (set, push, update, remove, setPriority or setWithPriority).</dd>
+		<dt class="optional">priority<span class="property-type">number</span></dt>
+		<dd>the priority to apply to the message. By default 1.</dd>
+		<dt class="optional">topic<span class="property-type">string</span></dt>
+		<dd>the message containing the path of the data to add/modify. By default 'topic'.</dd>
+	</dl>
+	<h3>Details</h3>
+	<p>This node allows you to add/modify data to the database.</p>
+	<ul>
+		<li><strong>Set</strong>: overwrite data on every write.</li>
+		<li><strong>Push</strong>: add the data to the Firebase reference as a new child reference with a unique key.</li>
+		<li><strong>Update</strong>: update values for each matching key in the database.</li>
+		<li><strong>Remove</strong>: the data at the Firebase reference and all child data is removed.</li>
+		<li>
+			<strong>Set Priority</strong>: the priority is used to sort the children under a specific parent or in a query if
+			no other sort condition is specified.
+		</li>
+		<li><strong>Set With Priority</strong>: the priority and overwrite data.</li>
+	</ul>
+	<p>
+		The <strong>Path</strong> determines where the data will be written. It can be defined in the node or dynamically
+		with the <code>msg.topic</code> property
+	</p>
+</script>
