@@ -2,7 +2,7 @@
 
 Node RED nodes to communicate with [Firebase Realtime Databases](https://firebase.google.com/).
 
-![demo nodes](./docs/images/demo-nodes.mov)
+![demo nodes](./docs/images/demo-nodes.gif)
 
 ## What is it?
 
@@ -21,8 +21,7 @@ There are 3 nodes included with this contrib:
 | Firebase get | Fetches data from the specified path.<br />Query constraints can be used to sort and order your data. |
 | Firebase out | `SET`, `PUSH`, `UPDATE`, `REMOVE`, `SET PRIORITY` or `SET WITH PRIORITY` data at the target Database. |
 
-The configuration of fields for authentication with `Private Key` can be filled in automatically if you drop the JSON file
-in the gray area (see video above).
+On the video above, we can see the "Query Constraint" feature, which is used to sort and order your data as required, and also shown is the "Drag and drop JSON file" feature, which automatically populates the fields with the content of the JSON file you provide.
 
 ## How to use?
 
