@@ -123,11 +123,11 @@ export default class FirebaseDatabase {
 
 		if (Object.keys(content).length === 0) {
 			const projetId = this.node.credentials.url
-				.split("https://")
+				?.split("https://")
 				.pop()
 				?.split(/-default-rtdb\.((asia-southeast1|europe-west1)\.firebasedatabase\.app|firebaseio\.com)(\/)?$/)[0];
 			const privateKey = JSON.stringify(this.node.credentials.privateKey)
-				.replace(/\\\\n/gm, "\n")
+				?.replace(/\\\\n/gm, "\n")
 				.replaceAll('"', "")
 				.replaceAll("\\", "");
 
