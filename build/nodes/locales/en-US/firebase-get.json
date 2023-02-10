@@ -1,0 +1,38 @@
+{
+  "firebase-get": {
+    "label": {
+      "database": "Database",
+      "sortData": "Sort Data?",
+      "path": "Path",
+      "output": "Output",
+      "name": "Name"
+    },
+    "constraint": {
+      "orderByChild": "Order by Child",
+      "orderByKey": "Order by Key",
+      "orderByPriority": "Order by Priority",
+      "orderByValue": "Order by Value",
+      "limitToFirst": "Limit to First",
+      "limitToLast": "Limit to Last",
+      "endAt": "End At",
+      "endBefore": "End Before",
+      "equalTo": "Equal To",
+      "startAfter": "Start After",
+      "startAt": "Start At"
+    },
+    "outputType": {
+      "auto": "auto-detect",
+      "string": "a String"
+    },
+    "placeholder": {
+      "name": "Name"
+    },
+    "tips": {
+      "tips": "<strong>Tips</strong>:",
+      "tip0": "You can use constraint(s) for the query by setting the <code>msg.method</code> property.",
+      "tip1": "If <code>msg.method</code> is set, Query Constraints defined in the node will be replaced by those contained in the message."
+    },
+    "useConstraint": "Use Query Constraint to sort and order your data.",
+    "addConstraint": "Add Query Constraint Set"
+  }
+}

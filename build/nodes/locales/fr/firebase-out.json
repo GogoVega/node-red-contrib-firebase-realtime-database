@@ -1,0 +1,28 @@
+{
+  "firebase-out": {
+    "label": {
+      "database": "Database",
+      "query": "Méthode",
+      "priority": "Priorité",
+      "path": "Chemin",
+      "name": "Nom"
+    },
+    "queryType": {
+      "none": "- utiliser msg.method -",
+      "set": "Définir",
+      "push": "Pousser",
+      "update": "Mettre à jour",
+      "remove": "Supprimer",
+      "setPriority": "Définir la priorité",
+      "setWithPriority": "Définir avec priorité"
+    },
+    "placeholder": {
+      "name": "Nom"
+    },
+    "tips": {
+      "tips": "<strong>Astuces</strong> :",
+      "tip0": "Laisser Méthode vide pour définir dynamiquement la requête à partir de la propriété <code>msg.method</code>.",
+      "tip1": "Si <code>msg.priority</code> est défini, la priorité du noeud sera remplacée par la priorité du message."
+    }
+  }
+}

@@ -1,0 +1,122 @@
+<!--
+  Copyright 2022-2023 Gauthier Dandele
+
+  Licensed under the MIT License,
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+  https://opensource.org/licenses/MIT.
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+
+<script type="text/javascript">
+	RED.nodes.registerType("firebase-out", {
+		align: "right",
+		category: "Firebase",
+		color: "#e2a12b",
+		defaults: {
+			name: { value: "" },
+			database: { value: "", type: "database-config" },
+			path: { value: "topic" },
+			pathType: { value: "msg", validate: RED.validators.regex(/^(msg|str)$/) },
+			priority: { value: 1 },
+			queryType: {
+				value: "none",
+				validate: RED.validators.regex(/^(none|set|push|update|remove|setPriority|setWithPriority)$/),
+			},
+		},
+		inputs: 1,
+		outputs: 0,
+		icon: "firebase.png",
+		paletteLabel: "Firebase out",
+		label: function () {
+			const query = this.queryType !== "none" ? this.queryType.toUpperCase() : "";
+			const path = this.pathType === "msg" ? "" : this.path;
+			const name = query.concat(query ? " " : "", path);
+			return this.name || name || "Firebase out";
+		},
+		labelStyle: function () {
+			return this.name ? "node_label_italic" : "";
+		},
+		oneditprepare: function () {
+			function isPathValid(x) {
+				if (!x || typeof x !== "string") return false;
+				if (x.match(/^\s|[.#$\[\]]/g)) return false;
+				return true;
+			}
+
+			$("#node-input-path").typedInput({
+				typeField: $("#node-input-pathType"),
+				types: ["msg", { value: "str", label: "string", icon: "red/images/typedInput/az.svg", validate: isPathValid }],
+			});
+
+			$("#node-input-priority").typedInput({
+				typeField: $("#node-input-priorityType"),
+				types: ["num"],
+			});
+
+			const queryType = $("#node-input-queryType");
+			queryType.on("change", () => {
+				switch (queryType.val()) {
+					case "setPriority":
+					case "setWithPriority":
+						$(".form-row-priority").show();
+						break;
+					default:
+						$(".form-row-priority").hide();
+						break;
+				}
+			});
+		},
+	});
+</script>
+
+<script type="text/html" data-template-name="firebase-out">
+	<div class="form-row">
+		<label for="node-input-database"><i class="fa fa-database"></i> <span data-i18n="firebase-out.label.database"></span></label>
+		<input type="text" id="node-input-database" style="width:70%" />
+	</div>
+
+	<div class="form-row">
+		<label for="node-input-queryType"><i class="fa fa-bars"></i> <span data-i18n="firebase-out.label.query"></span></label>
+		<select id="node-input-queryType" style="width:70%;">
+			<option value="none" data-i18n="firebase-out.queryType.none"></option>
+			<option value="set" data-i18n="firebase-out.queryType.set"></option>
+			<option value="push" data-i18n="firebase-out.queryType.push"></option>
+			<option value="update" data-i18n="firebase-out.queryType.update"></option>
+			<option value="remove" data-i18n="firebase-out.queryType.remove"></option>
+			<option value="setPriority" data-i18n="firebase-out.queryType.setPriority"></option>
+			<option value="setWithPriority" data-i18n="firebase-out.queryType.setWithPriority"></option>
+		</select>
+	</div>
+
+	<div class="form-row form-row-priority">
+		<label for="node-input-priority"><i class="fa fa-list-ol"></i> <span data-i18n="firebase-out.label.priority"></span></label>
+		<input type="text" id="node-input-priority" style="width:70%" />
+		<input type="hidden" id="node-input-priorityType" />
+	</div>
+
+	<div class="form-row">
+		<label for="node-input-path"><i class="fa fa-sitemap"></i> <span data-i18n="firebase-out.label.path"></span></label>
+		<input type="text" id="node-input-path" style="width:70%" />
+		<input type="hidden" id="node-input-pathType" />
+	</div>
+
+	<div class="form-row">
+		<label for="node-input-name"><i class="fa fa-tag"></i> <span data-i18n="firebase-out.label.name"></span></label>
+		<input type="text" id="node-input-name" data-i18n="[placeholder]firebase-out.placeholder.name" />
+	</div>
+
+	<div class="form-tips" id="firebase-out-tips">
+		<p><span data-i18n="[html]firebase-out.tips.tips"></span></p>
+		<ul>
+			<li><span data-i18n="[html]firebase-out.tips.tip0"></span></li>
+			<li><span data-i18n="[html]firebase-out.tips.tip1"></span></li>
+		</ul>
+	</div>
+</script>

@@ -3,11 +3,11 @@
 .DS_Store
 
 ### Node ###
-# Build folder
-build
-
 # Dependency directories
 node_modules
+
+# Build folder
+build/**/*.js
 
 # dotenv environment variables file
 .env

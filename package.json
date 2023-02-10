@@ -1,11 +1,13 @@
 {
   "name": "@gogovega/node-red-contrib-firebase-realtime-database",
-  "version": "0.2.0",
-  "description": "Node-RED nodes to communicate with Google Firebase Realtime Database",
-  "main": "src/database.js",
+  "version": "0.3.0",
+  "description": "Node-RED nodes to communicate with Google Firebase Realtime Databases",
+  "main": "build/nodes/database.js",
   "scripts": {
-    "lint": "eslint . --ext .js",
-    "prettier": "prettier --write \"**/*.{js,html,md}\"",
+    "build": "tsc",
+    "clean": "rm -rf build/lib build/**/*.js",
+    "lint": "eslint . --ext .ts",
+    "prettier": "prettier --write \"**/*.{md,ts}\"",
     "test": "mocha './test/**/*_spec.js' --exit"
   },
   "repository": {
@@ -13,14 +15,23 @@
     "url": "https://github.com/GogoVega/node-red-contrib-firebase-realtime-database.git"
   },
   "keywords": [
+    "admin",
+    "database",
     "firebase",
     "node-red",
-    "realtime-database"
+    "realtime"
   ],
   "author": {
     "name": "Gauthier Dandele",
     "url": "https://github.com/GogoVega"
   },
+  "contributors": [
+    {
+      "name": "Marcus Davies",
+      "email": "marcus.davies83@icloud.com",
+      "url": "https://github.com/marcus-j-davies"
+    }
+  ],
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/GogoVega/node-red-contrib-firebase-realtime-database/issues"
@@ -28,23 +39,27 @@
   "homepage": "https://github.com/GogoVega/node-red-contrib-firebase-realtime-database#readme",
   "node-red": {
     "nodes": {
-      "database-config": "src/database.js",
-      "firebase-in": "src/firebase-in.js",
-      "firebase-get": "src/firebase-get.js",
-      "firebase-out": "src/firebase-out.js"
+      "database-config": "build/nodes/database.js",
+      "firebase-in": "build/nodes/firebase-in.js",
+      "firebase-get": "build/nodes/firebase-get.js",
+      "firebase-out": "build/nodes/firebase-out.js"
     },
     "version": ">=1.3.7"
   },
   "dependencies": {
-    "firebase": "^9.14.0",
-    "firebase-admin": "^11.4.1"
+    "firebase": "^9.17.1",
+    "firebase-admin": "^11.5.0"
   },
   "devDependencies": {
-    "eslint": "^8.30.0",
+    "@types/node-red": "^1.2.1",
+    "@typescript-eslint/eslint-plugin": "^5.51.0",
+		"@typescript-eslint/parser": "^5.51.0",
+    "eslint": "^8.33.0",
     "mocha": "^10.2.0",
     "node-red": "^2.2.3",
     "node-red-node-test-helper": "^0.3.0",
-    "prettier": "^2.8.1"
+    "prettier": "^2.8.4",
+    "typescript": "^4.9.5"
   },
   "engines": {
     "node": ">=14.20.0"

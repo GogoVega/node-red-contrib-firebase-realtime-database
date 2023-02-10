@@ -1,0 +1,41 @@
+<!--
+  Copyright 2022-2023 Gauthier Dandele
+
+  Licensed under the MIT License,
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+  https://opensource.org/licenses/MIT.
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+
+<script type="text/html" data-help-name="database-config">
+	<p>This node is used to authenticate with Firebase.</p>
+	<p>The authentication methods are as follows:</p>
+	<ul>
+		<li>Anonymous</li>
+		<li>Email and Pasword</li>
+		<li>Private Key (SDK)</li>
+	</ul>
+	<p><strong>API Key</strong>: can be found in the project settings.</p>
+	<p><strong>URL</strong>: can be found in the Realtime Database console.</p>
+	<p>
+		<strong>Email and Password</strong>: you must create a user either in the <strong>Authentication</strong> section
+		in the console or the node does it for you.
+	</p>
+	<p>
+		<strong>JSON Private Key</strong>: can be generated in the project settings, in the
+		<strong>Service Accounts</strong> tab and then on <strong>Generate new private key</strong>.
+		You can manually fill in the <strong>Email Client</strong> and <strong>Private Key</strong> fields or
+		let it complete automatically by dragging the JSON file into the gray area.
+	</p>
+	<p>
+		Read more about the different ways to authenticate
+		<a href="https://github.com/GogoVega/node-red-contrib-firebase-realtime-database/blob/master/docs/Authentication.md">here</a>.
+	</p>
+</script>

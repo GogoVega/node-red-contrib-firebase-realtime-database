@@ -1,0 +1,41 @@
+{
+  "firebase-in": {
+    "label": {
+      "database": "Database",
+      "listener": "Listener",
+      "sortData": "Sort Data?",
+      "path": "Path",
+      "output": "Output",
+      "name": "Name"
+    },
+    "listenerType": {
+      "value": "Value",
+      "child_added": "Child Added",
+      "child_changed": "Child Changed",
+      "child_moved": "Child Moved",
+      "child_removed": "Child Removed"
+    },
+    "constraint": {
+      "orderByChild": "Order by Child",
+      "orderByKey": "Order by Key",
+      "orderByPriority": "Order by Priority",
+      "orderByValue": "Order by Value",
+      "limitToFirst": "Limit to First",
+      "limitToLast": "Limit to Last",
+      "endAt": "End At",
+      "endBefore": "End Before",
+      "equalTo": "Equal To",
+      "startAfter": "Start After",
+      "startAt": "Start At"
+    },
+    "outputType": {
+      "auto": "auto-detect",
+      "string": "a String"
+    },
+    "placeholder": {
+      "name": "Name"
+    },
+    "useConstraint": "Use Query Constraint to sort and order your data.",
+    "addConstraint": "Add Query Constraint Set"
+  }
+}

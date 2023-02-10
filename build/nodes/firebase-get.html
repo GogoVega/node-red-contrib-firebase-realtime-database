@@ -1,0 +1,288 @@
+<!--
+  Copyright 2022-2023 Gauthier Dandele
+
+  Licensed under the MIT License,
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+  https://opensource.org/licenses/MIT.
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+
+<script type="text/javascript">
+	(function () {
+		let queryConstraintType = [
+			{ value: "orderByChild", label: "Order by Child" },
+			{ value: "orderByKey", label: "Order by Key" },
+			{ value: "orderByPriority", label: "Order by Priority" },
+			{ value: "orderByValue", label: "Order by Value" },
+			{ value: "limitToFirst", label: "Limit to First" },
+			{ value: "limitToLast", label: "Limit to Last" },
+			{ value: "endAt", label: "End At" },
+			{ value: "endBefore", label: "End Before" },
+			{ value: "equalTo", label: "Equal To" },
+			{ value: "startAfter", label: "Start After" },
+			{ value: "startAt", label: "Start At" },
+		];
+
+		RED.nodes.registerType("firebase-get", {
+			align: "left",
+			category: "Firebase",
+			color: "#e2a12b",
+			defaults: {
+				name: { value: "" },
+				constraint: { value: {} },
+				database: { value: "", type: "database-config" },
+				outputType: { value: "auto", validate: RED.validators.regex(/^(auto|string)$/) },
+				path: { value: "topic" },
+				pathType: { value: "msg", validate: RED.validators.regex(/^(msg|str)$/) },
+				useConstraint: { value: false },
+			},
+			inputs: 1,
+			outputs: 1,
+			icon: "firebase.png",
+			paletteLabel: "Firebase get",
+			label: function () {
+				const path = this.pathType === "msg" ? "" : this.path || "root";
+				return this.name || path || "Firebase get";
+			},
+			labelStyle: function () {
+				return this.name ? "node_label_italic" : "";
+			},
+			oneditprepare: function () {
+				const container = $("#node-input-constraint-container");
+				const useConstraint = $("#node-input-useConstraint");
+
+				$("#node-input-path").typedInput({
+					typeField: $("#node-input-pathType"),
+					types: ["msg", { value: "str", label: "string", icon: "red/images/typedInput/az.svg", validate: isPathValid }],
+				});
+
+				useConstraint.on("change", () => {
+					useConstraint.prop("checked") === true ? $(".form-row-constraint").show() : $(".form-row-constraint").hide();
+					if (useConstraint.prop("checked") === false) container.editableList("empty");
+				});
+
+				queryConstraintType = queryConstraintType.map((field) => {
+					field.label = this._(`firebase-get.constraint.${field.value}`);
+					return field;
+				});
+
+				container.css("min-height", "150px").css("min-width", "300px").editableList({
+					sortable: true,
+					removable: true,
+					addButton: this._("firebase-get.addConstraint"),
+					addItem: addItem,
+				});
+
+				Object.entries(this.constraint).forEach((item) => container.editableList("addItem", item));
+			},
+			oneditsave: saveItems,
+		});
+
+		function addItem(container, index, data) {
+			const id = Math.floor((0x99999 - 0x10000) * Math.random()).toString();
+
+			const HTMLBody = `
+				<div style="flex-grow:1">
+					<div style="display: flex;">
+						<input type="text" id="node-input-constraintType-case-${id}" style="width:165px; text-align: center;"">
+						<div style="flex-grow:1; margin-left: 5px;">
+							<input type="text" id="node-input-value-raw-case-${id}" style="width: 100%;" placeholder="Value"/>
+						</div>
+					</div>
+					<div style="display: flex; padding-top: 5px; align-items: center;">
+						<div style="flex-grow:1; margin-left: 170px;">
+							<input type="text" id="node-input-child-raw-case-${id}" style="width: 100%;" placeholder="Child" />
+						</div>
+					</div>
+				</div>`;
+
+			container.css({
+				overflow: "hidden",
+				whiteSpace: "nowrap",
+				display: "flex",
+				"align-items": "center",
+			});
+
+			$(container).html(HTMLBody);
+			$(container)
+				.find(`#node-input-constraintType-case-${id}`)
+				.typedInput({
+					types: [
+						{
+							options: queryConstraintType,
+						},
+					],
+				})
+				.typedInput("value", "limitToFirst")
+				.on("change", (event, type, value) => {
+					const valueRaw = $(container).find(`#node-input-value-raw-case-${id}`);
+					const childRaw = $(container).find(`#node-input-child-raw-case-${id}`);
+					updateTypeOfTypedInput(valueRaw, childRaw, value);
+				});
+
+			$(container)
+				.find(`#node-input-value-raw-case-${id}`)
+				.typedInput({
+					types: ["num"],
+					default: "num",
+				});
+
+			$(container)
+				.find(`#node-input-child-raw-case-${id}`)
+				.typedInput({
+					types: ["str"],
+					default: "str",
+				})
+				.typedInput("hide");
+
+			if (Array.isArray(data)) {
+				const [key, value] = data;
+				const type = $(container).find(`#node-input-constraintType-case-${id}`);
+				const valueRaw = $(container).find(`#node-input-value-raw-case-${id}`);
+				const childRaw = $(container).find(`#node-input-child-raw-case-${id}`);
+
+				type.typedInput("value", key);
+				updateTypeOfTypedInput(valueRaw, childRaw, key);
+
+				if (typeof value === "object") {
+					valueRaw.typedInput("value", value.value);
+					childRaw.typedInput("value", value.key);
+				} else {
+					valueRaw.typedInput("value", value);
+					childRaw.typedInput("value", "");
+				}
+
+				data = {};
+				$(container).data("data", data);
+			}
+
+			data.id = id;
+			data.index = index;
+		}
+
+		function compare(a, b) {
+			return a.index - b.index;
+		}
+
+		function isPathValid(path) {
+			if (typeof path !== "string") return false;
+			if (path.match(/^\s|[.#$\[\]]/g)) return false;
+			return true;
+		}
+
+		function saveItems() {
+			const container = $("#node-input-constraint-container").editableList("items").sort(compare);
+			const node = this;
+
+			node.constraint = {};
+
+			container.each(function () {
+				const id = $(this).data("data")?.id;
+				const constraintType = $(this).find(`#node-input-constraintType-case-${id}`).val();
+				const value = $(this).find(`#node-input-value-raw-case-${id}`).val();
+				const child = $(this).find(`#node-input-child-raw-case-${id}`).val();
+
+				switch (constraintType) {
+					case "endAt":
+					case "endBefore":
+					case "equalTo":
+					case "startAfter":
+					case "startAt":
+						node.constraint[constraintType] = { value: value, child: child };
+						break;
+					case "limitToFirst":
+					case "limitToLast":
+						node.constraint[constraintType] = parseInt(value);
+						break;
+					case "orderByKey":
+					case "orderByPriority":
+					case "orderByValue":
+						node.constraint[constraintType] = null;
+						break;
+					default:
+						node.constraint[constraintType] = value;
+						break;
+				}
+			});
+		}
+
+		function updateTypeOfTypedInput(value, child, key) {
+			value.typedInput("show");
+			child.typedInput("hide");
+
+			switch (key) {
+				case "endAt":
+				case "endBefore":
+				case "equalTo":
+				case "startAfter":
+				case "startAt":
+					value.typedInput("types", ["bool", "num", "str"]);
+					child.typedInput("show");
+					break;
+				case "limitToFirst":
+				case "limitToLast":
+					value.typedInput("types", ["num"]);
+					break;
+				case "orderByChild":
+					value.typedInput("types", ["str"]);
+					break;
+				case "orderByKey":
+				case "orderByPriority":
+				case "orderByValue":
+					value.typedInput("hide");
+					break;
+			}
+		}
+	})();
+</script>
+
+<script type="text/html" data-template-name="firebase-get">
+	<div class="form-row">
+		<label for="node-input-database"><i class="fa fa-database"></i> <span data-i18n="firebase-get.label.database"></span></label>
+		<input type="text" id="node-input-database" style="width:70%" />
+	</div>
+
+	<div class="form-row">
+		<label for="node-input-useConstraint"><i class="fa fa-sort"></i> <span data-i18n="firebase-get.label.sortData"></span></label>
+		<input type="checkbox" id="node-input-useConstraint" style="display:inline-block; width:15px; vertical-align:baseline;" />
+		<span data-i18n="firebase-get.useConstraint">
+	</div>
+
+	<div class="form-row form-row-constraint node-input-constraint-container-row">
+		<ol id="node-input-constraint-container"></ol>
+	</div>
+
+	<div class="form-row">
+		<label for="node-input-path"><i class="fa fa-sitemap"></i> <span data-i18n="firebase-get.label.path"></span></label>
+		<input type="text" id="node-input-path" style="width:70%" />
+		<input type="hidden" id="node-input-pathType" />
+	</div>
+
+	<div class="form-row">
+		<label for="node-input-outputType"><i class="fa fa-sign-out"></i> <span data-i18n="firebase-get.label.output"></span></label>
+		<select id="node-input-outputType" style="width:70%;">
+			<option value="auto" data-i18n="firebase-get.outputType.auto"></option>
+			<option value="string" data-i18n="firebase-get.outputType.string"></option>
+		</select>
+	</div>
+
+	<div class="form-row">
+		<label for="node-input-name"><i class="fa fa-tag"></i> <span data-i18n="firebase-get.label.name"></span></label>
+		<input type="text" id="node-input-name" data-i18n="[placeholder]firebase-get.placeholder.name" />
+	</div>
+
+	<div class="form-tips" id="firebase-get-tips">
+		<p><span data-i18n="[html]firebase-get.tips.tips"></span></p>
+		<ul>
+			<li><span data-i18n="[html]firebase-get.tips.tip0"></span></li>
+			<li><span data-i18n="[html]firebase-get.tips.tip1"></span></li>
+		</ul>
+	</div>
+</script>
