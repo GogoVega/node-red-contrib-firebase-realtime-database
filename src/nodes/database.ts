@@ -31,7 +31,7 @@ module.exports = function (RED: NodeAPI) {
 
 		const database = new FirebaseDatabase(self);
 
-		database.logIn().catch((error: Error) => database.onError(error));
+		database.logIn();
 
 		self.on("close", (done: (error?: Error) => void) =>
 			database

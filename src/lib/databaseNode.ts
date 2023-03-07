@@ -235,34 +235,45 @@ export default class FirebaseDatabase {
 	}
 
 	/**
-	 * Connects to Firebase with the authentication method defined in the `config-node`
-	 * @return A promise for Firebase connection completion
+	 * Connects to Firebase with the authentication method defined in the `config-node`.
+	 * An event `Firebase:signedIn` will be triggered for Firebase connection completion.
 	 */
-	public async logIn() {
-		// Initialize App
-		this.admin ? this.initAppWithSDK() : this.initApp();
+	public logIn() {
+		(async () => {
+			try {
+				// Initialize App
+				this.admin ? this.initAppWithSDK() : this.initApp();
 
-		// Initialize Logging
-		this.initLogging();
+				// Initialize Logging
+				this.initLogging();
 
-		// Initialize Connection Status
-		this.initConnectionStatus();
+				// Initialize Connection Status
+				this.initConnectionStatus();
 
-		// Log In
-		switch (this.node.config.authType) {
-			case "anonymous":
-				await this.logInAnonymously();
-				break;
-			case "email":
-				await this.logInWithEmail();
-				break;
-			case "privateKey":
-				// Logged In with Initialize App
-				break;
-		}
+				// Log In
+				switch (this.node.config.authType) {
+					case "anonymous":
+						await this.logInAnonymously();
+						break;
+					case "email":
+						await this.logInWithEmail();
+						break;
+					case "privateKey":
+						// Logged In with Initialize App
+						break;
+				}
 
-		// Check if the config node is in use. Otherwise the connection with Firebase will be closed.
-		this.destroyUnusedConnection(true);
+				this.node.signedIn = true;
+
+				// Check if the config node is in use. Otherwise the connection with Firebase will be closed.
+				this.destroyUnusedConnection(true);
+			} catch (error) {
+				this.node.signedIn = false;
+				this.onError(error as Error);
+			} finally {
+				this.node.RED.events.emit("Firebase:signedIn", this.node.signedIn);
+			}
+		})();
 	}
 
 	/**
@@ -391,13 +402,7 @@ export default class FirebaseDatabase {
 		// Skip if Node-RED re-starts
 		if (this.node.connectionStatus !== ConnectionStatus.LOG_OUT) return;
 
-		(async () => {
-			try {
-				await this.logIn();
-			} catch (error) {
-				this.node.error(error);
-			}
-		})();
+		this.logIn();
 	}
 
 	/**

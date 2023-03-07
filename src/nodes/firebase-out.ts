@@ -27,6 +27,7 @@ module.exports = function (RED: NodeAPI) {
 
 		self.config = config;
 		self.database = RED.nodes.getNode(config.database) as DatabaseNodeType | null;
+		self.RED = RED;
 
 		const firebase = new FirebaseOut(self);
 

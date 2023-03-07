@@ -15,7 +15,7 @@
  */
 
 import admin from "firebase-admin";
-import { Node, NodeMessage, NodeMessageInFlow } from "node-red";
+import { Node, NodeAPI, NodeMessage, NodeMessageInFlow } from "node-red";
 import { DatabaseNodeType } from "./DatabaseNodeType";
 import { FirebaseGetConfigType, FirebaseInConfigType, FirebaseOutConfigType } from "./FirebaseConfigType";
 
@@ -67,6 +67,7 @@ interface FirebaseNode extends Node {
 	 * @param done If defined, a function to be called when all the work is complete and return the error message.
 	 */
 	onError: (error: unknown, done?: () => void) => void;
+	RED: NodeAPI;
 }
 
 export interface FirebaseGetNodeType extends FirebaseNode {
