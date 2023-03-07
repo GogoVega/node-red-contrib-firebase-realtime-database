@@ -49,7 +49,7 @@ module.exports = function (RED: NodeAPI) {
 			json: { type: "password" },
 			password: { type: "password" },
 			privateKey: { type: "password" },
-			secret: { type: "password" },
+			uid: { type: "text" },
 			url: { type: "text" },
 		},
 	});

@@ -21,6 +21,7 @@ import {
 	fetchSignInMethodsForEmail,
 	getAuth,
 	signInAnonymously,
+	signInWithCustomToken,
 	signInWithEmailAndPassword,
 	signOut,
 } from "firebase/auth";
@@ -89,6 +90,25 @@ export default class FirebaseDatabase {
 		if (!cred["private_key"] && !cred["privateKey"]) throw new Error("JSON Content must contain 'privateKey'");
 
 		return content as JSONContentType;
+	}
+
+	/**
+	 * Creates a custom token with UID
+	 * @returns The Token created.
+	 */
+	// TODO: Add additional Claims
+	private async createCustomToken() {
+		const content = this.getJSONCredential();
+		const app = admin.initializeApp({
+			credential: admin.credential.cert(content),
+			databaseURL: this.node.credentials.url,
+		});
+
+		const token = await admin.auth(app).createCustomToken(this.node.credentials.uid);
+
+		app.delete();
+
+		return token;
 	}
 
 	/**
@@ -261,6 +281,9 @@ export default class FirebaseDatabase {
 					case "privateKey":
 						// Logged In with Initialize App
 						break;
+					case "customToken":
+						await this.logInWithCustomToken();
+						break;
 				}
 
 				this.node.signedIn = true;
@@ -284,6 +307,18 @@ export default class FirebaseDatabase {
 		if (!this.node.auth) return;
 
 		return signInAnonymously(this.node.auth as Auth);
+	}
+
+	/**
+	 * Logs in using a custom token containing a UID and optional additional Claims.
+	 * @returns A promise of signing completion
+	 */
+	private async logInWithCustomToken() {
+		if (!this.node.auth) return;
+
+		const token = await this.createCustomToken();
+
+		return signInWithCustomToken(this.node.auth as Auth, token);
 	}
 
 	/**

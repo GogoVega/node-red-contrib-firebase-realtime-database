@@ -42,8 +42,8 @@ type DatabaseCredentials = {
 	json: string;
 	password: string;
 	privateKey: string;
+	uid: string;
 	url: string;
-	secret: string;
 };
 
 type DatabaseNodeType = Node & {

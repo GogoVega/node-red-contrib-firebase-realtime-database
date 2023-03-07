@@ -16,7 +16,7 @@
 
 import { NodeDef } from "node-red";
 
-type AuthType = "anonymous" | "email" | "privateKey";
+type AuthType = "anonymous" | "email" | "privateKey" | "customToken";
 
 type DatabaseConfigType = NodeDef & {
 	authType?: AuthType;
