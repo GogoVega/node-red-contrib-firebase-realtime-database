@@ -86,141 +86,241 @@
 </style>
 
 <script type="text/javascript">
-	RED.nodes.registerType("database-config", {
-		category: "config",
-		credentials: {
-			apiKey: { type: "text", validate: RED.validators.regex(/^AIza[a-zA-Z0-9]{35}$/) },
-			clientEmail: { type: "password" },
-			email: {
-				type: "text",
-				validate: RED.validators.regex(/^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/i),
+	(function () {
+		RED.nodes.registerType("database-config", {
+			category: "config",
+			credentials: {
+				apiKey: { type: "text", validate: RED.validators.regex(/^AIza[a-zA-Z0-9]{35}$/) },
+				clientEmail: { type: "password" },
+				email: {
+					type: "text",
+					validate: RED.validators.regex(/^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/i),
+				},
+				json: { type: "password" },
+				password: { type: "password", validate: RED.validators.regex(/\S/) },
+				privateKey: { type: "password" },
+				uid: { type: "text", validate: RED.validators.regex(/\S{1,128}/) },
+				url: {
+					type: "text",
+					validate: RED.validators.regex(
+						/https:\/\/[a-zA-Z0-9-]{4,30}-default-rtdb\.((asia-southeast1|europe-west1)\.firebasedatabase\.app|firebaseio\.com)\//
+					),
+				},
 			},
-			json: { type: "password" },
-			password: { type: "password", validate: RED.validators.regex(/\S/) },
-			privateKey: { type: "password" },
-			uid: { type: "text" },
-			url: {
-				type: "text",
-				validate: RED.validators.regex(
-					/https:\/\/[a-zA-Z0-9-]{4,30}-default-rtdb\.((asia-southeast1|europe-west1)\.firebasedatabase\.app|firebaseio\.com)\//
-				),
+			defaults: {
+				name: { value: "My Database" },
+				authType: { value: "anonymous" },
+				claims: { value: {} },
+				createUser: { value: false },
+				useClaims: { value: false },
 			},
-		},
-		defaults: {
-			name: { value: "My Database" },
-			authType: { value: "anonymous" },
-			createUser: { value: false },
-		},
-		label: function () {
-			return this.name || "My Database";
-		},
-		oneditprepare: function () {
-			const authType = $("#node-config-input-authType");
+			label: function () {
+				return this.name || "My Database";
+			},
+			oneditprepare: function () {
+				const authType = $("#node-config-input-authType");
+				const claimsContainer = $("#node-config-input-claims-container");
+				const useClaims = $("#node-config-input-useClaims");
 
-			authType.on("change", () => hideShow(authType.val()));
-			$("#node-config-input-json").typedInput({ type: "json", types: ["json"] });
-			$("#node-config-input-clientEmail").typedInput({ types: [{ value: "str", validate: RED.validators.regex(/^__PWRD__|\S+\.iam\.gserviceaccount\.com$/) }] });
-			$("#node-config-input-privateKey").typedInput({ types: [{ value: "str", validate: RED.validators.regex(/^__PWRD__|-----BEGIN PRIVATE KEY-----\S+-----END PRIVATE KEY-----/) }] });
+				authType.on("change", () => hideShow(authType.val()));
+				$("#node-config-input-json").typedInput({ default: "json", types: ["json"] });
+				$("#node-config-input-clientEmail").typedInput({ types: [{ value: "str", validate: RED.validators.regex(/^__PWRD__|\S+\.iam\.gserviceaccount\.com$/) }] });
+				$("#node-config-input-privateKey").typedInput({ types: [{ value: "str", validate: RED.validators.regex(/^__PWRD__|-----BEGIN PRIVATE KEY-----\S+-----END PRIVATE KEY-----$/) }] });
 
-			$(".red-ui-tray").on("dragenter", dragEnter);
-			$("#json-drop-target").on("click", filePrompt);
-			$("#file-drop-target").on("dragover", dragOverHandler).on("dragleave", dragLeave).on("drop", dropHandler).hide();
-		},
-	});
+				$(".red-ui-tray").on("dragenter", dragEnter);
+				$("#json-drop-target").on("click", filePrompt);
+				$("#file-drop-target").on("dragover", dragOverHandler).on("dragleave", dragLeave).on("drop", dropHandler).hide();
 
-	function dragEnter() {
-		event.preventDefault();
-		event.stopPropagation();
-		$("#file-drop-target").css({ display: "table" }).focus();
-	}
+				claimsContainer.css("min-height", "150px").css("min-width", "300px").editableList({
+					addButton: this._("database-config.addClaim"),
+					addItem: addItem,
+					removable: true,
+					sortable: true,
+				});
 
-	function dragLeave() {
-		event.preventDefault();
-		event.stopPropagation();
-		$("#file-drop-target").hide();
-	}
+				useClaims.on("change", useClaimsHandler.bind(this));
+			},
+			oneditsave: function () {
+				const claimsContainer = $("#node-config-input-claims-container").editableList("items").sort(compare);
+				const node = this;
 
-	// Prevent default behavior (Prevent file from being opened)
-	function dragOverHandler() {
-		event.preventDefault();
-		event.stopPropagation();
-	}
+				node.claims = {};
 
-	// Read drag data
-	function dropHandler() {
-		event.preventDefault();
-		event.stopPropagation();
+				claimsContainer.each(function () {
+					const id = $(this).data("data")?.id;
+					const key = $(this).find(`#node-config-input-claimsKey-case-${id}`).val();
+					const value = $(this).find(`#node-config-input-claimsValue-case-${id}`).val();
+					const type = $(this).find(`#node-config-input-claimsValueType-case-${id}`).val();
 
-		$("#file-drop-target").hide();
+					node.claims[key] = { value: value, type: type };
+				});
+			},
+		});
 
-		if (event.dataTransfer.items) {
-			[...event.dataTransfer.items].forEach((item, i) => {
-				if (item.kind === "file") {
-					const file = item.getAsFile();
-					readData(file);
-				} else if (item.kind === "string") {
-					if (item.type !== "text/plain") return;
-					item.getAsString((s) => parseAndUpdateInputs(s));
-				} else {
-					alert("The dropped item must be an file .txt or .json");
-				}
+		function addItem(container, index, data) {
+			const id = Math.floor((0x99999 - 0x10000) * Math.random()).toString();
+
+			const HTMLBody = `
+				<div style="flex-grow:1">
+					<div style="display:flex;">
+						<input type="text" id="node-config-input-claimsKey-case-${id}" style="width:165px; text-align:center;" placeholder="Key" />
+						<div style="flex-grow:1; margin-left:5px;">
+							<input type="text" id="node-config-input-claimsValue-case-${id}" style="width:100%;" placeholder="Value" />
+							<input type="hidden" id="node-config-input-claimsValueType-case-${id}" style="width:100%;" />
+						</div>
+					</div>
+				</div>`;
+
+			container.css({
+				overflow: "hidden",
+				whiteSpace: "nowrap",
+				display: "flex",
+				"align-items": "center",
 			});
+
+			$(container).html(HTMLBody);
+			const keyField = $(container).find(`#node-config-input-claimsKey-case-${id}`);
+			const valueField = $(container).find(`#node-config-input-claimsValue-case-${id}`);
+
+			keyField.typedInput({ default: "str", types: ["str"] });
+			valueField.typedInput({ default: "str", typeField: `#node-config-input-claimsValueType-case-${id}`, types: ["flow", "global", "str", "num", "bool", "json", "bin", "date", "env"] });
+
+			if (Array.isArray(data)) {
+				const [key, object] = data;
+
+				keyField.typedInput("value", key);
+				valueField.typedInput("value", object.value);
+				valueField.typedInput("type", object.type);
+
+				data = {};
+				$(container).data("data", data);
+			}
+
+			data.id = id;
+			data.index = index;
 		}
-	}
 
-	// Prompt file
-	function filePrompt() {
-		const onChange = (e) => readData(e.target.files[0]);
-		const input = document.createElement("input");
-		input.type = "file";
-		input.onchange = onChange;
-		input.click();
-	}
+		function compare(a, b) {
+			return a.index - b.index;
+		}
 
-	function hideShow(type) {
-		$(".login-row").hide();
-		$(`.login-row-${type}`).show();
+		function dragEnter() {
+			event.preventDefault();
+			event.stopPropagation();
+			$("#file-drop-target").css({ display: "table" }).focus();
+		}
 
-		// DEPRECATED
-		// Disables JSON input if node config uses it (old config < 0.3.0)
-		if (type === "privateKey" || type === "customToken") {
-			if ($("#node-config-input-json").val()) {
-				$("#node-config-input-json").typedInput("disable");
-			} else {
-				$(".form-row-json-deprecated").hide();
+		function dragLeave() {
+			event.preventDefault();
+			event.stopPropagation();
+			$("#file-drop-target").hide();
+		}
+
+		// Prevent default behavior (Prevent file from being opened)
+		function dragOverHandler() {
+			event.preventDefault();
+			event.stopPropagation();
+		}
+
+		// Read drag data
+		function dropHandler() {
+			event.preventDefault();
+			event.stopPropagation();
+
+			$("#file-drop-target").hide();
+
+			if (event.dataTransfer.items) {
+				[...event.dataTransfer.items].forEach((item, i) => {
+					if (item.kind === "file") {
+						const file = item.getAsFile();
+						readData(file);
+					} else if (item.kind === "string") {
+						if (item.type !== "text/plain") return;
+						item.getAsString((s) => parseAndUpdateInputs(s));
+					} else {
+						alert("The dropped item must be an file .txt or .json");
+					}
+				});
 			}
 		}
-	}
 
-	function parseAndUpdateInputs(content) {
-		try {
-			const data = JSON.parse(content);
-			// Need to stringify it because the input does not support line break
-			const privateKey = JSON.stringify(data["privateKey"] || data["private_key"]);
-
-			$("#node-config-input-clientEmail").typedInput("value", data["clientEmail"] || data["client_email"]);
-			$("#node-config-input-privateKey").typedInput("value", privateKey);
-			$("#node-config-input-clientEmail").typedInput("validate");
-			$("#node-config-input-privateKey").typedInput("validate");
-			$("#json-drop-target").html("The file has been loaded.");
-		} catch (error) {
-			$("#json-drop-target").html("An error has occurred :(");
-			alert(error.message || error.toString());
+		// Prompt file
+		function filePrompt() {
+			const onChange = (e) => readData(e.target.files[0]);
+			const input = document.createElement("input");
+			input.type = "file";
+			input.onchange = onChange;
+			input.click();
 		}
-	}
 
-	// Read Data
-	function readData(file) {
-		const name = file.name.toLowerCase();
-		const reader = new FileReader();
+		function hideShow(type) {
+			$(".login-row").hide();
+			$(`.login-row-${type}`).show();
 
-		if (!name.match(/\.(txt|json)$/)) return alert("The file extension must be .txt or .json");
+			$("#node-config-input-useClaims").prop("checked") === true && type === "customToken" ? $(".form-row-claims").show() : $(".form-row-claims").hide();
 
-		reader.readAsText(file);
-		reader.onload = function () {
-			parseAndUpdateInputs(reader.result);
-		};
-	}
+			// DEPRECATED
+			// Disables JSON input if node config uses it (old config < 0.3.0)
+			if (type === "privateKey" || type === "customToken") {
+				if ($("#node-config-input-json").val()) {
+					$("#node-config-input-json").typedInput("disable");
+				} else {
+					$(".form-row-json-deprecated").hide();
+				}
+			}
+		}
+
+		function parseAndUpdateInputs(content) {
+			try {
+				const data = JSON.parse(content);
+				// Need to stringify it because the input does not support line break
+				const privateKey = JSON.stringify(data["privateKey"] || data["private_key"]);
+
+				$("#node-config-input-clientEmail").typedInput("value", data["clientEmail"] || data["client_email"]);
+				$("#node-config-input-privateKey").typedInput("value", privateKey);
+				$("#node-config-input-clientEmail").typedInput("validate");
+				$("#node-config-input-privateKey").typedInput("validate");
+				$("#json-drop-target").html("The file has been loaded.");
+			} catch (error) {
+				$("#json-drop-target").html("An error has occurred :(");
+				alert(error.message || error.toString());
+			}
+		}
+
+		// Read Data
+		function readData(file) {
+			const name = file.name.toLowerCase();
+			const reader = new FileReader();
+
+			if (!name.match(/\.(txt|json)$/)) return alert("The file extension must be .txt or .json");
+
+			reader.readAsText(file);
+			reader.onload = function () {
+				parseAndUpdateInputs(reader.result);
+			};
+		}
+
+		function useClaimsHandler() {
+			const authType = $("#node-config-input-authType");
+			const claimsContainer = $("#node-config-input-claims-container");
+			const claimsContainerRow = $(".form-row-claims");
+			const useClaims = $("#node-config-input-useClaims");
+
+			if (authType.val() !== "customToken") return;
+
+			if (useClaims.prop("checked") === true) {
+				let claims = Object.entries(this.claims || {});
+
+				if (claims.length === 0) claims = [["admin", { value: false, type: "bool" }], ["debug", { value: false, type: "bool" }]];
+
+				claims.forEach((item) => claimsContainer.editableList("addItem", item));
+				claimsContainerRow.show();
+			} else {
+				claimsContainerRow.hide();
+				claimsContainer.editableList("empty");
+			}
+		}
+	})();
 </script>
 
 <script type="text/html" data-template-name="database-config">
@@ -281,7 +381,7 @@
 
 	<!-- Custom Token generated with Private Key-->
 	<div class="form-row login-row login-row-customToken">
-		<label for="node-config-input-uid"><i class="fa fa-user-secret"></i> UID</label>
+		<label for="node-config-input-uid"><i class="fa fa-user"></i> <span data-i18n="database-config.label.uid"></span></label>
 		<input type="text" id="node-config-input-uid" style="width:70%;" placeholder="Unique ID" />
 	</div>
 
@@ -294,6 +394,16 @@
 	<div class="form-row login-row login-row-email">
 		<label for="node-config-input-password"><i class="fa fa-lock"></i> <span data-i18n="database-config.label.password"></span></label>
 		<input type="password" id="node-config-input-password" style="width:70%;" data-i18n="[placeholder]database-config.placeholder.password" />
+	</div>
+
+	<div class="form-row login-row login-row-customToken">
+		<label for="node-config-input-useClaims"><i class="fa fa-id-card"></i> <span data-i18n="database-config.label.claims"></span></label>
+		<input type="checkbox" id="node-config-input-useClaims" style="display:inline-block; width:15px; vertical-align:baseline;" />
+		<span data-i18n="database-config.useClaims">
+	</div>
+
+	<div class="form-row form-row-claims">
+		<ol id="node-config-input-claims-container"></ol>
 	</div>
 
 	<div class="login-row login-row-customToken login-row-privateKey" id="json-drop-target" data-i18n="database-config.clickDragHere"></div>

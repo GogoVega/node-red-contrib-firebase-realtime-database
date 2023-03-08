@@ -20,7 +20,9 @@ type AuthType = "anonymous" | "email" | "privateKey" | "customToken";
 
 type DatabaseConfigType = NodeDef & {
 	authType?: AuthType;
+	claims?: object;
 	createUser?: boolean;
+	useClaims?: boolean;
 };
 
 export default DatabaseConfigType;
