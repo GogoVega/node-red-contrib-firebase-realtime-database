@@ -27,6 +27,7 @@ import {
 } from "firebase/auth";
 import { Database, getDatabase, onValue, ref, Unsubscribe } from "firebase/database";
 import admin from "firebase-admin";
+import { claimsNotAllowed } from "./const/database";
 import { firebaseError } from "./const/FirebaseError";
 import { ConnectionStatus, DatabaseNodeType, JSONContentType } from "./types/DatabaseNodeType";
 import { LogCallbackParams } from "@firebase/logger/dist/src/logger";
@@ -75,6 +76,24 @@ export default class FirebaseDatabase {
 	private subscriptionCallback?: Unsubscribe;
 
 	/**
+	 * Checks if the Claim keys are authorized.
+	 * @param claims The additional claims to be added to the token.
+	 * @returns The token generated.
+	 */
+	private checkClaims(claims: unknown = {}) {
+		if (typeof claims !== "object") throw new Error("Additional Claims must be an object!");
+
+		Object.keys(claims || {}).forEach((key) => {
+			if (claimsNotAllowed.includes(key)) throw new Error(`Claim key '${key}' is not allowed`);
+		});
+
+		return Object.entries(claims || {}).reduce<Record<string, unknown | never>>((acc, [key, value]) => {
+			acc[key] = value.value;
+			return acc;
+		}, {});
+	}
+
+	/**
 	 * Check if the received JSON content credentials contain the desired elements.
 	 * @param content The JSON content credentials
 	 * @returns The JSON content credentials checked
@@ -93,18 +112,18 @@ export default class FirebaseDatabase {
 	}
 
 	/**
-	 * Creates a custom token with UID
+	 * Creates a Custom Token with UID and additional Claims generated with the Private Key.
 	 * @returns The Token created.
 	 */
-	// TODO: Add additional Claims
 	private async createCustomToken() {
+		const claims = this.checkClaims(this.node.config.claims);
 		const content = this.getJSONCredential();
 		const app = admin.initializeApp({
 			credential: admin.credential.cert(content),
 			databaseURL: this.node.credentials.url,
 		});
 
-		const token = await admin.auth(app).createCustomToken(this.node.credentials.uid);
+		const token = await admin.auth(app).createCustomToken(this.node.credentials.uid, claims);
 
 		app.delete();
 

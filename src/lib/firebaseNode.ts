@@ -271,12 +271,13 @@ class Firebase {
 	protected isUserSignedIn(): Promise<boolean> {
 		return new Promise((resolve, reject) => {
 			try {
-				if (this.node.database?.signedIn === true) return resolve(true);
-				if (this.node.database?.signedIn === false) return resolve(false);
+				if (this.node.database?.signedIn !== undefined) {
+					resolve(this.node.database?.signedIn);
+					return;
+				}
 
-				this.signedInCallback = (isSignedIn: boolean) => {
-					if (!isSignedIn) return resolve(false);
-					resolve(true);
+				this.signedInCallback = (isSignedIn) => {
+					resolve(isSignedIn);
 				};
 
 				this.node.RED.events.on("Firebase:signedIn", this.signedInCallback);
