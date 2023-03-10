@@ -16,7 +16,7 @@
 
 import { NodeDef } from "node-red";
 
-type AuthType = "anonymous" | "email" | "privateKey" | "customToken";
+type AuthType = "anonymous" | "email" | "privateKey" | "customToken" | "serviceAccountId";
 
 type ClaimsType = Record<string, { value?: unknown; type?: unknown } | never>;
 

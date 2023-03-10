@@ -26,7 +26,7 @@ import {
 	signOut,
 } from "firebase/auth";
 import { Database, getDatabase, onValue, ref, Unsubscribe } from "firebase/database";
-import admin from "firebase-admin";
+import admin, { ServiceAccount } from "firebase-admin";
 import { claimsNotAllowed } from "./const/database";
 import { firebaseError } from "./const/FirebaseError";
 import { ConnectionStatus, DatabaseNodeType, JSONContentType } from "./types/DatabaseNodeType";
@@ -96,19 +96,25 @@ export default class FirebaseDatabase {
 	/**
 	 * Check if the received JSON content credentials contain the desired elements.
 	 * @param content The JSON content credentials
+	 * @param only If set, checks only this property of the JSON content
 	 * @returns The JSON content credentials checked
 	 */
-	private checkJSONCredential(content: unknown): JSONContentType {
+	private checkJSONCredential(content: unknown, only?: keyof ServiceAccount) {
 		if (!content || typeof content !== "object" || !Object.keys(content).length)
 			throw new Error("JSON Content must contain 'projectId', 'clientEmail' and 'privateKey'");
 
-		const cred = content as Record<string, string>;
+		const cred = content as JSONContentType;
+		const output = {
+			clientEmail: cred["client_email"] || cred["clientEmail"],
+			privateKey: cred["private_key"] || cred["privateKey"],
+			projectId: cred["project_id"] || cred["projectId"],
+		};
 
-		if (!cred["project_id"] && !cred["projectId"]) throw new Error("JSON Content must contain 'projectId'");
-		if (!cred["client_email"] && !cred["clientEmail"]) throw new Error("JSON Content must contain 'clientEmail'");
-		if (!cred["private_key"] && !cred["privateKey"]) throw new Error("JSON Content must contain 'privateKey'");
+		for (const [key, value] of Object.entries(output)) {
+			if ((!only || only === key) && !value) throw new Error(`JSON Content must contain '${key}'`);
+		}
 
-		return content as JSONContentType;
+		return output as ServiceAccount;
 	}
 
 	/**
@@ -117,12 +123,17 @@ export default class FirebaseDatabase {
 	 */
 	private async createCustomToken() {
 		const claims = this.checkClaims(this.node.config.claims);
-		const content = this.getJSONCredential();
-		const app = admin.initializeApp({
-			credential: admin.credential.cert(content),
-			databaseURL: this.node.credentials.url,
-		});
+		const only = this.node.config.authType === "serviceAccountId" ? "clientEmail" : undefined;
+		const content = this.getJSONCredential(only);
+		/* eslint-disable no-mixed-spaces-and-tabs */
+		const appOptions = only
+			? { serviceAccountId: content.clientEmail }
+			: {
+					credential: admin.credential.cert(content),
+					databaseURL: this.node.credentials.url,
+			  };
 
+		const app = admin.initializeApp(appOptions);
 		const token = await admin.auth(app).createCustomToken(this.node.credentials.uid, claims);
 
 		app.delete();
@@ -155,9 +166,10 @@ export default class FirebaseDatabase {
 
 	/**
 	 * Get credentials from JSON content of `config-node`.
+	 * @param only If set, checks only this property of the JSON content
 	 * @returns The JSON content credentials
 	 */
-	private getJSONCredential() {
+	private getJSONCredential(only?: keyof ServiceAccount) {
 		const content = JSON.parse(this.node.credentials.json || "{}");
 
 		if (Object.keys(content).length === 0) {
@@ -170,12 +182,12 @@ export default class FirebaseDatabase {
 				.replaceAll('"', "")
 				.replaceAll("\\", "");
 
-			content["project_id"] = projetId;
+			content["projectId"] = projetId;
 			content["clientEmail"] = this.node.credentials.clientEmail;
 			content["privateKey"] = privateKey;
 		}
 
-		return this.checkJSONCredential(content);
+		return this.checkJSONCredential(content, only);
 	}
 
 	/**
@@ -301,6 +313,7 @@ export default class FirebaseDatabase {
 						// Logged In with Initialize App
 						break;
 					case "customToken":
+					case "serviceAccountId":
 						await this.logInWithCustomToken();
 						break;
 				}
