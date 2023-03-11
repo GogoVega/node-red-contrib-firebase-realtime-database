@@ -77,12 +77,13 @@
 					<div style="display:flex;">
 						<input type="text" id="node-input-constraintType-case-${id}" style="width:165px; text-align:center;">
 						<div style="flex-grow:1; margin-left:5px;">
-							<input type="text" id="node-input-value-raw-case-${id}" style="width:100%;" placeholder="Value" />
+							<input type="text" id="node-input-value-case-${id}" style="width:100%;" placeholder="Value" />
+							<input type="hidden" id="node-input-valueType-case-${id}" />
 						</div>
 					</div>
 					<div style="display:flex; padding-top:5px; align-items:center;">
 						<div style="flex-grow:1; margin-left:170px;">
-							<input type="text" id="node-input-child-raw-case-${id}" style="width:100%;" placeholder="Child" />
+							<input type="text" id="node-input-child-case-${id}" style="width:100%;" placeholder="Child" />
 						</div>
 					</div>
 				</div>`;
@@ -96,10 +97,10 @@
 
 			$(container).html(HTMLBody);
 			const constraintType = $(container).find(`#node-input-constraintType-case-${id}`);
-			const valueField = $(container).find(`#node-input-value-raw-case-${id}`);
-			const childField = $(container).find(`#node-input-child-raw-case-${id}`);
+			const valueField = $(container).find(`#node-input-value-case-${id}`);
+			const childField = $(container).find(`#node-input-child-case-${id}`);
 
-			valueField.typedInput({ default: "num", types: ["num"] });
+			valueField.typedInput({ default: "num", typeField: `#node-input-valueType-case-${id}`, types: ["num"] });
 			childField
 				.typedInput({ default: "str", types: [{ value: "str", label: "string", icon: "red/images/typedInput/az.svg", validate: isChildValid }] })
 				.typedInput("hide");
@@ -116,6 +117,7 @@
 
 				if (value && typeof value === "object") {
 					valueField.typedInput("value", value.value ?? "");
+					valueField.typedInput("type", value.type ?? "str");
 					childField.typedInput("value", value.child ?? "");
 				} else {
 					if (key === "orderByChild") {
@@ -154,8 +156,9 @@
 			container.each(function () {
 				const id = $(this).data("data").id;
 				const constraintType = $(this).find(`#node-input-constraintType-case-${id}`).typedInput("value");
-				const value = $(this).find(`#node-input-value-raw-case-${id}`).val();
-				const child = $(this).find(`#node-input-child-raw-case-${id}`).val();
+				const value = $(this).find(`#node-input-value-case-${id}`).val();
+				const child = $(this).find(`#node-input-child-case-${id}`).val();
+				const type = $(this).find(`#node-input-valueType-case-${id}`).val();
 
 				switch (constraintType) {
 					case "endAt":
@@ -163,7 +166,7 @@
 					case "equalTo":
 					case "startAfter":
 					case "startAt":
-						node.constraint[constraintType] = { value: value, child: child };
+						node.constraint[constraintType] = { value: value, child: child, type: type };
 						break;
 					case "limitToFirst":
 					case "limitToLast":
@@ -176,9 +179,6 @@
 					case "orderByPriority":
 					case "orderByValue":
 						node.constraint[constraintType] = null;
-						break;
-					default:
-						node.constraint[constraintType] = value;
 						break;
 				}
 			});
