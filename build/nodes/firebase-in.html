@@ -16,19 +16,8 @@
 
 <script type="text/javascript">
 	(function () {
-		let queryConstraintType = [
-			{ value: "orderByChild", label: "Order by Child" },
-			{ value: "orderByKey", label: "Order by Key" },
-			{ value: "orderByPriority", label: "Order by Priority" },
-			{ value: "orderByValue", label: "Order by Value" },
-			{ value: "limitToFirst", label: "Limit to First" },
-			{ value: "limitToLast", label: "Limit to Last" },
-			{ value: "endAt", label: "End At" },
-			{ value: "endBefore", label: "End Before" },
-			{ value: "equalTo", label: "Equal To" },
-			{ value: "startAfter", label: "Start After" },
-			{ value: "startAt", label: "Start At" },
-		];
+		let queryConstraintFieldType = ["endAt", "endBefore", "equalTo", "limitToFirst", "limitToLast", "orderByChild", "orderByKey", "orderByPriority", "orderByValue", "startAfter", "startAt"];
+		let translationInitialized = false;
 
 		RED.nodes.registerType("firebase-in", {
 			align: "left",
@@ -57,27 +46,25 @@
 				return this.name ? "node_label_italic" : "";
 			},
 			oneditprepare: function () {
-				const container = $("#node-input-constraint-container");
+				const constraintContainer = $("#node-input-constraint-container");
 				const useConstraint = $("#node-input-useConstraint");
+				const node = this;
 
-				useConstraint.on("change", () => {
-					useConstraint.prop("checked") === true ? $(".form-row-constraint").show() : $(".form-row-constraint").hide();
-					if (useConstraint.prop("checked") === false) container.editableList("empty");
-				});
+				if (!translationInitialized) {
+					translationInitialized = true;
+					queryConstraintFieldType = queryConstraintFieldType.map((fieldName) => (
+						{ value: fieldName, label: node._(`firebase-in.constraint.${fieldName}`) }
+					));
+				}
 
-				queryConstraintType = queryConstraintType.map((field) => {
-					field.label = this._(`firebase-in.constraint.${field.value}`);
-					return field;
-				});
-
-				container.css("min-height", "150px").css("min-width", "300px").editableList({
-					sortable: true,
-					removable: true,
-					addButton: this._("firebase-in.addConstraint"),
+				constraintContainer.css("min-height", "150px").css("min-width", "300px").editableList({
+					addButton: node._("firebase-in.addConstraint"),
 					addItem: addItem,
+					removable: true,
+					sortable: true,
 				});
 
-				Object.entries(this.constraint).forEach((item) => container.editableList("addItem", item));
+				useConstraint.on("change", useConstraintHandler.bind(node));
 			},
 			oneditsave: saveItems,
 		});
@@ -87,15 +74,15 @@
 
 			const HTMLBody = `
 				<div style="flex-grow:1">
-					<div style="display: flex;">
-						<input type="text" id="node-input-constraintType-case-${id}" style="width:165px; text-align: center;"">
-						<div style="flex-grow:1; margin-left: 5px;">
-							<input type="text" id="node-input-value-raw-case-${id}" style="width: 100%;" placeholder="Value"/>
+					<div style="display:flex;">
+						<input type="text" id="node-input-constraintType-case-${id}" style="width:165px; text-align:center;">
+						<div style="flex-grow:1; margin-left:5px;">
+							<input type="text" id="node-input-value-raw-case-${id}" style="width:100%;" placeholder="Value" />
 						</div>
 					</div>
-					<div style="display: flex; padding-top: 5px; align-items: center;">
-						<div style="flex-grow:1; margin-left: 170px;">
-							<input type="text" id="node-input-child-raw-case-${id}" style="width: 100%;" placeholder="Child" />
+					<div style="display:flex; padding-top:5px; align-items:center;">
+						<div style="flex-grow:1; margin-left:170px;">
+							<input type="text" id="node-input-child-raw-case-${id}" style="width:100%;" placeholder="Child" />
 						</div>
 					</div>
 				</div>`;
@@ -108,52 +95,36 @@
 			});
 
 			$(container).html(HTMLBody);
-			$(container)
-				.find(`#node-input-constraintType-case-${id}`)
-				.typedInput({
-					types: [
-						{
-							options: queryConstraintType,
-						},
-					],
-				})
-				.typedInput("value", "limitToFirst")
-				.on("change", (event, type, value) => {
-					const valueRaw = $(container).find(`#node-input-value-raw-case-${id}`);
-					const childRaw = $(container).find(`#node-input-child-raw-case-${id}`);
-					updateTypeOfTypedInput(valueRaw, childRaw, value);
-				});
+			const constraintType = $(container).find(`#node-input-constraintType-case-${id}`);
+			const valueField = $(container).find(`#node-input-value-raw-case-${id}`);
+			const childField = $(container).find(`#node-input-child-raw-case-${id}`);
 
-			$(container)
-				.find(`#node-input-value-raw-case-${id}`)
-				.typedInput({
-					types: ["num"],
-					default: "num",
-				});
-
-			$(container)
-				.find(`#node-input-child-raw-case-${id}`)
-				.typedInput({
-					types: ["str"],
-					default: "str",
-				})
+			valueField.typedInput({ default: "num", types: ["num"] });
+			childField
+				.typedInput({ default: "str", types: [{ value: "str", label: "string", icon: "red/images/typedInput/az.svg", validate: isChildValid }] })
 				.typedInput("hide");
+
+			constraintType
+				.typedInput({ types: [{ options: queryConstraintFieldType }] })
+				.on("change", (_event, _type, value) => updateTypeOfTypedInput(valueField, childField, value))
+				.typedInput("value", "limitToLast");
 
 			if (Array.isArray(data)) {
 				const [key, value] = data;
-				const type = $(container).find(`#node-input-constraintType-case-${id}`);
-				const valueRaw = $(container).find(`#node-input-value-raw-case-${id}`);
-				const childRaw = $(container).find(`#node-input-child-raw-case-${id}`);
 
-				type.typedInput("value", key);
-				updateTypeOfTypedInput(valueRaw, childRaw, key);
+				constraintType.typedInput("value", key);
 
-				if (typeof value === "object") {
-					valueRaw.typedInput("value", value.value);
-					childRaw.typedInput("value", value.key);
+				if (value && typeof value === "object") {
+					valueField.typedInput("value", value.value ?? "");
+					childField.typedInput("value", value.child ?? "");
 				} else {
-					valueRaw.typedInput("value", value);
-					childRaw.typedInput("value", "");
+					if (key === "orderByChild") {
+						valueField.typedInput("value", "");
+						childField.typedInput("value", value ?? "");
+					} else {
+						valueField.typedInput("value", value ?? "");
+						childField.typedInput("value", "");
+					}
 				}
 
 				data = {};
@@ -166,6 +137,12 @@
 
 		function compare(a, b) {
 			return a.index - b.index;
+		}
+
+		function isChildValid(child) {
+			if (!child || typeof child !== "string") return false;
+			if (child.match(/^\s|[.#$\[\]]/g)) return false;
+			return true;
 		}
 
 		function saveItems() {
@@ -192,6 +169,9 @@
 					case "limitToLast":
 						node.constraint[constraintType] = parseInt(value);
 						break;
+					case "orderByChild":
+						node.constraint[constraintType] = child;
+						break;
 					case "orderByKey":
 					case "orderByPriority":
 					case "orderByValue":
@@ -205,6 +185,7 @@
 		}
 
 		function updateTypeOfTypedInput(value, child, key) {
+			// Initial state
 			value.typedInput("show");
 			child.typedInput("hide");
 
@@ -222,7 +203,8 @@
 					value.typedInput("types", ["num"]);
 					break;
 				case "orderByChild":
-					value.typedInput("types", ["str"]);
+					value.typedInput("hide");
+					child.typedInput("show");
 					break;
 				case "orderByKey":
 				case "orderByPriority":
@@ -231,13 +213,30 @@
 					break;
 			}
 		}
+
+		function useConstraintHandler() {
+			const constraintContainer = $("#node-input-constraint-container");
+			const useConstraint = $("#node-input-useConstraint");
+
+			if (useConstraint.prop("checked") === true) {
+				let constraint = Object.entries(this.constraint || {});
+
+				if (constraint.length === 0) constraint = [["limitToLast", 5]];
+
+				constraint.forEach((item) => constraintContainer.editableList("addItem", item));
+				$(".form-row-constraint").show();
+			} else {
+				$(".form-row-constraint").hide();
+				constraintContainer.editableList("empty");
+			}
+		}
 	})();
 </script>
 
 <script type="text/html" data-template-name="firebase-in">
 	<div class="form-row">
 		<label for="node-input-database"><i class="fa fa-database"></i> <span data-i18n="firebase-in.label.database"></span></label>
-		<input type="text" id="node-input-database" style="width:70%" />
+		<input type="text" id="node-input-database" style="width:70%;" />
 	</div>
 
 	<div class="form-row">
