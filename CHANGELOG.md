@@ -1,5 +1,16 @@
 # Change log
 
+## 0.3.1
+
+### Changes
+
+- Bump `firebase` from 9.17.1 to 9.17.2
+
+### Fixes
+
+- Clear `Permission Denied` Status for `Firebase-out` Node (#25)
+- `typedInput` for `Query Constraint` container (#24)
+
 ## 0.3.0
 
 ### Changes

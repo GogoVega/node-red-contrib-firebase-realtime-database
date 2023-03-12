@@ -79,7 +79,7 @@ class Firebase {
 	 * This property is used to store the "Permission Denied" state of the node.
 	 * Error received when database rules deny reading/writing data.
 	 */
-	private permissionDeniedStatus = false;
+	protected permissionDeniedStatus = false;
 
 	/**
 	 * Applies the query constraints to the database reference.
@@ -546,7 +546,7 @@ export class FirebaseOut extends Firebase {
 	 * @param msg The message to be sent to Firebase Database
 	 * @returns A Promise when write/update on server is complete.
 	 */
-	public doWriteQuery(msg: InputMessageType) {
+	public async doWriteQuery(msg: InputMessageType) {
 		const path = this.getPath(msg);
 		const query = this.getQuery(msg);
 
@@ -555,36 +555,58 @@ export class FirebaseOut extends Firebase {
 		if (this.isAdmin(this.db)) {
 			switch (query) {
 				case "update":
-					if (msg.payload && typeof msg.payload === "object") return this.db.ref().child(path)[query](msg.payload);
+					if (msg.payload && typeof msg.payload === "object") {
+						await this.db.ref().child(path)[query](msg.payload);
+						break;
+					}
+
 					throw new Error("msg.payload must be an object with 'update' query.");
 				case "remove":
-					return this.db.ref().child(path)[query]();
+					await this.db.ref().child(path)[query]();
+					break;
 				case "setPriority":
-					return this.db
+					await this.db
 						.ref()
 						.child(path)
 						.setPriority(this.getPriority(msg), (err) => {
 							if (err) this.node.error(err);
 						});
+					break;
 				case "setWithPriority":
-					return this.db.ref().child(path)[query](msg.payload, this.getPriority(msg));
+					await this.db.ref().child(path)[query](msg.payload, this.getPriority(msg));
+					break;
 				default:
-					return this.db.ref().child(path)[query](msg.payload);
+					await this.db.ref().child(path)[query](msg.payload);
+					break;
 			}
 		} else {
 			switch (query) {
 				case "update":
-					if (msg.payload && typeof msg.payload === "object") return firebase[query](ref(this.db, path), msg.payload);
+					if (msg.payload && typeof msg.payload === "object") {
+						await firebase[query](ref(this.db, path), msg.payload);
+						break;
+					}
+
 					throw new Error("msg.payload must be an object with 'update' query.");
 				case "remove":
-					return firebase[query](ref(this.db, path));
+					await firebase[query](ref(this.db, path));
+					break;
 				case "setPriority":
-					return firebase[query](ref(this.db, path), this.getPriority(msg));
+					await firebase[query](ref(this.db, path), this.getPriority(msg));
+					break;
 				case "setWithPriority":
-					return firebase[query](ref(this.db, path), msg.payload, this.getPriority(msg));
+					await firebase[query](ref(this.db, path), msg.payload, this.getPriority(msg));
+					break;
 				default:
-					return firebase[query](ref(this.db, path), msg.payload);
+					await firebase[query](ref(this.db, path), msg.payload);
+					break;
 			}
+		}
+
+		// Clear Permission Denied Status
+		if (this.permissionDeniedStatus) {
+			this.permissionDeniedStatus = false;
+			this.setNodeStatus();
 		}
 	}
 
