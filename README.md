@@ -1,6 +1,27 @@
-# node-red-contrib-firebase-realtime-database
+<div align="center">
+  <h1>Node-RED nodes to communicate with <a href="https://firebase.google.com">Firebase Realtime Databases</a></h1>
 
-Node RED nodes to communicate with [Firebase Realtime Databases](https://firebase.google.com/).
+  <a href="https://firebase.google.com"><img src="docs/images/node-red-firebase-logo.svg" alt="Logo" width="70%"></a>
+
+  <p align="center">
+    <br />
+    <a href="https://github.com/GogoVega/node-red-contrib-firebase-realtime-database/issues">Report Bug</a>
+    ·
+    <a href="https://github.com/GogoVega/node-red-contrib-firebase-realtime-database/discussions/new?category=ideas">Request Feature</a>
+    ·
+    <a href="https://github.com/GogoVega/node-red-contrib-firebase-realtime-database/discussions/new">Discussion</a>
+  </p>
+</div>
+
+<div align="center">
+  <a href="https://github.com/GogoVega/node-red-contrib-firebase-realtime-database/blob/main/LICENSE"><img src="https://img.shields.io/github/license/GogoVega/node-red-contrib-firebase-realtime-database" alt="shield-license" /></a>
+  <a href="https://github.com/GogoVega/node-red-contrib-firebase-realtime-database/issues"><img src="https://img.shields.io/github/issues/GogoVega/node-red-contrib-firebase-realtime-database" alt="shield-issues" /></a>
+  <a href="https://github.com/GogoVega/node-red-contrib-firebase-realtime-database/stargazers"><img src="https://img.shields.io/github/stars/GogoVega/node-red-contrib-firebase-realtime-database" alt="shield-stars" /></a>
+  <a href="https://github.com/GogoVega/node-red-contrib-firebase-realtime-database/network/members"><img src="https://img.shields.io/github/forks/GogoVega/node-red-contrib-firebase-realtime-database" alt="shield-forks" /></a>
+  <a href="https://github.com/GogoVega/node-red-contrib-firebase-realtime-database/releases"><img src="https://img.shields.io/npm/dm/@gogovega/node-red-contrib-firebase-realtime-database" alt="shield-downloads" /></a>
+  <a href="https://github.com/GogoVega/node-red-contrib-firebase-realtime-database/releases"><img src="https://img.shields.io/librariesio/release/npm/@gogovega/node-red-contrib-firebase-realtime-database" alt="shield-dependencies" /></a>
+</div>
+<br />
 
 ![demo nodes](./docs/images/demo-nodes.gif)
 
