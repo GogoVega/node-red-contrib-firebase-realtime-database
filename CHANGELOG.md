@@ -4,7 +4,7 @@
 
 ### Changes
 
-- Bump `firebase` from  9.17.1 to 9.17.2
+- Bump `firebase` from 9.17.1 to 9.17.2
 
 ### Fixes
 

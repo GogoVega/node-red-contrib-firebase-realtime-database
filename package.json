@@ -1,6 +1,6 @@
 {
   "name": "@gogovega/node-red-contrib-firebase-realtime-database",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "Node-RED nodes to communicate with Google Firebase Realtime Databases",
   "main": "build/nodes/database.js",
   "scripts": {
