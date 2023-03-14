@@ -293,8 +293,13 @@ class Firebase {
 	 * @param snapshot A DataSnapshot contains data from a Database location.
 	 * @param child A string containing the key of the previous child, by sort order,
 	 * or `null` if it is the first child.
+	 * @param msg The message to pass through.
 	 */
-	protected sendMsg(snapshot: DataSnapshot | admin.database.DataSnapshot, child?: string | null) {
+	protected sendMsg(
+		snapshot: DataSnapshot | admin.database.DataSnapshot,
+		child?: string | null,
+		msg?: InputMessageType
+	) {
 		// Clear Permission Denied Status
 		if (this.permissionDeniedStatus) {
 			this.permissionDeniedStatus = false;
@@ -309,7 +314,13 @@ class Firebase {
 			const previousChildName = child !== undefined ? { previousChildName: child } : {};
 			const priority = snapshot instanceof DataSnapshot ? snapshot.priority : snapshot.getPriority();
 
-			this.node.send({ payload: payload, ...previousChildName, priority: priority, topic: topic } as OutputMessageType);
+			this.node.send({
+				...(msg || {}),
+				payload: payload,
+				...previousChildName,
+				priority: priority,
+				topic: topic,
+			} as OutputMessageType);
 		} catch (error) {
 			this.onError(error);
 		}
@@ -374,6 +385,7 @@ export class FirebaseGet extends Firebase {
 	 * @returns A promise of completion of the request
 	 */
 	public async doGetQuery(msg: InputMessageType) {
+		const msg2PassThrough = this.node.config.passThrough ? msg : undefined;
 		const constraint = msg.method || this.node.config.constraint;
 		const path = this.getPath(msg);
 		let snapshot;
@@ -388,7 +400,7 @@ export class FirebaseGet extends Firebase {
 			snapshot = await get(query(ref(this.db, path), ...this.getQueryConstraints(constraint)));
 		}
 
-		this.sendMsg(snapshot);
+		this.sendMsg(snapshot, undefined, msg2PassThrough);
 	}
 
 	/**
@@ -468,7 +480,7 @@ export class FirebaseIn extends Firebase {
 		} else {
 			this.subscriptionCallback = firebase[Listener[this.listener]](
 				query(ref(this.db, pathParsed), ...this.getQueryConstraints(constraint)),
-				(snapshot: DataSnapshot, child: string | null | undefined) => this.sendMsg(snapshot, child),
+				(snapshot: DataSnapshot, child?: string | null) => this.sendMsg(snapshot, child),
 				(error) => this.onError(error)
 			);
 		}
