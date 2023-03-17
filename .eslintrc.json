@@ -39,7 +39,6 @@
 		"no-debugger": 2,
 		"no-delete-var": 2,
 		"no-dupe-args": 2,
-		"no-dupe-class-members": 2,
 		"no-dupe-else-if": 2,
 		"no-dupe-keys": 2,
 		"no-duplicate-case": 2,
