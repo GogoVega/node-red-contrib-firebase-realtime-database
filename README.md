@@ -12,12 +12,12 @@
 </div>
 
 <div align="center">
-  <a href="https://github.com/GogoVega/node-red-contrib-firebase-realtime-database/blob/main/LICENSE"><img src="https://img.shields.io/github/license/GogoVega/node-red-contrib-firebase-realtime-database" alt="shield-license" /></a>
+  <a href="https://github.com/GogoVega/node-red-contrib-firebase-realtime-database/blob/master/LICENSE"><img src="https://img.shields.io/github/license/GogoVega/node-red-contrib-firebase-realtime-database" alt="shield-license" /></a>
   <a href="https://github.com/GogoVega/node-red-contrib-firebase-realtime-database/issues"><img src="https://img.shields.io/github/issues/GogoVega/node-red-contrib-firebase-realtime-database" alt="shield-issues" /></a>
   <a href="https://github.com/GogoVega/node-red-contrib-firebase-realtime-database/stargazers"><img src="https://img.shields.io/github/stars/GogoVega/node-red-contrib-firebase-realtime-database" alt="shield-stars" /></a>
   <a href="https://github.com/GogoVega/node-red-contrib-firebase-realtime-database/network/members"><img src="https://img.shields.io/github/forks/GogoVega/node-red-contrib-firebase-realtime-database" alt="shield-forks" /></a>
-  <a href="https://github.com/GogoVega/node-red-contrib-firebase-realtime-database/releases"><img src="https://img.shields.io/npm/dm/@gogovega/node-red-contrib-firebase-realtime-database" alt="shield-downloads" /></a>
-  <a href="https://github.com/GogoVega/node-red-contrib-firebase-realtime-database/releases"><img src="https://img.shields.io/librariesio/release/npm/@gogovega/node-red-contrib-firebase-realtime-database" alt="shield-dependencies" /></a>
+  <a href="https://www.npmjs.com/package/@gogovega/node-red-contrib-firebase-realtime-database?activeTab=versions"><img src="https://img.shields.io/npm/dm/@gogovega/node-red-contrib-firebase-realtime-database" alt="shield-downloads" /></a>
+  <a href="https://github.com/GogoVega/node-red-contrib-firebase-realtime-database/network/dependencies"><img src="https://img.shields.io/librariesio/release/npm/@gogovega/node-red-contrib-firebase-realtime-database" alt="shield-dependencies" /></a>
 </div>
 <br />
 
@@ -36,9 +36,9 @@ There are 3 nodes included with this contrib:
 
 | Node         | Purpose                                                                                               |
 | ------------ | ----------------------------------------------------------------------------------------------------- |
-| Firebase in  | Subscribes to data at the specified path,<br /> which yields a `payload` whenever a value changes.    |
-| Firebase get | Fetches data from the specified path.<br />Query constraints can be used to sort and order your data. |
-| Firebase out | `SET`, `PUSH`, `UPDATE`, `REMOVE`, `SET PRIORITY` or `SET WITH PRIORITY` data at the target Database. |
+| Firebase&nbsp;in  | Subscribes to data at the specified path,<br /> which yields a `payload` whenever a value changes.    |
+| Firebase&nbsp;get | Fetches data from the specified path.<br />Query constraints can be used to sort and order your data. |
+| Firebase&nbsp;out | `SET`, `PUSH`, `UPDATE`, `REMOVE`, `SET PRIORITY` or `SET WITH PRIORITY` data at the target Database. |
 
 On the video above, we can see the "Query Constraint" feature, which is used to sort and order your data as required, and also shown is the "Drag and drop JSON file" feature, which automatically populates the fields with the content of the JSON file you provide.
 
@@ -67,13 +67,21 @@ Read more about the different ways to authenticate [here](./docs/Authentication.
 
 ## Future Features
 
-- Sign in with Custom Token
+- Sign in with Custom Token generated with Private Key or Service Account ID (coming for v0.4.0)
 
 ## Getting Started Link
 
 - [Authentication Methods](./docs/Authentication.md): Which method used to connect?
 - [Firebase Site](https://firebase.google.com/): What is Firebase?
-- [Change Log](./CHANGELOG.md): whats changed?
+- [Change Log](./CHANGELOG.md): Whats changed?
+
+## TODO List
+
+- [ ] Sign in with Custom Token
+- [ ] Add `onDisconnect` method
+- [ ] Sign in with Google (Provider)
+
+If you have any other suggestions, please let me know [here](https://github.com/GogoVega/node-red-contrib-firebase-realtime-database/discussions/new?category=ideas).
 
 ## License
 
