@@ -27,7 +27,7 @@
 	</p>
 	<h3>Inputs</h3>
 	<dl class="message-properties">
-		<dt>payload<span class="property-type">string | boolean | number | object</span></dt>
+		<dt>payload<span class="property-type">string | boolean | number | array | object | null</span></dt>
 		<dd>the data that will be sent to the database.</dd>
 		<dt class="optional">method<span class="property-type">object</span></dt>
 		<dd>an object containing the constraint(s) to apply to the query.</dd>
@@ -36,7 +36,7 @@
 	</dl>
 	<h3>Outputs</h3>
 	<dl class="message-properties">
-		<dt>payload<span class="property-type">string | boolean | number | object</span></dt>
+		<dt>payload<span class="property-type">string | boolean | number | array | object | null</span></dt>
 		<dd>contains your query data from the database.</dd>
 		<dt class="optional">previousChildName<span class="property-type">string</span></dt>
 		<dd>contains the key of the previous child, by sort order, or <code>null</code> if it is the first child.</dd>
