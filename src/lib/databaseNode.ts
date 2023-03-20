@@ -96,10 +96,9 @@ export default class FirebaseDatabase {
 	/**
 	 * Check if the received JSON content credentials contain the desired elements.
 	 * @param content The JSON content credentials
-	 * @param only If set, checks only this property of the JSON content
 	 * @returns The JSON content credentials checked
 	 */
-	private checkJSONCredential(content: unknown, only?: keyof ServiceAccount) {
+	private checkJSONCredential(content: unknown) {
 		if (!content || typeof content !== "object" || !Object.keys(content).length)
 			throw new Error("JSON Content must contain 'projectId', 'clientEmail' and 'privateKey'");
 
@@ -111,7 +110,7 @@ export default class FirebaseDatabase {
 		};
 
 		for (const [key, value] of Object.entries(output)) {
-			if ((!only || only === key) && !value) throw new Error(`JSON Content must contain '${key}'`);
+			if (!value) throw new Error(`JSON Content must contain '${key}'`);
 		}
 
 		return output as ServiceAccount;
@@ -123,17 +122,12 @@ export default class FirebaseDatabase {
 	 */
 	private async createCustomToken() {
 		const claims = this.checkClaims(this.node.config.claims);
-		const only = this.node.config.authType === "serviceAccountId" ? "clientEmail" : undefined;
-		const content = this.getJSONCredential(only);
-		/* eslint-disable no-mixed-spaces-and-tabs */
-		const appOptions = only
-			? { serviceAccountId: content.clientEmail }
-			: {
-					credential: admin.credential.cert(content),
-					databaseURL: this.node.credentials.url,
-			  };
+		const content = this.getJSONCredential();
+		const app = admin.initializeApp({
+			credential: admin.credential.cert(content),
+			databaseURL: this.node.credentials.url,
+		});
 
-		const app = admin.initializeApp(appOptions);
 		const token = await admin.auth(app).createCustomToken(this.node.credentials.uid, claims);
 
 		app.delete();
@@ -166,10 +160,9 @@ export default class FirebaseDatabase {
 
 	/**
 	 * Get credentials from JSON content of `config-node`.
-	 * @param only If set, checks only this property of the JSON content
 	 * @returns The JSON content credentials
 	 */
-	private getJSONCredential(only?: keyof ServiceAccount) {
+	private getJSONCredential() {
 		const content = JSON.parse(this.node.credentials.json || "{}");
 
 		if (Object.keys(content).length === 0) {
@@ -187,7 +180,7 @@ export default class FirebaseDatabase {
 			content["privateKey"] = privateKey;
 		}
 
-		return this.checkJSONCredential(content, only);
+		return this.checkJSONCredential(content);
 	}
 
 	/**
@@ -313,7 +306,6 @@ export default class FirebaseDatabase {
 						// Logged In with Initialize App
 						break;
 					case "customToken":
-					case "serviceAccountId":
 						await this.logInWithCustomToken();
 						break;
 				}

@@ -22,8 +22,7 @@
       "anonymous": "Anonyme",
       "email": "Email",
       "privateKey": "Clé Privée JSON",
-      "customToken": "Jeton personnalisé (Clé Privée)",
-      "serviceAccountId": "Jeton personnalisé (ID Compte de Service)"
+      "customToken": "Jeton personnalisé (Clé Privée)"
     },
     "placeholder": {
       "apiKey": "Clé API de la base de données",

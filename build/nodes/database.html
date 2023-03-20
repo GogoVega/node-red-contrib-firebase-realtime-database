@@ -251,11 +251,11 @@
 			$(".login-row").hide();
 			$(`.login-row-${type}`).show();
 
-			(useClaims === true && (type === "customToken" || type === "serviceAccountId")) ? $(".form-row-claims").show() : $(".form-row-claims").hide();
+			useClaims === true && type === "customToken" ? $(".form-row-claims").show() : $(".form-row-claims").hide();
 
 			// DEPRECATED
 			// Disables JSON input if node config uses it (old config < 0.3.0)
-			if (type === "privateKey" || type === "customToken" || type === "serviceAccountId") {
+			if (type === "privateKey" || type === "customToken") {
 				if ($("#node-config-input-json").val()) {
 					$("#node-config-input-json").typedInput("disable");
 				} else {
@@ -335,7 +335,6 @@
 			<option value="email" data-i18n="database-config.value.email"></option>
 			<option value="privateKey" data-i18n="database-config.value.privateKey"></option>
 			<option value="customToken" data-i18n="database-config.value.customToken"></option>
-			<option value="serviceAccountId" data-i18n="database-config.value.serviceAccountId"></option>
 		</select>
 	</div>
 
@@ -348,7 +347,7 @@
 	<div class="firebase-text-divider" data-i18n="database-config.divider.credentials"></div>
 
 	<!-- Anonymous login -->
-	<div class="form-row login-row login-row-anonymous login-row-customToken login-row-email login-row-serviceAccountId">
+	<div class="form-row login-row login-row-anonymous login-row-customToken login-row-email">
 		<label for="node-config-input-apiKey"><i class="fa fa-key"></i> <span data-i18n="database-config.label.apiKey"></span></label>
 		<input type="text" id="node-config-input-apiKey" style="width:70%;" data-i18n="[placeholder]database-config.placeholder.apiKey" />
 	</div>
@@ -360,12 +359,12 @@
 
 	<!-- JSON Private Key -->
 	<!-- DEPRECATED -->
-	<div class="form-row login-row login-row-customToken login-row-privateKey login-row-serviceAccountId form-row-json-deprecated">
+	<div class="form-row login-row login-row-customToken login-row-privateKey form-row-json-deprecated">
 		<label for="node-config-input-json"><i class="fa fa-file-code-o"></i> <span data-i18n="database-config.label.json"></span></label>
 		<input type="text" id="node-config-input-json" style="width:70%;" data-i18n="[placeholder]database-config.placeholder.json" />
 	</div>
 
-	<div class="form-row login-row login-row-customToken login-row-privateKey login-row-serviceAccountId">
+	<div class="form-row login-row login-row-customToken login-row-privateKey">
 		<label for="node-config-input-clientEmail"><i class="fa fa-envelope"></i> <span data-i18n="database-config.label.clientEmail"></span></label>
 		<input type="password" id="node-config-input-clientEmail" style="width:70%;" data-i18n="[placeholder]database-config.placeholder.clientEmail"/>
 	</div>
@@ -376,7 +375,7 @@
 	</div>
 
 	<!-- Custom Token generated with Private Key-->
-	<div class="form-row login-row login-row-customToken login-row-serviceAccountId">
+	<div class="form-row login-row login-row-customToken">
 		<label for="node-config-input-uid"><i class="fa fa-user"></i> <span data-i18n="database-config.label.uid"></span></label>
 		<input type="text" id="node-config-input-uid" style="width:70%;" placeholder="Unique ID" />
 	</div>
@@ -392,7 +391,7 @@
 		<input type="password" id="node-config-input-password" style="width:70%;" data-i18n="[placeholder]database-config.placeholder.password" />
 	</div>
 
-	<div class="form-row login-row login-row-customToken login-row-serviceAccountId">
+	<div class="form-row login-row login-row-customToken">
 		<label for="node-config-input-useClaims"><i class="fa fa-id-card"></i> <span data-i18n="database-config.label.claims"></span></label>
 		<input type="checkbox" id="node-config-input-useClaims" style="display:inline-block; width:15px; vertical-align:baseline;" />
 		<span data-i18n="database-config.useClaims">
@@ -402,12 +401,12 @@
 		<ol id="node-config-input-claims-container"></ol>
 	</div>
 
-	<div class="login-row login-row-customToken login-row-privateKey login-row-serviceAccountId" id="json-drop-target" data-i18n="database-config.clickDragHere"></div>
+	<div class="login-row login-row-customToken login-row-privateKey" id="json-drop-target" data-i18n="database-config.clickDragHere"></div>
 
 	<div class="firebase-text-divider" data-i18n="database-config.divider.tips"></div>
 
 	<div class="form-tips" id="database-config-tips">
-		<div class="login-row login-row-anonymous login-row-email login-row-customToken login-row-serviceAccountId"><span data-i18n="[html]database-config.tips.apiKey"></span></div>
+		<div class="login-row login-row-anonymous login-row-email login-row-customToken"><span data-i18n="[html]database-config.tips.apiKey"></span></div>
 		<div><span data-i18n="[html]database-config.tips.url"></span></div>
 		<div class="login-row login-row-email">
 			<span data-i18n="[html]database-config.tips.email"></span>
@@ -416,6 +415,6 @@
 				<li><span data-i18n="[html]database-config.tips.emailMethod2"></span></li>
 			</ul>
 		</div>
-		<div class="login-row login-row-customToken login-row-privateKey login-row-serviceAccountId"><span data-i18n="[html]database-config.tips.json"></span></div>
+		<div class="login-row login-row-customToken login-row-privateKey"><span data-i18n="[html]database-config.tips.json"></span></div>
 	</div>
 </script>

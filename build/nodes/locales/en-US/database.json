@@ -22,8 +22,7 @@
       "anonymous": "Anonymous",
       "email": "Email",
       "privateKey": "JSON Private Key",
-      "customToken": "Custom Token Generated with Private Key",
-      "serviceAccountId": "Custom Token Generated with Service Account ID"
+      "customToken": "Custom Token Generated with Private Key"
     },
     "placeholder": {
       "apiKey": "Database API Key",
