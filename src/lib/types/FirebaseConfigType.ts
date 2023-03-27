@@ -42,6 +42,7 @@ export type FirebaseGetConfigType = NodeDef & {
 	constraint?: object;
 	database: string;
 	outputType?: OutputType;
+	passThrough?: boolean;
 	path?: string;
 	pathType?: PathType;
 };

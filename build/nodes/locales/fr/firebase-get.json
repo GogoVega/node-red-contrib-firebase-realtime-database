@@ -33,6 +33,7 @@
       "tip1": "Si <code>msg.method</code> est défini, les contraintes de la requête définies dans le noeuud seront remplacées par celles contenues dans le message."
     },
     "useConstraint": "Souhaitez-vous trier et ordonner vos données ?",
-    "addConstraint": "Ajouter une contrainte de requête"
+    "addConstraint": "Ajouter une contrainte de requête",
+    "passThrough": "Si un message arrive, transmettre le message ?"
   }
 }

@@ -28,6 +28,7 @@
 				constraint: { value: {} },
 				database: { value: "", type: "database-config" },
 				outputType: { value: "auto", validate: RED.validators.regex(/^(auto|string)$/) },
+				passThrough: { value: false },
 				path: { value: "topic" },
 				pathType: { value: "msg", validate: RED.validators.regex(/^(msg|str)$/) },
 				useConstraint: { value: false },
@@ -251,7 +252,7 @@
 	<div class="form-row">
 		<label for="node-input-useConstraint"><i class="fa fa-sort"></i> <span data-i18n="firebase-get.label.sortData"></span></label>
 		<input type="checkbox" id="node-input-useConstraint" style="display:inline-block; width:15px; vertical-align:baseline;" />
-		<span data-i18n="firebase-get.useConstraint">
+		<span data-i18n="firebase-get.useConstraint"></span>
 	</div>
 
 	<div class="form-row form-row-constraint node-input-constraint-container-row">
@@ -270,6 +271,12 @@
 			<option value="auto" data-i18n="firebase-get.outputType.auto"></option>
 			<option value="string" data-i18n="firebase-get.outputType.string"></option>
 		</select>
+	</div>
+
+	<div class="form-row">
+		<label for="node-input-passThrough"></label>
+		<input type="checkbox" id="node-input-passThrough" style="display:inline-block; width:15px; vertical-align:baseline;" />
+		<span data-i18n="firebase-get.passThrough"></span>
 	</div>
 
 	<div class="form-row">

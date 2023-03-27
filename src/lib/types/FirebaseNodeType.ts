@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-import admin from "firebase-admin";
+import * as database from "firebase/database";
+import * as adminDatabase from "firebase-admin/database";
 import { Node, NodeMessage, NodeMessageInFlow } from "node-red";
 import { DatabaseNodeType } from "./DatabaseNodeType";
 import { FirebaseGetConfigType, FirebaseInConfigType, FirebaseOutConfigType } from "./FirebaseConfigType";
@@ -46,7 +47,8 @@ export type QueryConstraintType =
 			}
 	  >;
 
-export type DBRef = admin.database.Reference | admin.database.Query;
+export type DataSnapshot = database.DataSnapshot | adminDatabase.DataSnapshot;
+export type DBRef = adminDatabase.Reference | adminDatabase.Query;
 
 export interface InputMessageType extends NodeMessageInFlow {
 	method?: unknown;
