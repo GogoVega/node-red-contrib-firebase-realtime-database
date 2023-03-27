@@ -457,7 +457,7 @@ export class FirebaseIn extends Firebase {
 			);
 		} else {
 			this.subscriptionCallback = firebase[Listener[this.listener]](
-				query(ref(this.db, pathParsed), ...this.getQueryConstraints(constraint)),
+				query(ref(this.db, pathParsed), ...this.applyQueryConstraints(constraint)),
 				(snapshot: firebase.DataSnapshot, child?: string | null) => this.sendMsg(snapshot, child),
 				(error) => this.onError(error)
 			);
