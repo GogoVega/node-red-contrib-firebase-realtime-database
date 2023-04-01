@@ -79,7 +79,7 @@ class Firebase {
 	 * This property is used to store the "Permission Denied" state of the node.
 	 * Error received when database rules deny reading/writing data.
 	 */
-	private permissionDeniedStatus = false;
+	protected permissionDeniedStatus = false;
 
 	/**
 	 * This callback is used to subscribe and unsubscribe to the `signedIn` event.
@@ -88,13 +88,22 @@ class Firebase {
 
 	/**
 	 * Applies the query constraints to the database reference.
-	 * @remarks To be used only on the `firebase-admin` module.
-	 * @param dbRef The database reference
 	 * @param method The object containing the query constraints
+	 * @returns An array of query constraints checked
+	 */
+	protected applyQueryConstraints(method: unknown): firebase.QueryConstraint[];
+
+	/**
+	 * Applies the query constraints to the database reference.
+	 * @param method The object containing the query constraints
+	 * @param dbRef The database reference
 	 * @returns The database reference with the query constraints applied
 	 */
-	protected applyQueryConstraints(dbRef: DBRef, method: unknown) {
+	protected applyQueryConstraints(method: unknown, dbRef: DBRef): DBRef;
+
+	protected applyQueryConstraints(method: unknown, dbRef?: DBRef) {
 		const constraints = this.checkQueryConstraints(method);
+		const query = [];
 
 		for (const [method, value] of Object.entries(constraints) as Entry<QueryConstraintType | Record<string, never>>[]) {
 			switch (method) {
@@ -103,24 +112,40 @@ class Firebase {
 				case "equalTo":
 				case "startAfter":
 				case "startAt":
-					dbRef = dbRef[method](value.value, value.key);
+					if (dbRef) {
+						dbRef = dbRef[method](value.value, value.key);
+					} else {
+						query.push(firebase[method](value.value, value.key));
+					}
 					break;
 				case "limitToFirst":
 				case "limitToLast":
-					dbRef = dbRef[method](value);
+					if (dbRef) {
+						dbRef = dbRef[method](value);
+					} else {
+						query.push(firebase[method](value));
+					}
 					break;
 				case "orderByChild":
-					dbRef = dbRef[method](value);
+					if (dbRef) {
+						dbRef = dbRef[method](value);
+					} else {
+						query.push(firebase[method](value));
+					}
 					break;
 				case "orderByKey":
 				case "orderByPriority":
 				case "orderByValue":
-					dbRef = dbRef[method]();
+					if (dbRef) {
+						dbRef = dbRef[method]();
+					} else {
+						query.push(firebase[method]());
+					}
 					break;
 			}
 		}
 
-		return dbRef;
+		return dbRef || query;
 	}
 
 	/**
@@ -213,43 +238,6 @@ class Firebase {
 		} catch (error) {
 			done(error);
 		}
-	}
-
-	/**
-	 * Gets the query constraints from the message. Calls `checkQueryConstraint` to check the query constraints.
-	 * @remarks To be used only on the `firebase` module.
-	 * @param method The object containing the query constraints
-	 * @returns An array of query constraints checked
-	 */
-	protected getQueryConstraints(method: unknown) {
-		const constraints = this.checkQueryConstraints(method) || {};
-		const query = [];
-
-		for (const [method, value] of Object.entries(constraints) as Entry<QueryConstraintType | Record<string, never>>[]) {
-			switch (method) {
-				case "endAt":
-				case "endBefore":
-				case "equalTo":
-				case "startAfter":
-				case "startAt":
-					query.push(firebase[method](value.value, value.key));
-					break;
-				case "limitToFirst":
-				case "limitToLast":
-					query.push(firebase[method](value));
-					break;
-				case "orderByChild":
-					query.push(firebase[method](value));
-					break;
-				case "orderByKey":
-				case "orderByPriority":
-				case "orderByValue":
-					query.push(firebase[method]());
-					break;
-			}
-		}
-
-		return query;
 	}
 
 	/**
@@ -416,9 +404,9 @@ export class FirebaseGet extends Firebase {
 		if (this.isAdmin(this.db)) {
 			const database = path ? this.db.ref().child(path) : this.db.ref();
 
-			snapshot = await this.applyQueryConstraints(database, constraint).get();
+			snapshot = await this.applyQueryConstraints(constraint, database).get();
 		} else {
-			snapshot = await get(query(ref(this.db, path), ...this.getQueryConstraints(constraint)));
+			snapshot = await get(query(ref(this.db, path), ...this.applyQueryConstraints(constraint)));
 		}
 
 		this.sendMsg(snapshot);
@@ -497,14 +485,14 @@ export class FirebaseIn extends Firebase {
 				if (this.isAdmin(this.db)) {
 					const databaseRef = pathParsed ? this.db.ref().child(pathParsed) : this.db.ref();
 
-					this.subscriptionCallback = this.applyQueryConstraints(databaseRef, constraint).on(
+					this.subscriptionCallback = this.applyQueryConstraints(constraint, databaseRef).on(
 						this.listener,
 						(snapshot, child) => this.sendMsg(snapshot, child),
 						(error) => this.onError(error)
 					);
 				} else {
 					this.subscriptionCallback = firebase[Listener[this.listener]](
-						query(ref(this.db, pathParsed), ...this.getQueryConstraints(constraint)),
+						query(ref(this.db, pathParsed), ...this.applyQueryConstraints(constraint)),
 						(snapshot: DataSnapshot, child: string | null | undefined) => this.sendMsg(snapshot, child),
 						(error) => this.onError(error)
 					);
@@ -597,36 +585,58 @@ export class FirebaseOut extends Firebase {
 		if (this.isAdmin(this.db)) {
 			switch (query) {
 				case "update":
-					if (msg.payload && typeof msg.payload === "object") return this.db.ref().child(path)[query](msg.payload);
+					if (msg.payload && typeof msg.payload === "object") {
+						await this.db.ref().child(path)[query](msg.payload);
+						break;
+					}
+
 					throw new Error("msg.payload must be an object with 'update' query.");
 				case "remove":
-					return this.db.ref().child(path)[query]();
+					await this.db.ref().child(path)[query]();
+					break;
 				case "setPriority":
-					return this.db
+					await this.db
 						.ref()
 						.child(path)
 						.setPriority(this.getPriority(msg), (err) => {
 							if (err) this.node.error(err);
 						});
+					break;
 				case "setWithPriority":
-					return this.db.ref().child(path)[query](msg.payload, this.getPriority(msg));
+					await this.db.ref().child(path)[query](msg.payload, this.getPriority(msg));
+					break;
 				default:
-					return this.db.ref().child(path)[query](msg.payload);
+					await this.db.ref().child(path)[query](msg.payload);
+					break;
 			}
 		} else {
 			switch (query) {
 				case "update":
-					if (msg.payload && typeof msg.payload === "object") return firebase[query](ref(this.db, path), msg.payload);
+					if (msg.payload && typeof msg.payload === "object") {
+						await firebase[query](ref(this.db, path), msg.payload);
+						break;
+					}
+
 					throw new Error("msg.payload must be an object with 'update' query.");
 				case "remove":
-					return firebase[query](ref(this.db, path));
+					await firebase[query](ref(this.db, path));
+					break;
 				case "setPriority":
-					return firebase[query](ref(this.db, path), this.getPriority(msg));
+					await firebase[query](ref(this.db, path), this.getPriority(msg));
+					break;
 				case "setWithPriority":
-					return firebase[query](ref(this.db, path), msg.payload, this.getPriority(msg));
+					await firebase[query](ref(this.db, path), msg.payload, this.getPriority(msg));
+					break;
 				default:
-					return firebase[query](ref(this.db, path), msg.payload);
+					await firebase[query](ref(this.db, path), msg.payload);
+					break;
 			}
+		}
+
+		// Clear Permission Denied Status
+		if (this.permissionDeniedStatus) {
+			this.permissionDeniedStatus = false;
+			this.setNodeStatus();
 		}
 	}
 
