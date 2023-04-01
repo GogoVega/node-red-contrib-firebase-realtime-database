@@ -14,12 +14,13 @@
  * limitations under the License.
  */
 
-import { Database, DataSnapshot, get, ref, query, Unsubscribe } from "firebase/database";
+import { Database, get, ref, query, Unsubscribe } from "firebase/database";
 import * as firebase from "firebase/database";
-import admin from "firebase-admin";
+import * as admin from "firebase-admin";
 import { ConnectionStatus } from "./types/DatabaseNodeType";
 import { Listener, ListenerType, Query } from "../lib/types/FirebaseConfigType";
 import {
+	DataSnapshot,
 	DBRef,
 	FirebaseGetNodeType,
 	FirebaseInNodeType,
@@ -312,23 +313,23 @@ class Firebase {
 	 * @param snapshot A DataSnapshot contains data from a Database location.
 	 * @param child A string containing the key of the previous child, by sort order,
 	 * or `null` if it is the first child.
+	 * @param msg The message to pass through.
 	 */
-	protected sendMsg(snapshot: DataSnapshot | admin.database.DataSnapshot, child?: string | null) {
-		// Clear Permission Denied Status
-		if (this.permissionDeniedStatus) {
-			this.permissionDeniedStatus = false;
-			this.setNodeStatus();
-		}
-
+	protected sendMsg(snapshot: DataSnapshot, child?: string | null, msg?: InputMessageType) {
 		try {
-			if (!snapshot.exists()) return;
+			// Clear Permission Denied Status
+			if (this.permissionDeniedStatus) {
+				this.permissionDeniedStatus = false;
+				this.setNodeStatus();
+			}
 
 			const topic = snapshot.ref.key?.toString() || "";
 			const payload = this.node.config.outputType === "string" ? JSON.stringify(snapshot.val()) : snapshot.val();
 			const previousChildName = child !== undefined ? { previousChildName: child } : {};
-			const priority = snapshot instanceof DataSnapshot ? snapshot.priority : snapshot.getPriority();
+			const priority = snapshot instanceof firebase.DataSnapshot ? snapshot.priority : snapshot.getPriority();
+			const msgToSend = { ...(msg || {}), payload: payload, ...previousChildName, priority: priority, topic: topic };
 
-			this.node.send({ payload: payload, ...previousChildName, priority: priority, topic: topic } as OutputMessageType);
+			this.node.send(msgToSend as OutputMessageType);
 		} catch (error) {
 			this.onError(error);
 		}
@@ -393,6 +394,7 @@ export class FirebaseGet extends Firebase {
 	 * @returns A promise of completion of the request
 	 */
 	public async doGetQuery(msg: InputMessageType) {
+		const msg2PassThrough = this.node.config.passThrough ? msg : undefined;
 		const constraint = msg.method || this.node.config.constraint;
 		const path = this.getPath(msg);
 		let snapshot;
@@ -409,7 +411,7 @@ export class FirebaseGet extends Firebase {
 			snapshot = await get(query(ref(this.db, path), ...this.applyQueryConstraints(constraint)));
 		}
 
-		this.sendMsg(snapshot);
+		this.sendMsg(snapshot, undefined, msg2PassThrough);
 	}
 
 	/**
@@ -493,7 +495,7 @@ export class FirebaseIn extends Firebase {
 				} else {
 					this.subscriptionCallback = firebase[Listener[this.listener]](
 						query(ref(this.db, pathParsed), ...this.applyQueryConstraints(constraint)),
-						(snapshot: DataSnapshot, child: string | null | undefined) => this.sendMsg(snapshot, child),
+						(snapshot: firebase.DataSnapshot, child?: string | null) => this.sendMsg(snapshot, child),
 						(error) => this.onError(error)
 					);
 				}
