@@ -117,7 +117,7 @@
 				authType.on("change", () => hideShow(authType.val()));
 				$("#node-config-input-json").typedInput({ default: "json", types: ["json"] });
 				$("#node-config-input-clientEmail").typedInput({ types: [{ value: "str", validate: RED.validators.regex(/^__PWRD__$|^\S+\.iam\.gserviceaccount\.com$/) }] });
-				$("#node-config-input-privateKey").typedInput({ types: [{ value: "str", validate: RED.validators.regex(/^__PWRD__$|^-----BEGIN PRIVATE KEY-----\S+-----END PRIVATE KEY-----/) }] });
+				$("#node-config-input-privateKey").typedInput({ types: [{ value: "str", validate: RED.validators.regex(/^__PWRD__$|-----BEGIN PRIVATE KEY-----\S+-----END PRIVATE KEY-----/) }] });
 
 				$(".red-ui-tray").on("dragenter", dragEnter);
 				$("#json-drop-target").on("click", filePrompt);
@@ -269,6 +269,7 @@
 			return true;
 		}
 
+		// TODO: Use data instead of value
 		function parseAndUpdateInputs(content) {
 			try {
 				const data = JSON.parse(content);
