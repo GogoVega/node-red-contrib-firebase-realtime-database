@@ -86,170 +86,237 @@
 </style>
 
 <script type="text/javascript">
-	RED.nodes.registerType("database-config", {
-		category: "config",
-		credentials: {
-			apiKey: { type: "text", validate: RED.validators.regex(/^AIza[a-zA-Z0-9]{35}$/) },
-			clientEmail: { type: "password" },
-			email: {
-				type: "text",
-				validate: RED.validators.regex(/^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/i),
+	(function () {
+		RED.nodes.registerType("database-config", {
+			category: "config",
+			credentials: {
+				apiKey: { type: "text", validate: RED.validators.regex(/^AIza[a-zA-Z0-9]{35}$/) },
+				clientEmail: { type: "password" },
+				email: { type: "text", validate: RED.validators.regex(/^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/i) },
+				json: { type: "password" },
+				password: { type: "password", validate: RED.validators.regex(/^.+$/) },
+				privateKey: { type: "password" },
+				uid: { type: "text", validate: RED.validators.regex(/^.{1,128}$/) },
+				url: { type: "text", validate: RED.validators.regex(/^https:\/\/[a-zA-Z0-9-]{4,30}-default-rtdb\.((asia-southeast1|europe-west1)\.firebasedatabase\.app|firebaseio\.com)\/$/) },
 			},
-			json: { type: "password" },
-			password: { type: "password", validate: RED.validators.regex(/\S/) },
-			privateKey: { type: "password" },
-			secret: { type: "password" },
-			url: {
-				type: "text",
-				validate: RED.validators.regex(
-					/https:\/\/[a-zA-Z0-9-]{4,30}-default-rtdb\.((asia-southeast1|europe-west1)\.firebasedatabase\.app|firebaseio\.com)\//
-				),
+			defaults: {
+				name: { value: "My Database" },
+				authType: { value: "anonymous" },
+				claims: { value: {} },
+				createUser: { value: false },
+				useClaims: { value: false },
 			},
-		},
-		defaults: {
-			name: { value: "My Database" },
-			authType: { value: "anonymous" },
-			createUser: { value: false },
-		},
-		label: function () {
-			return this.name || "My Database";
-		},
-		oneditprepare: function () {
-			const authType = $("#node-config-input-authType");
+			label: function () {
+				return this.name || "My Database";
+			},
+			oneditprepare: function () {
+				const authType = $("#node-config-input-authType");
+				const claimsContainer = $("#node-config-input-claims-container");
+				const useClaims = $("#node-config-input-useClaims");
 
-			authType.on("change", () => HideShow(authType.val()));
-			$("#node-config-input-json").typedInput({ type: "json", types: ["json"] });
-			$("#node-config-input-clientEmail").typedInput({ types: [{ value: "str", validate: RED.validators.regex(/^__PWRD__|\S+\.iam\.gserviceaccount\.com$/) }] });
-			$("#node-config-input-privateKey").typedInput({ types: [{ value: "str", validate: RED.validators.regex(/^__PWRD__|-----BEGIN PRIVATE KEY-----\S+-----END PRIVATE KEY-----/) }] });
+				authType.on("change", () => hideShow(authType.val()));
+				$("#node-config-input-json").typedInput({ default: "json", types: ["json"] });
+				$("#node-config-input-clientEmail").typedInput({ types: [{ value: "str", validate: RED.validators.regex(/^__PWRD__$|^\S+\.iam\.gserviceaccount\.com$/) }] });
+				$("#node-config-input-privateKey").typedInput({ types: [{ value: "str", validate: RED.validators.regex(/^__PWRD__$|-----BEGIN PRIVATE KEY-----\S+-----END PRIVATE KEY-----/) }] });
 
-			$(".red-ui-tray").on("dragenter", dragEnter);
-			$("#json-drop-target").on("click", filePrompt);
-			$("#file-drop-target").on("dragover", dragOverHandler).on("dragleave", dragLeave).on("drop", dropHandler).hide();
-		},
-	});
+				$(".red-ui-tray").on("dragenter", dragEnter);
+				$("#json-drop-target").on("click", filePrompt);
+				$("#file-drop-target").on("dragover", dragOverHandler).on("dragleave", dragLeave).on("drop", dropHandler).hide();
 
-	function dragEnter() {
-		event.preventDefault();
-		event.stopPropagation();
-		$("#file-drop-target").css({ display: "table" }).focus();
-	}
+				claimsContainer.css("min-height", "150px").css("min-width", "300px").editableList({
+					addButton: this._("database-config.addClaim"),
+					addItem: addItem,
+					removable: true,
+					sortable: true,
+				});
 
-	function dragLeave() {
-		event.preventDefault();
-		event.stopPropagation();
-		$("#file-drop-target").hide();
-	}
+				useClaims.on("change", useClaimsHandler.bind(this));
+			},
+			oneditsave: function () {
+				const claimsContainer = $("#node-config-input-claims-container").editableList("items").sort(compare);
+				const node = this;
 
-	// Prevent default behavior (Prevent file from being opened)
-	function dragOverHandler() {
-		event.preventDefault();
-		event.stopPropagation();
-	}
+				node.claims = {};
 
-	// Read drag data
-	function dropHandler() {
-		event.preventDefault();
-		event.stopPropagation();
+				claimsContainer.each(function () {
+					const id = $(this).data("data")?.id;
+					const key = $(this).find(`#node-config-input-claimsKey-case-${id}`).val();
+					const value = $(this).find(`#node-config-input-claimsValue-case-${id}`).val();
+					const type = $(this).find(`#node-config-input-claimsValueType-case-${id}`).val();
 
-		$("#file-drop-target").hide();
+					node.claims[key] = { value: value, type: type };
+				});
+			},
+		});
 
-		if (event.dataTransfer.items) {
-			[...event.dataTransfer.items].forEach((item, i) => {
-				if (item.kind === "file") {
-					const file = item.getAsFile();
-					readData(file);
-				} else if (item.kind === "string") {
-					if (item.type !== "text/plain") return;
-					item.getAsString((s) => parseAndUpdateInputs(s));
-				} else {
-					alert("The dropped item must be an file .txt or .json");
-				}
+		function addItem(container, index, data) {
+			const id = Math.floor((0x99999 - 0x10000) * Math.random()).toString();
+
+			const HTMLBody = `
+				<div style="flex-grow:1">
+					<div style="display:flex;">
+						<input type="text" id="node-config-input-claimsKey-case-${id}" style="width:165px; text-align:center;" placeholder="Key" />
+						<div style="flex-grow:1; margin-left:5px;">
+							<input type="text" id="node-config-input-claimsValue-case-${id}" style="width:100%;" placeholder="Value" />
+							<input type="hidden" id="node-config-input-claimsValueType-case-${id}" style="width:100%;" />
+						</div>
+					</div>
+				</div>`;
+
+			container.css({
+				overflow: "hidden",
+				whiteSpace: "nowrap",
+				display: "flex",
+				"align-items": "center",
 			});
+
+			$(container).html(HTMLBody);
+			const keyField = $(container).find(`#node-config-input-claimsKey-case-${id}`);
+			const valueField = $(container).find(`#node-config-input-claimsValue-case-${id}`);
+
+			keyField.typedInput({ default: "str", types: [{ value: "str", label: "string", icon: "red/images/typedInput/az.svg", validate: isClaimKeyValid }] });
+			valueField.typedInput({ default: "str", typeField: `#node-config-input-claimsValueType-case-${id}`, types: ["flow", "global", "str", "num", "bool", "json", "bin", "date", "env"] });
+
+			if (Array.isArray(data)) {
+				const [key, object] = data;
+
+				keyField.typedInput("value", key);
+				valueField.typedInput("value", object.value);
+				valueField.typedInput("type", object.type);
+
+				data = {};
+				$(container).data("data", data);
+			}
+
+			data.id = id;
+			data.index = index;
 		}
-	}
 
-	// Prompt file
-	function filePrompt() {
-		const onChange = (e) => readData(e.target.files[0]);
-		const input = document.createElement("input");
-		input.type = "file";
-		input.onchange = onChange;
-		input.click();
-	}
+		function compare(a, b) {
+			return a.index - b.index;
+		}
 
-	function HideShow(Value) {
-		switch (Value) {
-			case "anonymous":
-				$(".form-row-apiKey").show();
-				$(".form-row-url").show();
-				$(".form-row-json").hide();
-				$(".form-row-email").hide();
-				$(".form-row-secret").hide();
-				break;
+		function dragEnter() {
+			event.preventDefault();
+			event.stopPropagation();
+			$("#file-drop-target").css({ display: "table" }).focus();
+		}
 
-			case "privateKey":
-				$(".form-row-apiKey").hide();
-				$(".form-row-url").show();
-				$(".form-row-json").show();
-				$(".form-row-email").hide();
-				$(".form-row-secret").hide();
+		function dragLeave() {
+			event.preventDefault();
+			event.stopPropagation();
+			$("#file-drop-target").hide();
+		}
 
-				// DEPRECATED
-				// Disables JSON input if node config uses it (old config)
+		// Prevent default behavior (Prevent file from being opened)
+		function dragOverHandler() {
+			event.preventDefault();
+			event.stopPropagation();
+		}
+
+		// Read drag data
+		function dropHandler() {
+			event.preventDefault();
+			event.stopPropagation();
+
+			$("#file-drop-target").hide();
+
+			if (event.dataTransfer.items) {
+				[...event.dataTransfer.items].forEach((item, i) => {
+					if (item.kind === "file") {
+						const file = item.getAsFile();
+						readData(file);
+					} else if (item.kind === "string") {
+						if (item.type !== "text/plain") return;
+						item.getAsString((s) => parseAndUpdateInputs(s));
+					} else {
+						alert("The dropped item must be an file .txt or .json");
+					}
+				});
+			}
+		}
+
+		// Prompt file
+		function filePrompt() {
+			const onChange = (e) => readData(e.target.files[0]);
+			const input = document.createElement("input");
+			input.type = "file";
+			input.onchange = onChange;
+			input.click();
+		}
+
+		function hideShow(type) {
+			const useClaims = $("#node-config-input-useClaims").prop("checked");
+
+			$(".login-row").hide();
+			$(`.login-row-${type}`).show();
+
+			useClaims === true && type === "customToken" ? $(".form-row-claims").show() : $(".form-row-claims").hide();
+
+			// DEPRECATED
+			// Disables JSON input if node config uses it (old config < 0.3.0)
+			if (type === "privateKey" || type === "customToken") {
 				if ($("#node-config-input-json").val()) {
 					$("#node-config-input-json").typedInput("disable");
 				} else {
 					$(".form-row-json-deprecated").hide();
 				}
-				break;
-
-			case "email":
-				$(".form-row-apiKey").show();
-				$(".form-row-url").show();
-				$(".form-row-json").hide();
-				$(".form-row-email").show();
-				$(".form-row-secret").hide();
-				break;
-
-			case "customToken":
-				$(".form-row-apiKey").show();
-				$(".form-row-url").show();
-				$(".form-row-json").hide();
-				$(".form-row-email").hide();
-				$(".form-row-secret").show();
-				break;
+			}
 		}
-	}
 
-	function parseAndUpdateInputs(content) {
-		try {
-			const data = JSON.parse(content);
-			// Need to stringify it because the input does not support line break
-			const privateKey = JSON.stringify(data["privateKey"] || data["private_key"]);
-
-			$("#node-config-input-clientEmail").typedInput("value", data["clientEmail"] || data["client_email"]);
-			$("#node-config-input-privateKey").typedInput("value", privateKey);
-			$("#node-config-input-clientEmail").typedInput("validate");
-			$("#node-config-input-privateKey").typedInput("validate");
-			$("#json-drop-target").html("The file has been loaded.");
-		} catch (error) {
-			$("#json-drop-target").html("An error has occurred :(");
-			alert(error.message || error.toString());
+		function isClaimKeyValid(key) {
+			if (key.match(/^(acr|amr|at_hash|aud|auth_time|azp|cnf|c_hash|exp|iat|iss|jti|nbf|nonce|sub|firebase|user_id)$|^\s|\s$/)) return false;
+			return true;
 		}
-	}
 
-	// Read Data
-	function readData(file) {
-		const name = file.name.toLowerCase();
-		const reader = new FileReader();
+		// TODO: Use data instead of value
+		function parseAndUpdateInputs(content) {
+			try {
+				const data = JSON.parse(content);
+				// Need to stringify it because the input does not support line break
+				const privateKey = JSON.stringify(data["privateKey"] || data["private_key"]);
 
-		if (!name.match(/\.(txt|json)$/)) return alert("The file extension must be .txt or .json");
+				$("#node-config-input-clientEmail").typedInput("value", data["clientEmail"] || data["client_email"]);
+				$("#node-config-input-privateKey").typedInput("value", privateKey);
+				$("#node-config-input-clientEmail").typedInput("validate");
+				$("#node-config-input-privateKey").typedInput("validate");
+				$("#json-drop-target").html("The file has been loaded.");
+			} catch (error) {
+				$("#json-drop-target").html("An error has occurred :(");
+				alert(error.message || error.toString());
+			}
+		}
 
-		reader.readAsText(file);
-		reader.onload = function () {
-			parseAndUpdateInputs(reader.result);
-		};
-	}
+		// Read Data
+		function readData(file) {
+			const name = file.name.toLowerCase();
+			const reader = new FileReader();
+
+			if (!name.match(/\.(txt|json)$/)) return alert("The file extension must be .txt or .json");
+
+			reader.onload = (ev) => parseAndUpdateInputs(ev.target.result);
+			reader.readAsText(file, "UTF-8");
+		}
+
+		function useClaimsHandler() {
+			const authType = $("#node-config-input-authType");
+			const claimsContainer = $("#node-config-input-claims-container");
+			const claimsContainerRow = $(".form-row-claims");
+			const useClaims = $("#node-config-input-useClaims");
+
+			if (useClaims.prop("checked") === true) {
+				let claims = Object.entries(this.claims || {});
+
+				if (claims.length === 0) claims = [["admin", { value: false, type: "bool" }], ["debug", { value: false, type: "bool" }]];
+
+				claims.forEach((item) => claimsContainer.editableList("addItem", item));
+				claimsContainerRow.show();
+			} else {
+				claimsContainerRow.hide();
+				claimsContainer.editableList("empty");
+			}
+		}
+	})();
 </script>
 
 <script type="text/html" data-template-name="database-config">
@@ -257,22 +324,22 @@
 
 	<div class="form-row">
 		<label for="node-config-input-name"><i class="fa fa-tag"></i> <span data-i18n="database-config.label.name"></span></label>
-		<input type="text" id="node-config-input-name" style="width:70%" />
+		<input type="text" id="node-config-input-name" style="width:70%;" />
 	</div>
 
 	<div class="firebase-text-divider" data-i18n="database-config.divider.authMethod"></div>
 
 	<div class="form-row">
 		<label for="node-config-input-authType"><i class="fa fa-shield"></i> <span data-i18n="database-config.label.type"></span></label>
-		<select id="node-config-input-authType" style="width: 70%;">
+		<select id="node-config-input-authType" style="width:70%;">
 			<option value="anonymous" data-i18n="database-config.value.anonymous"></option>
 			<option value="email" data-i18n="database-config.value.email"></option>
 			<option value="privateKey" data-i18n="database-config.value.privateKey"></option>
-			<!--<option value="customToken">Custom Token Generated with Secret</option>-->
+			<option value="customToken" data-i18n="database-config.value.customToken"></option>
 		</select>
 	</div>
 
-	<div class="form-row form-row-email">
+	<div class="form-row login-row login-row-email">
 		<label for="node-config-input-createUser">&nbsp;</label>
 		<input type="checkbox" id="node-config-input-createUser" style="display:inline-block; width:15px; vertical-align:baseline;"/>
 		<span data-i18n="database-config.createNewUser"></span>
@@ -281,64 +348,74 @@
 	<div class="firebase-text-divider" data-i18n="database-config.divider.credentials"></div>
 
 	<!-- Anonymous login -->
-	<div class="form-row form-row-apiKey">
+	<div class="form-row login-row login-row-anonymous login-row-customToken login-row-email">
 		<label for="node-config-input-apiKey"><i class="fa fa-key"></i> <span data-i18n="database-config.label.apiKey"></span></label>
-		<input type="text" id="node-config-input-apiKey" style="width:70%" data-i18n="[placeholder]database-config.placeholder.apiKey" />
+		<input type="text" id="node-config-input-apiKey" style="width:70%;" data-i18n="[placeholder]database-config.placeholder.apiKey" />
 	</div>
 
-	<div class="form-row form-row-url">
+	<div class="form-row">
 		<label for="node-config-input-url"><i class="fa fa-link"></i> <span data-i18n="database-config.label.url"></span></label>
-		<input type="text" id="node-config-input-url" style="width:70%" data-i18n="[placeholder]database-config.placeholder.url" />
+		<input type="text" id="node-config-input-url" style="width:70%;" data-i18n="[placeholder]database-config.placeholder.url" />
 	</div>
 
 	<!-- JSON Private Key -->
 	<!-- DEPRECATED -->
-	<div class="form-row form-row-json form-row-json-deprecated">
+	<div class="form-row login-row login-row-customToken login-row-privateKey form-row-json-deprecated">
 		<label for="node-config-input-json"><i class="fa fa-file-code-o"></i> <span data-i18n="database-config.label.json"></span></label>
-		<input type="text" id="node-config-input-json" style="width:70%" data-i18n="[placeholder]database-config.placeholder.json" />
+		<input type="text" id="node-config-input-json" style="width:70%;" data-i18n="[placeholder]database-config.placeholder.json" />
 	</div>
 
-	<div class="form-row form-row-json">
+	<div class="form-row login-row login-row-customToken login-row-privateKey">
 		<label for="node-config-input-clientEmail"><i class="fa fa-envelope"></i> <span data-i18n="database-config.label.clientEmail"></span></label>
 		<input type="password" id="node-config-input-clientEmail" style="width:70%;" data-i18n="[placeholder]database-config.placeholder.clientEmail"/>
 	</div>
 
-	<div class="form-row form-row-json">
+	<div class="form-row login-row login-row-customToken login-row-privateKey">
 		<label for="node-config-input-privateKey"><i class="fa fa-key"></i> <span data-i18n="database-config.label.privateKey"></span></label>
-		<input type="password" id="node-config-input-privateKey" style="width:70%;" data-i18n="[placeholder]database-config.placeholder.privateKey"/>
+		<input type="password" id="node-config-input-privateKey" style="width:70%; white-space:nowrap;" data-i18n="[placeholder]database-config.placeholder.privateKey"/>
 	</div>
 
-	<!-- Custom login with new token generated from Firebase-->
-	<div class="form-row form-row-secret">
-		<label for="node-config-input-secret"><i class="fa fa-user-secret"></i> Secret</label>
-		<input type="password" id="node-config-input-secret" style="width:70%" placeholder="Firebase Secret" />
+	<!-- Custom Token generated with Private Key-->
+	<div class="form-row login-row login-row-customToken">
+		<label for="node-config-input-uid"><i class="fa fa-user"></i> <span data-i18n="database-config.label.uid"></span></label>
+		<input type="text" id="node-config-input-uid" style="width:70%;" placeholder="Unique ID" />
 	</div>
 
 	<!-- Email login -->
-	<div class="form-row form-row-email">
+	<div class="form-row login-row login-row-email">
 		<label for="node-config-input-email"><i class="fa fa-envelope"></i> <span data-i18n="database-config.label.email"></span></label>
-		<input type="email" id="node-config-input-email" style="width:70%" data-i18n="[placeholder]database-config.placeholder.email" />
+		<input type="email" id="node-config-input-email" style="width:70%;" data-i18n="[placeholder]database-config.placeholder.email" />
 	</div>
 
-	<div class="form-row form-row-email">
+	<div class="form-row login-row login-row-email">
 		<label for="node-config-input-password"><i class="fa fa-lock"></i> <span data-i18n="database-config.label.password"></span></label>
-		<input type="password" id="node-config-input-password" style="width:70%" data-i18n="[placeholder]database-config.placeholder.password" />
+		<input type="password" id="node-config-input-password" style="width:70%;" data-i18n="[placeholder]database-config.placeholder.password" />
 	</div>
 
-	<div class="form-row-json" id="json-drop-target" data-i18n="database-config.clickDragHere"></div>
+	<div class="form-row login-row login-row-customToken">
+		<label for="node-config-input-useClaims"><i class="fa fa-id-card"></i> <span data-i18n="database-config.label.claims"></span></label>
+		<input type="checkbox" id="node-config-input-useClaims" style="display:inline-block; width:15px; vertical-align:baseline;" />
+		<span data-i18n="database-config.useClaims">
+	</div>
+
+	<div class="form-row form-row-claims">
+		<ol id="node-config-input-claims-container"></ol>
+	</div>
+
+	<div class="login-row login-row-customToken login-row-privateKey" id="json-drop-target" data-i18n="database-config.clickDragHere"></div>
 
 	<div class="firebase-text-divider" data-i18n="database-config.divider.tips"></div>
 
 	<div class="form-tips" id="database-config-tips">
-		<div class="form-row-apiKey"><span data-i18n="[html]database-config.tips.apiKey"></span></div>
-		<div class="form-row-url"><span data-i18n="[html]database-config.tips.url"></span></div>
-		<div class="form-row-email">
+		<div class="login-row login-row-anonymous login-row-email login-row-customToken"><span data-i18n="[html]database-config.tips.apiKey"></span></div>
+		<div><span data-i18n="[html]database-config.tips.url"></span></div>
+		<div class="login-row login-row-email">
 			<span data-i18n="[html]database-config.tips.email"></span>
 			<ul>
 				<li><span data-i18n="[html]database-config.tips.emailMethod1"></span></li>
 				<li><span data-i18n="[html]database-config.tips.emailMethod2"></span></li>
 			</ul>
 		</div>
-		<div class="form-row-json"><span data-i18n="[html]database-config.tips.json"></span></div>
+		<div class="login-row login-row-customToken login-row-privateKey"><span data-i18n="[html]database-config.tips.json"></span></div>
 	</div>
 </script>

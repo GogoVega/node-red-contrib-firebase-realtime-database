@@ -42,8 +42,8 @@ type DatabaseCredentials = {
 	json: string;
 	password: string;
 	privateKey: string;
+	uid: string;
 	url: string;
-	secret: string;
 };
 
 type DatabaseNodeType = Node & {
@@ -53,7 +53,6 @@ type DatabaseNodeType = Node & {
 	connectionStatus: ConnectionStatus;
 	credentials: DatabaseCredentials;
 	database?: Database | admin.database.Database;
-	RED: NodeAPI;
 
 	/**
 	 * Creates and initializes a callback to verify that the config node is in use.
@@ -66,12 +65,21 @@ type DatabaseNodeType = Node & {
 	 */
 	destroyUnusedConnection(removed: boolean): void;
 	nodes: Array<FirebaseNodeType>;
+	RED: NodeAPI;
 
 	/**
 	 * Restores the connection with Firebase if at least one node is activated.
 	 * @remarks This method should only be used if the connection has been destroyed.
 	 */
 	restoreDestroyedConnection(): void;
+
+	/**
+	 * Authentication status
+	 * @returns `true` On successful authentication.
+	 * @returns `false` On failure authentication.
+	 * @returns `undefined` On not yet authenticated.
+	 */
+	signedIn?: boolean;
 };
 
 type JSONContentType = ServiceAccount & {

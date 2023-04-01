@@ -83,6 +83,11 @@ class Firebase {
 	protected permissionDeniedStatus = false;
 
 	/**
+	 * This callback is used to subscribe and unsubscribe to the `signedIn` event.
+	 */
+	protected signedInCallback?: (isSignedIn: boolean) => void;
+
+	/**
 	 * Applies the query constraints to the database reference.
 	 * @param method The object containing the query constraints
 	 * @returns An array of query constraints checked
@@ -218,9 +223,11 @@ class Firebase {
 	public deregisterNode(removed: boolean, done: (error?: unknown) => void) {
 		const nodes = this.node.database?.nodes;
 
-		if (!nodes) return done();
-
 		try {
+			if (this.signedInCallback) this.node.RED.events.removeListener("Firebase:signedIn", this.signedInCallback);
+
+			if (!nodes) return done();
+
 			nodes.forEach((node) => {
 				if (node.id !== this.node.id) return;
 				nodes.splice(nodes.indexOf(node), 1);
@@ -243,6 +250,30 @@ class Firebase {
 	// @ts-ignore
 	protected isAdmin(db: Database | admin.database.Database): db is admin.database.Database {
 		return this.node.database?.config.authType === "privateKey";
+	}
+
+	/**
+	 * Checks and waits for the user to be logged in.
+	 * The Promise will be resolved when the `signedIn` event is triggered with the status of the connection.
+	 * @returns A boolean promise of the user's login state.
+	 */
+	protected isUserSignedIn(): Promise<boolean> {
+		return new Promise((resolve, reject) => {
+			try {
+				if (this.node.database?.signedIn !== undefined) {
+					resolve(this.node.database?.signedIn);
+					return;
+				}
+
+				this.signedInCallback = (isSignedIn) => {
+					resolve(isSignedIn);
+				};
+
+				this.node.RED.events.on("Firebase:signedIn", this.signedInCallback);
+			} catch (error) {
+				reject(error);
+			}
+		});
 	}
 
 	/**
@@ -341,7 +372,7 @@ class Firebase {
 }
 
 /**
- * `FirebaseGet` Sublass of Parent `Firebase` Class
+ * `FirebaseGet` SubClass of Parent `Firebase` Class
  *
  * This class is used to communicate with Google Firebase Realtime Databases.
  *
@@ -369,6 +400,8 @@ export class FirebaseGet extends Firebase {
 		let snapshot;
 
 		if (!this.db) return;
+
+		if (!(await this.isUserSignedIn())) return;
 
 		if (this.isAdmin(this.db)) {
 			const database = path ? this.db.ref().child(path) : this.db.ref();
@@ -405,7 +438,7 @@ export class FirebaseGet extends Firebase {
 }
 
 /**
- * `FirebaseIn` Sublass of Parent `Firebase` Class
+ * `FirebaseIn` SubClass of Parent `Firebase` Class
  *
  * This class is used to communicate with Google Firebase Realtime Databases.
  *
@@ -414,7 +447,7 @@ export class FirebaseGet extends Firebase {
  * Subscribes to data at the specified path, which yields a `payload` whenever a value changes.
  *
  * @param node The node to associate with this class
- * @returns A `FirebaseIn` class
+ * @returns A `FirebaseIn` Class
  */
 export class FirebaseIn extends Firebase {
 	constructor(protected node: FirebaseInNodeType) {
@@ -442,26 +475,34 @@ export class FirebaseIn extends Firebase {
 	 * Calls `checkPath` to check the path.
 	 */
 	public doSubscriptionQuery() {
-		const constraint = this.node.config.constraint;
-		const pathParsed = this.checkPath(this.path, true);
+		(async () => {
+			try {
+				const constraint = this.node.config.constraint;
+				const pathParsed = this.checkPath(this.path, true);
 
-		if (!this.db) return;
+				if (!this.db) return;
 
-		if (this.isAdmin(this.db)) {
-			const databaseRef = pathParsed ? this.db.ref().child(pathParsed) : this.db.ref();
+				if (!(await this.isUserSignedIn())) return;
 
-			this.subscriptionCallback = this.applyQueryConstraints(constraint, databaseRef).on(
-				this.listener,
-				(snapshot, child) => this.sendMsg(snapshot, child),
-				(error) => this.onError(error)
-			);
-		} else {
-			this.subscriptionCallback = firebase[Listener[this.listener]](
-				query(ref(this.db, pathParsed), ...this.applyQueryConstraints(constraint)),
-				(snapshot: firebase.DataSnapshot, child?: string | null) => this.sendMsg(snapshot, child),
-				(error) => this.onError(error)
-			);
-		}
+				if (this.isAdmin(this.db)) {
+					const databaseRef = pathParsed ? this.db.ref().child(pathParsed) : this.db.ref();
+
+					this.subscriptionCallback = this.applyQueryConstraints(constraint, databaseRef).on(
+						this.listener,
+						(snapshot, child) => this.sendMsg(snapshot, child),
+						(error) => this.onError(error)
+					);
+				} else {
+					this.subscriptionCallback = firebase[Listener[this.listener]](
+						query(ref(this.db, pathParsed), ...this.applyQueryConstraints(constraint)),
+						(snapshot: firebase.DataSnapshot, child?: string | null) => this.sendMsg(snapshot, child),
+						(error) => this.onError(error)
+					);
+				}
+			} catch (error) {
+				this.node.error(error);
+			}
+		})();
 	}
 
 	/**
@@ -493,7 +534,7 @@ export class FirebaseIn extends Firebase {
 }
 
 /**
- * `FirebaseOut` Sublass of Parent `Firebase` Class
+ * `FirebaseOut` SubClass of Parent `Firebase` Class
  *
  * This class is used to write data to Firebase Database.
  * `SET`, `PUSH`, `UPDATE`, `REMOVE`, `SET PRIORITY` or `SET WITH PRIORITY` data at the target Database.
@@ -501,7 +542,6 @@ export class FirebaseIn extends Firebase {
  * @param node The node to associate with this class
  * @returns A `FirebaseOut` Class
  */
-// TODO: Add others methods
 export class FirebaseOut extends Firebase {
 	constructor(protected node: FirebaseOutNodeType) {
 		super(node);
@@ -541,6 +581,8 @@ export class FirebaseOut extends Firebase {
 		const query = this.getQuery(msg);
 
 		if (!this.db) return Promise.resolve();
+
+		if (!(await this.isUserSignedIn())) return Promise.resolve();
 
 		if (this.isAdmin(this.db)) {
 			switch (query) {

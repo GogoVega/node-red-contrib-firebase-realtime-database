@@ -21,11 +21,13 @@ import {
 	fetchSignInMethodsForEmail,
 	getAuth,
 	signInAnonymously,
+	signInWithCustomToken,
 	signInWithEmailAndPassword,
 	signOut,
 } from "firebase/auth";
 import { Database, getDatabase, onValue, ref, Unsubscribe } from "firebase/database";
-import admin from "firebase-admin";
+import admin, { ServiceAccount } from "firebase-admin";
+import { claimsNotAllowed } from "./const/database";
 import { firebaseError } from "./const/FirebaseError";
 import { ConnectionStatus, DatabaseNodeType, JSONContentType } from "./types/DatabaseNodeType";
 import { LogCallbackParams } from "@firebase/logger/dist/src/logger";
@@ -74,21 +76,63 @@ export default class FirebaseDatabase {
 	private subscriptionCallback?: Unsubscribe;
 
 	/**
+	 * Checks if the Claim keys are authorized.
+	 * @param claims The additional claims to be added to the token.
+	 * @returns The token generated.
+	 */
+	private checkClaims(claims: unknown = {}) {
+		if (typeof claims !== "object") throw new Error("Additional Claims must be an object!");
+
+		Object.keys(claims || {}).forEach((key) => {
+			if (claimsNotAllowed.includes(key)) throw new Error(`Claim key '${key}' is not allowed`);
+		});
+
+		return Object.entries(claims || {}).reduce<Record<string, unknown | never>>((acc, [key, value]) => {
+			acc[key] = value.value;
+			return acc;
+		}, {});
+	}
+
+	/**
 	 * Check if the received JSON content credentials contain the desired elements.
 	 * @param content The JSON content credentials
 	 * @returns The JSON content credentials checked
 	 */
-	private checkJSONCredential(content: unknown): JSONContentType {
+	private checkJSONCredential(content: unknown) {
 		if (!content || typeof content !== "object" || !Object.keys(content).length)
 			throw new Error("JSON Content must contain 'projectId', 'clientEmail' and 'privateKey'");
 
-		const cred = content as Record<string, string>;
+		const cred = content as JSONContentType;
+		const output = {
+			clientEmail: cred["client_email"] || cred["clientEmail"],
+			privateKey: cred["private_key"] || cred["privateKey"],
+			projectId: cred["project_id"] || cred["projectId"],
+		};
 
-		if (!cred["project_id"] && !cred["projectId"]) throw new Error("JSON Content must contain 'projectId'");
-		if (!cred["client_email"] && !cred["clientEmail"]) throw new Error("JSON Content must contain 'clientEmail'");
-		if (!cred["private_key"] && !cred["privateKey"]) throw new Error("JSON Content must contain 'privateKey'");
+		for (const [key, value] of Object.entries(output)) {
+			if (!value) throw new Error(`JSON Content must contain '${key}'`);
+		}
 
-		return content as JSONContentType;
+		return output as ServiceAccount;
+	}
+
+	/**
+	 * Creates a Custom Token with UID and additional Claims generated with the Private Key.
+	 * @returns The Token created.
+	 */
+	private async createCustomToken() {
+		const claims = this.checkClaims(this.node.config.claims);
+		const content = this.getJSONCredential();
+		const app = admin.initializeApp({
+			credential: admin.credential.cert(content),
+			databaseURL: this.node.credentials.url,
+		});
+
+		const token = await admin.auth(app).createCustomToken(this.node.credentials.uid, claims);
+
+		app.delete();
+
+		return token;
 	}
 
 	/**
@@ -131,7 +175,7 @@ export default class FirebaseDatabase {
 				.replaceAll('"', "")
 				.replaceAll("\\", "");
 
-			content["project_id"] = projetId;
+			content["projectId"] = projetId;
 			content["clientEmail"] = this.node.credentials.clientEmail;
 			content["privateKey"] = privateKey;
 		}
@@ -235,34 +279,48 @@ export default class FirebaseDatabase {
 	}
 
 	/**
-	 * Connects to Firebase with the authentication method defined in the `config-node`
-	 * @return A promise for Firebase connection completion
+	 * Connects to Firebase with the authentication method defined in the `config-node`.
+	 * An event `Firebase:signedIn` will be triggered for Firebase connection completion.
 	 */
-	public async logIn() {
-		// Initialize App
-		this.admin ? this.initAppWithSDK() : this.initApp();
+	public logIn() {
+		(async () => {
+			try {
+				// Initialize App
+				this.admin ? this.initAppWithSDK() : this.initApp();
 
-		// Initialize Logging
-		this.initLogging();
+				// Initialize Logging
+				this.initLogging();
 
-		// Initialize Connection Status
-		this.initConnectionStatus();
+				// Initialize Connection Status
+				this.initConnectionStatus();
 
-		// Log In
-		switch (this.node.config.authType) {
-			case "anonymous":
-				await this.logInAnonymously();
-				break;
-			case "email":
-				await this.logInWithEmail();
-				break;
-			case "privateKey":
-				// Logged In with Initialize App
-				break;
-		}
+				// Log In
+				switch (this.node.config.authType) {
+					case "anonymous":
+						await this.logInAnonymously();
+						break;
+					case "email":
+						await this.logInWithEmail();
+						break;
+					case "privateKey":
+						// Logged In with Initialize App
+						break;
+					case "customToken":
+						await this.logInWithCustomToken();
+						break;
+				}
 
-		// Check if the config node is in use. Otherwise the connection with Firebase will be closed.
-		this.destroyUnusedConnection(true);
+				this.node.signedIn = true;
+
+				// Check if the config node is in use. Otherwise the connection with Firebase will be closed.
+				this.destroyUnusedConnection(true);
+			} catch (error) {
+				this.node.signedIn = false;
+				this.onError(error as Error);
+			} finally {
+				this.node.RED.events.emit("Firebase:signedIn", this.node.signedIn);
+			}
+		})();
 	}
 
 	/**
@@ -273,6 +331,18 @@ export default class FirebaseDatabase {
 		if (!this.node.auth) return;
 
 		return signInAnonymously(this.node.auth as Auth);
+	}
+
+	/**
+	 * Logs in using a custom token containing a UID and optional additional Claims.
+	 * @returns A promise of signing completion
+	 */
+	private async logInWithCustomToken() {
+		if (!this.node.auth) return;
+
+		const token = await this.createCustomToken();
+
+		return signInWithCustomToken(this.node.auth as Auth, token);
 	}
 
 	/**
@@ -391,13 +461,7 @@ export default class FirebaseDatabase {
 		// Skip if Node-RED re-starts
 		if (this.node.connectionStatus !== ConnectionStatus.LOG_OUT) return;
 
-		(async () => {
-			try {
-				await this.logIn();
-			} catch (error) {
-				this.node.error(error);
-			}
-		})();
+		this.logIn();
 	}
 
 	/**

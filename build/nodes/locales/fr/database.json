@@ -9,7 +9,9 @@
       "clientEmail": "Email Client",
       "privateKey": "Clé Privée",
       "email": "Email",
-      "password": "MDP"
+      "password": "MDP",
+      "uid": "UID",
+      "claims": "Claims"
     },
     "divider": {
       "authMethod": "Méthode d'authentification",
@@ -19,7 +21,8 @@
     "value": {
       "anonymous": "Anonyme",
       "email": "Email",
-      "privateKey": "Clé Privée JSON"
+      "privateKey": "Clé Privée JSON",
+      "customToken": "Jeton personnalisé (Clé Privée)"
     },
     "placeholder": {
       "apiKey": "Clé API de la base de données",
@@ -31,6 +34,8 @@
       "password": "mot de passe"
     },
     "createNewUser": "Créer un nouvel utilisateur si celui-ci n'existe pas ?",
+    "addClaim": "Ajouter une revendication",
+    "useClaims": "Utiliser d'autres revendications pour s'authentifier ?",
     "clickDragHere": "Cliquer ou faites glisser le fichier ici.",
     "dropFileHere": "Lacher le fichier ici",
     "tips": {

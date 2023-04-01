@@ -9,7 +9,9 @@
       "clientEmail": "Client Email",
       "privateKey": "Private Key",
       "email": "Email",
-      "password": "Password"
+      "password": "Password",
+      "uid": "UID",
+      "claims": "Claims"
     },
     "divider": {
       "authMethod": "Authentication Method",
@@ -19,7 +21,8 @@
     "value": {
       "anonymous": "Anonymous",
       "email": "Email",
-      "privateKey": "JSON Private Key"
+      "privateKey": "JSON Private Key",
+      "customToken": "Custom Token Generated with Private Key"
     },
     "placeholder": {
       "apiKey": "Database API Key",
@@ -31,6 +34,8 @@
       "password": "password"
     },
     "createNewUser": "Create a new user if this one does not exist?",
+    "addClaim": "Add Claims Set",
+    "useClaims": "Use additional claims to authenticate?",
     "clickDragHere": "Click or drag the file here.",
     "dropFileHere": "Drop File Here",
     "tips": {

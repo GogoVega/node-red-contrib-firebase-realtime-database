@@ -20,7 +20,8 @@
 	<ul>
 		<li>Anonyme</li>
 		<li>Email avec Mot de passe</li>
-		<li>Clé Privée (SDK)</li>
+		<li>Clé Privée (Admin SDK)</li>
+		<li>Jeton Personnalisé généré avec une Clé Privée</li>
 	</ul>
 	<p><strong>Clé API</strong> : peut être trouvé dans les paramètres du projet.</p>
 	<p><strong>URL</strong> : peut être trouvé dans la console de la base de données en temps réel.</p>
@@ -34,8 +35,13 @@
 		Vous pouvez remplir manuellement les champs <strong>Email Client</strong> et <strong>Clé Privée</strong> ou les
 		laisser se compléter automatiquement en glissant le fichier JSON dans la zone grisée.
 	</p>
+	<p><strong>UID</strong> : identifie de manière unique l'utilisateur ou l'appareil que vous authentifiez.</p>
 	<p>
-		En savoir plus sur les différentes façons de s'authentifier
-		<a href="https://github.com/GogoVega/node-red-contrib-firebase-realtime-database/blob/master/docs/Authentication.md">ici</a>.
+		<strong>Claims</strong> : revendications supplémentaires à inclure dans le jeton personnalisé, qui sera disponible
+		dans les objets <code>auth</code> / <code>request.auth</code> de vos règles de sécurité.
+		</p>
+	<p>
+		En savoir plus sur la configuration de l'authentification
+		<a href="https://github.com/GogoVega/node-red-contrib-firebase-realtime-database/wiki/config-node">ici</a>.
 	</p>
 </script>

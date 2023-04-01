@@ -19,8 +19,9 @@
 	<p>The authentication methods are as follows:</p>
 	<ul>
 		<li>Anonymous</li>
-		<li>Email and Pasword</li>
-		<li>Private Key (SDK)</li>
+		<li>Email and Password</li>
+		<li>Private Key (Admin SDK)</li>
+		<li>Custom Token Generated with Private Key</li>
 	</ul>
 	<p><strong>API Key</strong>: can be found in the project settings.</p>
 	<p><strong>URL</strong>: can be found in the Realtime Database console.</p>
@@ -34,8 +35,13 @@
 		You can manually fill in the <strong>Email Client</strong> and <strong>Private Key</strong> fields or
 		let it complete automatically by dragging the JSON file into the gray area.
 	</p>
+	<p><strong>UID</strong>: uniquely identifies the user or device you are authenticating.</p>
 	<p>
-		Read more about the different ways to authenticate
-		<a href="https://github.com/GogoVega/node-red-contrib-firebase-realtime-database/blob/master/docs/Authentication.md">here</a>.
+		<strong>Claims</strong>: additional claims to include in the custom token, which will be available
+		in the <code>auth</code> / <code>request.auth</code> objects of your security rules.
+	</p>
+	<p>
+		Learn more about setting up authentication
+		<a href="https://github.com/GogoVega/node-red-contrib-firebase-realtime-database/wiki/config-node">here</a>.
 	</p>
 </script>
