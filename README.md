@@ -62,22 +62,22 @@ npm install @gogovega/node-red-contrib-firebase-realtime-database
 - `Anonymous`
 - `Email`
 - `Private Key` (Firebase Admin Node.js SDK)
+- `Custom Token` (Generated with Private Key)
 
-Read more about the different ways to authenticate [here](./docs/Authentication.md).
-
-## Future Features
-
-- Sign in with Custom Token generated with Private Key or Service Account ID (coming for v0.4.0)
+Read more about the different ways to authenticate [here](https://github.com/GogoVega/node-red-contrib-firebase-realtime-database/wiki/Authentication#authentication-methods).
 
 ## Getting Started Link
 
-- [Authentication Methods](./docs/Authentication.md): Which method used to connect?
+- [Installing](https://github.com/GogoVega/node-red-contrib-firebase-realtime-database/wiki/getting-started): System requirements and install instructions
+- [Build Database](https://github.com/GogoVega/node-red-contrib-firebase-realtime-database/wiki/create-database): How to build a Firebase database?
+- [Authentication Methods](https://github.com/GogoVega/node-red-contrib-firebase-realtime-database/wiki/Authentication#authentication-methods): Which method used to connect?
+- [Wiki](https://github.com/GogoVega/node-red-contrib-firebase-realtime-database/wiki): Just about everything
 - [Firebase Site](https://firebase.google.com/): What is Firebase?
 - [Change Log](./CHANGELOG.md): Whats changed?
 
 ## TODO List
 
-- [ ] Sign in with Custom Token
+- [x] ~~Sign in with Custom Token (Generated with Private Key)~~ (Generated with Service Account ID pending)
 - [ ] Add `onDisconnect` method
 - [ ] Sign in with Google (Provider)
 
