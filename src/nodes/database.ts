@@ -31,7 +31,7 @@ module.exports = function (RED: NodeAPI) {
 
 		const database = new FirebaseDatabase(self);
 
-		database.logIn().catch((error: Error) => database.onError(error));
+		database.logIn();
 
 		self.on("close", (done: (error?: Error) => void) =>
 			database
@@ -49,7 +49,7 @@ module.exports = function (RED: NodeAPI) {
 			json: { type: "password" },
 			password: { type: "password" },
 			privateKey: { type: "password" },
-			secret: { type: "password" },
+			uid: { type: "text" },
 			url: { type: "text" },
 		},
 	});

@@ -33,6 +33,7 @@
       "tip1": "If <code>msg.method</code> is set, Query Constraints defined in the node will be replaced by those contained in the message."
     },
     "useConstraint": "Use Query Constraint to sort and order your data.",
-    "addConstraint": "Add Query Constraint Set"
+    "addConstraint": "Add Query Constraint Set",
+    "passThrough": "If a message arrives, pass through the message?"
   }
 }

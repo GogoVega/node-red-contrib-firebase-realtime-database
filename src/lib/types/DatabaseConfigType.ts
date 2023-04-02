@@ -16,11 +16,15 @@
 
 import { NodeDef } from "node-red";
 
-type AuthType = "anonymous" | "email" | "privateKey";
+type AuthType = "anonymous" | "email" | "privateKey" | "customToken";
+
+type ClaimsType = Record<string, { value?: unknown; type?: unknown } | never>;
 
 type DatabaseConfigType = NodeDef & {
 	authType?: AuthType;
+	claims?: ClaimsType;
 	createUser?: boolean;
+	useClaims?: boolean;
 };
 
 export default DatabaseConfigType;

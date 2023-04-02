@@ -14,12 +14,13 @@
  * limitations under the License.
  */
 
-import { Database, DataSnapshot, get, ref, query, Unsubscribe } from "firebase/database";
+import { Database, get, ref, query, Unsubscribe } from "firebase/database";
 import * as firebase from "firebase/database";
-import admin from "firebase-admin";
+import * as admin from "firebase-admin";
 import { ConnectionStatus } from "./types/DatabaseNodeType";
 import { Listener, ListenerType, Query } from "../lib/types/FirebaseConfigType";
 import {
+	DataSnapshot,
 	DBRef,
 	FirebaseGetNodeType,
 	FirebaseInNodeType,
@@ -82,14 +83,28 @@ class Firebase {
 	protected permissionDeniedStatus = false;
 
 	/**
+	 * This callback is used to subscribe and unsubscribe to the `signedIn` event.
+	 */
+	protected signedInCallback?: (isSignedIn: boolean) => void;
+
+	/**
 	 * Applies the query constraints to the database reference.
-	 * @remarks To be used only on the `firebase-admin` module.
-	 * @param dbRef The database reference
 	 * @param method The object containing the query constraints
+	 * @returns An array of query constraints checked
+	 */
+	protected applyQueryConstraints(method: unknown): firebase.QueryConstraint[];
+
+	/**
+	 * Applies the query constraints to the database reference.
+	 * @param method The object containing the query constraints
+	 * @param dbRef The database reference
 	 * @returns The database reference with the query constraints applied
 	 */
-	protected applyQueryConstraints(dbRef: DBRef, method: unknown) {
+	protected applyQueryConstraints(method: unknown, dbRef: DBRef): DBRef;
+
+	protected applyQueryConstraints(method: unknown, dbRef?: DBRef) {
 		const constraints = this.checkQueryConstraints(method);
+		const query = [];
 
 		for (const [method, value] of Object.entries(constraints) as Entry<QueryConstraintType | Record<string, never>>[]) {
 			switch (method) {
@@ -98,24 +113,40 @@ class Firebase {
 				case "equalTo":
 				case "startAfter":
 				case "startAt":
-					dbRef = dbRef[method](value.value, value.key);
+					if (dbRef) {
+						dbRef = dbRef[method](value.value, value.key);
+					} else {
+						query.push(firebase[method](value.value, value.key));
+					}
 					break;
 				case "limitToFirst":
 				case "limitToLast":
-					dbRef = dbRef[method](value);
+					if (dbRef) {
+						dbRef = dbRef[method](value);
+					} else {
+						query.push(firebase[method](value));
+					}
 					break;
 				case "orderByChild":
-					dbRef = dbRef[method](value);
+					if (dbRef) {
+						dbRef = dbRef[method](value);
+					} else {
+						query.push(firebase[method](value));
+					}
 					break;
 				case "orderByKey":
 				case "orderByPriority":
 				case "orderByValue":
-					dbRef = dbRef[method]();
+					if (dbRef) {
+						dbRef = dbRef[method]();
+					} else {
+						query.push(firebase[method]());
+					}
 					break;
 			}
 		}
 
-		return dbRef;
+		return dbRef || query;
 	}
 
 	/**
@@ -192,9 +223,11 @@ class Firebase {
 	public deregisterNode(removed: boolean, done: (error?: unknown) => void) {
 		const nodes = this.node.database?.nodes;
 
-		if (!nodes) return done();
-
 		try {
+			if (this.signedInCallback) this.node.RED.events.removeListener("Firebase:signedIn", this.signedInCallback);
+
+			if (!nodes) return done();
+
 			nodes.forEach((node) => {
 				if (node.id !== this.node.id) return;
 				nodes.splice(nodes.indexOf(node), 1);
@@ -209,43 +242,6 @@ class Firebase {
 	}
 
 	/**
-	 * Gets the query constraints from the message. Calls `checkQueryConstraint` to check the query constraints.
-	 * @remarks To be used only on the `firebase` module.
-	 * @param method The object containing the query constraints
-	 * @returns An array of query constraints checked
-	 */
-	protected getQueryConstraints(method: unknown) {
-		const constraints = this.checkQueryConstraints(method) || {};
-		const query = [];
-
-		for (const [method, value] of Object.entries(constraints) as Entry<QueryConstraintType | Record<string, never>>[]) {
-			switch (method) {
-				case "endAt":
-				case "endBefore":
-				case "equalTo":
-				case "startAfter":
-				case "startAt":
-					query.push(firebase[method](value.value, value.key));
-					break;
-				case "limitToFirst":
-				case "limitToLast":
-					query.push(firebase[method](value));
-					break;
-				case "orderByChild":
-					query.push(firebase[method](value));
-					break;
-				case "orderByKey":
-				case "orderByPriority":
-				case "orderByValue":
-					query.push(firebase[method]());
-					break;
-			}
-		}
-
-		return query;
-	}
-
-	/**
 	 * This method checks if the database uses the `firebase-admin` module.
 	 * @param db The database used
 	 * @returns `true` if the database uses the `firebase-admin` module.
@@ -254,6 +250,30 @@ class Firebase {
 	// @ts-ignore
 	protected isAdmin(db: Database | admin.database.Database): db is admin.database.Database {
 		return this.node.database?.config.authType === "privateKey";
+	}
+
+	/**
+	 * Checks and waits for the user to be logged in.
+	 * The Promise will be resolved when the `signedIn` event is triggered with the status of the connection.
+	 * @returns A boolean promise of the user's login state.
+	 */
+	protected isUserSignedIn(): Promise<boolean> {
+		return new Promise((resolve, reject) => {
+			try {
+				if (this.node.database?.signedIn !== undefined) {
+					resolve(this.node.database?.signedIn);
+					return;
+				}
+
+				this.signedInCallback = (isSignedIn) => {
+					resolve(isSignedIn);
+				};
+
+				this.node.RED.events.on("Firebase:signedIn", this.signedInCallback);
+			} catch (error) {
+				reject(error);
+			}
+		});
 	}
 
 	/**
@@ -293,23 +313,23 @@ class Firebase {
 	 * @param snapshot A DataSnapshot contains data from a Database location.
 	 * @param child A string containing the key of the previous child, by sort order,
 	 * or `null` if it is the first child.
+	 * @param msg The message to pass through.
 	 */
-	protected sendMsg(snapshot: DataSnapshot | admin.database.DataSnapshot, child?: string | null) {
-		// Clear Permission Denied Status
-		if (this.permissionDeniedStatus) {
-			this.permissionDeniedStatus = false;
-			this.setNodeStatus();
-		}
-
+	protected sendMsg(snapshot: DataSnapshot, child?: string | null, msg?: InputMessageType) {
 		try {
-			if (!snapshot.exists()) return;
+			// Clear Permission Denied Status
+			if (this.permissionDeniedStatus) {
+				this.permissionDeniedStatus = false;
+				this.setNodeStatus();
+			}
 
 			const topic = snapshot.ref.key?.toString() || "";
 			const payload = this.node.config.outputType === "string" ? JSON.stringify(snapshot.val()) : snapshot.val();
 			const previousChildName = child !== undefined ? { previousChildName: child } : {};
-			const priority = snapshot instanceof DataSnapshot ? snapshot.priority : snapshot.getPriority();
+			const priority = snapshot instanceof firebase.DataSnapshot ? snapshot.priority : snapshot.getPriority();
+			const msgToSend = { ...(msg || {}), payload: payload, ...previousChildName, priority: priority, topic: topic };
 
-			this.node.send({ payload: payload, ...previousChildName, priority: priority, topic: topic } as OutputMessageType);
+			this.node.send(msgToSend as OutputMessageType);
 		} catch (error) {
 			this.onError(error);
 		}
@@ -352,7 +372,7 @@ class Firebase {
 }
 
 /**
- * `FirebaseGet` Sublass of Parent `Firebase` Class
+ * `FirebaseGet` SubClass of Parent `Firebase` Class
  *
  * This class is used to communicate with Google Firebase Realtime Databases.
  *
@@ -374,21 +394,24 @@ export class FirebaseGet extends Firebase {
 	 * @returns A promise of completion of the request
 	 */
 	public async doGetQuery(msg: InputMessageType) {
+		const msg2PassThrough = this.node.config.passThrough ? msg : undefined;
 		const constraint = msg.method || this.node.config.constraint;
 		const path = this.getPath(msg);
 		let snapshot;
 
 		if (!this.db) return;
 
+		if (!(await this.isUserSignedIn())) return;
+
 		if (this.isAdmin(this.db)) {
 			const database = path ? this.db.ref().child(path) : this.db.ref();
 
-			snapshot = await this.applyQueryConstraints(database, constraint).get();
+			snapshot = await this.applyQueryConstraints(constraint, database).get();
 		} else {
-			snapshot = await get(query(ref(this.db, path), ...this.getQueryConstraints(constraint)));
+			snapshot = await get(query(ref(this.db, path), ...this.applyQueryConstraints(constraint)));
 		}
 
-		this.sendMsg(snapshot);
+		this.sendMsg(snapshot, undefined, msg2PassThrough);
 	}
 
 	/**
@@ -415,7 +438,7 @@ export class FirebaseGet extends Firebase {
 }
 
 /**
- * `FirebaseIn` Sublass of Parent `Firebase` Class
+ * `FirebaseIn` SubClass of Parent `Firebase` Class
  *
  * This class is used to communicate with Google Firebase Realtime Databases.
  *
@@ -424,7 +447,7 @@ export class FirebaseGet extends Firebase {
  * Subscribes to data at the specified path, which yields a `payload` whenever a value changes.
  *
  * @param node The node to associate with this class
- * @returns A `FirebaseIn` class
+ * @returns A `FirebaseIn` Class
  */
 export class FirebaseIn extends Firebase {
 	constructor(protected node: FirebaseInNodeType) {
@@ -452,26 +475,34 @@ export class FirebaseIn extends Firebase {
 	 * Calls `checkPath` to check the path.
 	 */
 	public doSubscriptionQuery() {
-		const constraint = this.node.config.constraint;
-		const pathParsed = this.checkPath(this.path, true);
+		(async () => {
+			try {
+				const constraint = this.node.config.constraint;
+				const pathParsed = this.checkPath(this.path, true);
 
-		if (!this.db) return;
+				if (!this.db) return;
 
-		if (this.isAdmin(this.db)) {
-			const databaseRef = pathParsed ? this.db.ref().child(pathParsed) : this.db.ref();
+				if (!(await this.isUserSignedIn())) return;
 
-			this.subscriptionCallback = this.applyQueryConstraints(databaseRef, constraint).on(
-				this.listener,
-				(snapshot, child) => this.sendMsg(snapshot, child),
-				(error) => this.onError(error)
-			);
-		} else {
-			this.subscriptionCallback = firebase[Listener[this.listener]](
-				query(ref(this.db, pathParsed), ...this.getQueryConstraints(constraint)),
-				(snapshot: DataSnapshot, child: string | null | undefined) => this.sendMsg(snapshot, child),
-				(error) => this.onError(error)
-			);
-		}
+				if (this.isAdmin(this.db)) {
+					const databaseRef = pathParsed ? this.db.ref().child(pathParsed) : this.db.ref();
+
+					this.subscriptionCallback = this.applyQueryConstraints(constraint, databaseRef).on(
+						this.listener,
+						(snapshot, child) => this.sendMsg(snapshot, child),
+						(error) => this.onError(error)
+					);
+				} else {
+					this.subscriptionCallback = firebase[Listener[this.listener]](
+						query(ref(this.db, pathParsed), ...this.applyQueryConstraints(constraint)),
+						(snapshot: firebase.DataSnapshot, child?: string | null) => this.sendMsg(snapshot, child),
+						(error) => this.onError(error)
+					);
+				}
+			} catch (error) {
+				this.node.error(error);
+			}
+		})();
 	}
 
 	/**
@@ -503,7 +534,7 @@ export class FirebaseIn extends Firebase {
 }
 
 /**
- * `FirebaseOut` Sublass of Parent `Firebase` Class
+ * `FirebaseOut` SubClass of Parent `Firebase` Class
  *
  * This class is used to write data to Firebase Database.
  * `SET`, `PUSH`, `UPDATE`, `REMOVE`, `SET PRIORITY` or `SET WITH PRIORITY` data at the target Database.
@@ -511,7 +542,6 @@ export class FirebaseIn extends Firebase {
  * @param node The node to associate with this class
  * @returns A `FirebaseOut` Class
  */
-// TODO: Add others methods
 export class FirebaseOut extends Firebase {
 	constructor(protected node: FirebaseOutNodeType) {
 		super(node);
@@ -551,6 +581,8 @@ export class FirebaseOut extends Firebase {
 		const query = this.getQuery(msg);
 
 		if (!this.db) return Promise.resolve();
+
+		if (!(await this.isUserSignedIn())) return Promise.resolve();
 
 		if (this.isAdmin(this.db)) {
 			switch (query) {
