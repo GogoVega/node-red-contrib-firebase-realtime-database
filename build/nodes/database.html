@@ -114,12 +114,14 @@
 				const claimsContainer = $("#node-config-input-claims-container");
 				const useClaims = $("#node-config-input-useClaims");
 
+				$(`<div id="file-drop-target"><div><i class="fa fa-download"></i><br/><span>${this._("database-config.dropFileHere")}</span></div></div>`).appendTo("#red-ui-editor-stack > div > div.red-ui-tray-body-wrapper > div");
+
 				authType.on("change", () => hideShow(authType.val()));
 				$("#node-config-input-json").typedInput({ default: "json", types: ["json"] });
 				$("#node-config-input-clientEmail").typedInput({ types: [{ value: "str", validate: RED.validators.regex(/^__PWRD__$|^\S+\.iam\.gserviceaccount\.com$/) }] });
 				$("#node-config-input-privateKey").typedInput({ types: [{ value: "str", validate: RED.validators.regex(/^__PWRD__$|-----BEGIN PRIVATE KEY-----\S+-----END PRIVATE KEY-----/) }] });
 
-				$(".red-ui-tray").on("dragenter", dragEnter);
+				$("#red-ui-editor-stack").on("dragenter", dragEnter);
 				$("#json-drop-target").on("click", filePrompt);
 				$("#file-drop-target").on("dragover", dragOverHandler).on("dragleave", dragLeave).on("drop", dropHandler).hide();
 
@@ -320,8 +322,6 @@
 </script>
 
 <script type="text/html" data-template-name="database-config">
-	<div id="file-drop-target"><div data-i18n="database-config.dropFileHere"><i class="fa fa-download"></i><br/></div></div>
-
 	<div class="form-row">
 		<label for="node-config-input-name"><i class="fa fa-tag"></i> <span data-i18n="database-config.label.name"></span></label>
 		<input type="text" id="node-config-input-name" style="width:70%;" />
