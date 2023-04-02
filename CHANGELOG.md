@@ -1,5 +1,27 @@
 # Change log
 
+## 0.4.0
+
+### Changes
+
+- Bump `firebase` from 9.17.2 to 9.19.1
+
+### Fixes
+
+- Send `null` payload if no data for the configured path
+- (database) Message properties for data help
+- Waits the end of log in before running stuff
+- Drop frame (label missing and scroll issue)
+
+### New Features
+
+- (Firebase get) Option to pass through the message
+- Sign In with Custom Token (generated with Private Key)
+
+### Refactors
+
+- Use `applyQueryConstraints` for both databases (overload method)
+
 ## 0.3.1
 
 ### Changes
