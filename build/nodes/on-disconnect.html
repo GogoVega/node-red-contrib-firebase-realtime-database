@@ -1,0 +1,128 @@
+<!--
+  Copyright 2022-2023 Gauthier Dandele
+
+  Licensed under the MIT License,
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+  https://opensource.org/licenses/MIT.
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+
+<script type="text/javascript">
+	(function () {
+		let sendMsgEventOption = ["onConnected", "onDisconnect"];
+		let translationInitialized = false;
+
+		RED.nodes.registerType("on-disconnect", {
+			align: "left",
+			category: "Firebase",
+			color: "#e2a12b",
+			defaults: {
+				name: { value: "" },
+				database: { value: "", type: "database-config" },
+				outputs: { value: 0 },
+				path: { value: "topic" },
+				pathType: { value: "msg", validate: RED.validators.regex(/^(msg|str)$/) },
+				sendMsgEvent: { value: "" },
+				queryType: { value: "none", validate: RED.validators.regex(/^(none|cancel|set|update|remove|setWithPriority)$/) },
+			},
+			inputs: 1,
+			outputs: 0,
+			outputLabels: function (index) {
+				const labelArray = !this.sendMsgEvent ? [""] : this.sendMsgEvent.split(",");
+				return labelArray[index];
+			},
+			icon: "firebase.png",
+			paletteLabel: "On Disconnect",
+			label: function () {
+				const query = this.queryType !== "none" ? this.queryType.toUpperCase() : "";
+				const path = this.pathType === "msg" ? "" : this.path;
+				const name = query.concat(query ? " " : "", path);
+				return this.name || name || "On Disconnect";
+			},
+			labelStyle: function () {
+				return this.name ? "node_label_italic" : "";
+			},
+			oneditprepare: function () {
+				const queryType = $("#node-input-queryType");
+				const node = this;
+
+				$("#node-input-path").typedInput({
+					typeField: $("#node-input-pathType"),
+					types: ["msg", { value: "str", label: "string", icon: "red/images/typedInput/az.svg", validate: isPathValid }],
+				});
+
+				if (!translationInitialized) {
+					translationInitialized = true;
+					sendMsgEventOption = sendMsgEventOption.map((fieldName) => ({ value: fieldName, label: node._(`on-disconnect.sendMsgEvent.${fieldName}`) }));
+				}
+
+				$("#node-input-sendMsgEvent").typedInput({ type: "event", types: [{ value: "event", multiple: true, options: sendMsgEventOption }] });
+
+				queryType.on("change", () => {
+					switch (queryType.val()) {
+						case "setWithPriority":
+							$(".form-row-priority").show();
+							break;
+						default:
+							$(".form-row-priority").hide();
+							break;
+					}
+				});
+			},
+			oneditsave: function () {
+				const value = $("#node-input-sendMsgEvent").typedInput("value");
+				const array = !value ? [] : value.split(",");
+				$("#node-input-outputs").val(array.length);
+			}
+		});
+
+		function isPathValid(x) {
+			if (!x || typeof x !== "string") return false;
+			if (x.match(/^\s|[.#$\[\]]/g)) return false;
+			return true;
+		}
+	})();
+</script>
+
+<script type="text/html" data-template-name="on-disconnect">
+	<div class="form-row">
+		<label for="node-input-database"><i class="fa fa-database"></i> <span data-i18n="on-disconnect.label.database"></span></label>
+		<input type="text" id="node-input-database" style="width:70%;" />
+	</div>
+
+	<div class="form-row">
+		<label for="node-input-queryType"><i class="fa fa-bars"></i> <span data-i18n="on-disconnect.label.query"></span></label>
+		<select id="node-input-queryType" style="width:70%;">
+			<option value="none" data-i18n="on-disconnect.queryType.none"></option>
+			<option value="cancel" data-i18n="on-disconnect.queryType.cancel"></option>
+			<option value="set" data-i18n="on-disconnect.queryType.set"></option>
+			<option value="update" data-i18n="on-disconnect.queryType.update"></option>
+			<option value="remove" data-i18n="on-disconnect.queryType.remove"></option>
+			<option value="setWithPriority" data-i18n="on-disconnect.queryType.setWithPriority"></option>
+		</select>
+	</div>
+
+	<div class="form-row">
+		<label for="node-input-path"><i class="fa fa-sitemap"></i> <span data-i18n="on-disconnect.label.path"></span></label>
+		<input type="text" id="node-input-path" style="width:70%;" />
+		<input type="hidden" id="node-input-pathType" />
+	</div>
+
+	<div class="form-row">
+		<label for="node-input-sendMsgEvent"><i class="fa fa-sign-out"></i> <span data-i18n="on-disconnect.label.sendMsgEvent"></span></label>
+		<input type="text" id="node-input-sendMsgEvent" style="width:70%;" />
+		<input type="hidden" id="node-input-outputs" />
+	</div>
+
+	<div class="form-row">
+		<label for="node-input-name"><i class="fa fa-tag"></i> <span data-i18n="on-disconnect.label.name"></span></label>
+		<input type="text" id="node-input-name" data-i18n="[placeholder]on-disconnect.placeholder.name" />
+	</div>
+</script>
