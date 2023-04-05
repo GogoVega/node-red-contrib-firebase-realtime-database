@@ -56,11 +56,11 @@ export interface InputMessageType extends NodeMessageInFlow {
 }
 
 export interface OutputMessageType extends NodeMessage {
-	previousChildName?: string;
+	previousChildName?: string | null;
 	priority: string | number | null;
 }
 
-interface FirebaseNode extends Node {
+export interface FirebaseNode extends Node {
 	database: DatabaseNodeType | null;
 
 	/**

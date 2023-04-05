@@ -53,7 +53,7 @@ import { printEnumKeys } from "./utils";
  * @param node The node to associate with this class
  * @returns Firebase Class
  */
-class Firebase {
+export class Firebase {
 	constructor(protected node: FirebaseNodeType) {
 		node.onError = this.onError.bind(this);
 
@@ -152,10 +152,20 @@ class Firebase {
 	/**
 	 * Checks path to match Firebase rules. Throws an error if does not match.
 	 * @param path The path to check
-	 * @param empty Can the path be empty. Default: `false`
+	 * @param empty Can the path be empty? Default: `false`
 	 * @returns The path checked to the database
 	 */
-	protected checkPath(path?: unknown, empty?: boolean) {
+	protected checkPath(path: unknown, empty: true): string | undefined;
+
+	/**
+	 * Checks path to match Firebase rules. Throws an error if does not match.
+	 * @param path The path to check
+	 * @param empty Can the path be empty? Default: `false`
+	 * @returns The path checked to the database
+	 */
+	protected checkPath(path: unknown, empty?: false): string;
+
+	protected checkPath(path: unknown, empty?: boolean) {
 		if (empty && path === undefined) return;
 		if (!empty && path === undefined) throw new Error("The msg containing the PATH do not exist!");
 		if (!empty && !path) throw new Error("PATH must be non-empty string!");
@@ -169,7 +179,16 @@ class Firebase {
 	 * @param constraints The query constraints
 	 * @returns The query constraints checked
 	 */
-	protected checkQueryConstraints(constraints: unknown): QueryConstraintType | Record<string, never> {
+	protected checkQueryConstraints(constraints?: null): Record<string, never>;
+
+	/**
+	 * Checks the query constraints and throws an error if it is invalid.
+	 * @param constraints The query constraints
+	 * @returns The query constraints checked
+	 */
+	protected checkQueryConstraints(constraints: unknown): QueryConstraintType | Record<string, never>;
+
+	protected checkQueryConstraints(constraints: unknown) {
 		if (constraints === undefined || constraints === null) return {};
 		if (typeof constraints !== "object") throw new Error("Query Constraint must be an Object!");
 
@@ -209,7 +228,7 @@ class Firebase {
 			}
 		}
 
-		return constraints as QueryConstraintType;
+		return constraints;
 	}
 
 	/**
@@ -221,9 +240,9 @@ class Firebase {
 	 * @param done A function to be called when all the work is complete.
 	 */
 	public deregisterNode(removed: boolean, done: (error?: unknown) => void) {
-		const nodes = this.node.database?.nodes;
-
 		try {
+			const nodes = this.node.database?.nodes;
+
 			if (this.signedInCallback) this.node.RED.events.removeListener("Firebase:signedIn", this.signedInCallback);
 
 			if (!nodes) return done();
@@ -250,6 +269,36 @@ class Firebase {
 	// @ts-ignore
 	protected isAdmin(db: Database | admin.database.Database): db is admin.database.Database {
 		return this.node.database?.config.authType === "privateKey";
+	}
+
+	/**
+	 * Checks if the given node matches the `Firebase GET` node.
+	 * @param node The node to check.
+	 * @returns `true` if the node matches the `Firebase GET` node.
+	 */
+	protected isFirebaseGetNode(node: FirebaseNodeType): node is FirebaseGetNodeType {
+		if (node.type === "firebase-get") return true;
+		return false;
+	}
+
+	/**
+	 * Checks if the given node matches the `Firebase IN` node.
+	 * @param node The node to check.
+	 * @returns `true` if the node matches the `Firebase IN` node.
+	 */
+	protected isFirebaseInNode(node: FirebaseNodeType): node is FirebaseInNodeType {
+		if (node.type === "firebase-in") return true;
+		return false;
+	}
+
+	/**
+	 * Checks if the given node matches the `Firebase OUT` node.
+	 * @param node The node to check.
+	 * @returns `true` if the node matches the `Firebase OUT` node.
+	 */
+	protected isFirebaseOutNode(node: FirebaseNodeType): node is FirebaseOutNodeType {
+		if (node.type === "firebase-out") return true;
+		return false;
 	}
 
 	/**
@@ -316,6 +365,8 @@ class Firebase {
 	 * @param msg The message to pass through.
 	 */
 	protected sendMsg(snapshot: DataSnapshot, child?: string | null, msg?: InputMessageType) {
+		if (this.isFirebaseOutNode(this.node)) return;
+
 		try {
 			// Clear Permission Denied Status
 			if (this.permissionDeniedStatus) {
@@ -327,9 +378,15 @@ class Firebase {
 			const payload = this.node.config.outputType === "string" ? JSON.stringify(snapshot.val()) : snapshot.val();
 			const previousChildName = child !== undefined ? { previousChildName: child } : {};
 			const priority = snapshot instanceof firebase.DataSnapshot ? snapshot.priority : snapshot.getPriority();
-			const msgToSend = { ...(msg || {}), payload: payload, ...previousChildName, priority: priority, topic: topic };
+			const msgToSend: OutputMessageType = {
+				...(msg || {}),
+				payload: payload,
+				...previousChildName,
+				priority: priority,
+				topic: topic,
+			};
 
-			this.node.send(msgToSend as OutputMessageType);
+			this.node.send(msgToSend);
 		} catch (error) {
 			this.onError(error);
 		}
@@ -529,7 +586,7 @@ export class FirebaseIn extends Firebase {
 
 		if (listener in Listener) return listener as ListenerType;
 
-		throw new Error(`msg.method must be one of ${printEnumKeys(Listener)}.`);
+		throw new Error(`The Listener should be one of ${printEnumKeys(Listener)}. Please re-configure this node.`);
 	}
 }
 
@@ -661,7 +718,7 @@ export class FirebaseOut extends Firebase {
 				throw new Error("pathType should be 'msg' or 'str', please re-configure this node.");
 		}
 
-		return this.checkPath(path, false) as string;
+		return this.checkPath(path, false);
 	}
 
 	/**
