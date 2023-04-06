@@ -1,5 +1,5 @@
 name: Bug Report
-description: Create a bug report to help us improve.
+description: File a bug report
 title: "[Bug]: "
 labels: ["bug"]
 assignees:
@@ -13,22 +13,67 @@ body:
     id: what-happened
     attributes:
       label: What happened?
-      description: Also tell us, what did you expect to happen?
+      description: Please describe observed behavior and expected behavior?
       placeholder: Tell us what you see!
-      value: "A bug happened!"
+      value: "A bug happened! Please describe the problem, drag pictures here if they are helpful to your story."
     validations:
       required: true
   - type: textarea
     id: reproduce
     attributes:
       label: How to reproduce?
-      description: Steps to reproduce the issue.
-      placeholder: Tell us how to reproduce the issue!
+      description: Steps to reproduce the behavior.
+      placeholder: Tell us how to reproduce the behavior!
       value: "Steps to reproduce the issue:
         1. Go to '...'
         2. Click on '....'
         3. Scroll down to '....'
         4. See error"
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Plugin Version
+      description: What version of our software are you running?
+      placeholder: ex. 0.3.1
+    validations:
+      required: true
+  - type: input
+    id: nodeversion
+    attributes:
+      label: Node.js Version
+      description: What version of Node.js are you running?
+      placeholder: ex. 14.20.0
+    validations:
+      required: true
+  - type: input
+    id: npmversion
+    attributes:
+      label: NPM Version
+      description: What version of NPM are you running?
+      placeholder: ex. 9.5.0
+    validations:
+      required: true
+  - type: input
+    id: nrversion
+    attributes:
+      label: Node-RED Version
+      description: What version of Node-RED are you running?
+      placeholder: ex. 3.0.2
+    validations:
+      required: true
+  - type: dropdown
+    id: hardware
+    attributes:
+      label: What hardware are you seeing the problem on?
+      multiple: true
+      options:
+        - Raspberry Pi
+        - Other Linux
+        - Mac OS
+        - Windows
+        - Other
     validations:
       required: true
   - type: textarea
@@ -39,3 +84,9 @@ body:
       value: Additional comments here, if any.
     validations:
       required: false
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant log output
+      description: Please copy and paste any relevant log output. This will be automatically formatted into code, so no need for backticks.
+      render: shell
