@@ -27,12 +27,10 @@
 	</p>
 	<h3>Inputs</h3>
 	<dl class="message-properties">
-		<dt>payload<span class="property-type">string | boolean | number | array | object | null</span></dt>
-		<dd>the data that will be sent to the database.</dd>
 		<dt class="optional">method<span class="property-type">object</span></dt>
 		<dd>an object containing the constraint(s) to apply to the query.</dd>
 		<dt class="optional">topic<span class="property-type">string</span></dt>
-		<dd>the path of the data to add/modify. By default 'topic'.</dd>
+		<dd>the path of the data to fetch. By default 'topic'.</dd>
 	</dl>
 	<h3>Outputs</h3>
 	<dl class="message-properties">
@@ -43,12 +41,12 @@
 		<dt>priority<span class="property-type">number</span></dt>
 		<dd>the priority of the data.</dd>
 		<dt>topic<span class="property-type">string</span></dt>
-		<dd>contains the path where the data comes from.</dd>
+		<dd>contains the last part of the path where the data comes from.</dd>
 	</dl>
 	<h3>Details</h3>
 	<p>This node reads data from a path and sends it in a message, including child data.</p>
 	<p>
-		The <strong>Path</strong> determines where the data will be written. It can be defined in the node or dynamically
+		The <strong>Path</strong> determines where the data will be read from. It can be defined in the node or dynamically
 		with the <code>msg.topic</code> property. It can be empty, in this case the data sent comes from the root of the
 		database.
 	</p>
@@ -83,4 +81,8 @@
     "key": "name"
   }
 }</pre>
+	<p>
+		Learn more about how to use this node
+		<a href="https://github.com/GogoVega/node-red-contrib-firebase-realtime-database/wiki/firebase-get">here</a>.
+	</p>
 </script>
