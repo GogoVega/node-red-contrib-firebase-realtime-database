@@ -26,11 +26,12 @@
 			defaults: {
 				name: { value: "" },
 				database: { value: "", type: "database-config" },
+				inputs: { value: 1 },
 				outputs: { value: 0 },
 				path: { value: "topic" },
 				pathType: { value: "msg", validate: RED.validators.regex(/^(msg|str)$/) },
 				sendMsgEvent: { value: "" },
-				queryType: { value: "none", validate: RED.validators.regex(/^(none|cancel|set|update|remove|setWithPriority)$/) },
+				queryType: { value: "msg", validate: RED.validators.regex(/^(msg|none|cancel|set|update|remove|setWithPriority)$/) },
 			},
 			inputs: 1,
 			outputs: 0,
@@ -41,10 +42,10 @@
 			icon: "firebase.png",
 			paletteLabel: "On Disconnect",
 			label: function () {
-				const query = this.queryType !== "none" ? this.queryType.toUpperCase() : "";
+				const query = this.queryType?.match(/^(msg|none)$/) ? "" : this.queryType?.toUpperCase() || "";
 				const path = this.pathType === "msg" ? "" : this.path;
 				const name = query.concat(query ? " " : "", path);
-				return this.name || name || "On Disconnect";
+				return this.name || name || this.sendMsgEvent || "On Disconnect";
 			},
 			labelStyle: function () {
 				return this.name ? "node_label_italic" : "";
@@ -63,20 +64,13 @@
 					sendMsgEventOption = sendMsgEventOption.map((fieldName) => ({ value: fieldName, label: node._(`on-disconnect.sendMsgEvent.${fieldName}`) }));
 				}
 
-				$("#node-input-sendMsgEvent").typedInput({ type: "event", types: [{ value: "event", multiple: true, options: sendMsgEventOption }] });
+				$("#node-input-sendMsgEvent").typedInput({ type: "event", types: [{ value: "event", multiple: true, options: sendMsgEventOption, validate: RED.validators.regex(/^(onConnected,)?(|onConnected|onDisconnect)$/) }] });
 
-				queryType.on("change", () => {
-					switch (queryType.val()) {
-						case "setWithPriority":
-							$(".form-row-priority").show();
-							break;
-						default:
-							$(".form-row-priority").hide();
-							break;
-					}
-				});
+				queryType.on("change", () => queryType.val() === "none" ? $(".form-row-path").hide() : $(".form-row-path").show());
 			},
 			oneditsave: function () {
+				const inputs = $("#node-input-queryType").val() === "none" ? 0 : 1;
+				$("#node-input-inputs").val(inputs);
 				const value = $("#node-input-sendMsgEvent").typedInput("value");
 				const array = !value ? [] : value.split(",");
 				$("#node-input-outputs").val(array.length);
@@ -99,7 +93,9 @@
 
 	<div class="form-row">
 		<label for="node-input-queryType"><i class="fa fa-bars"></i> <span data-i18n="on-disconnect.label.query"></span></label>
+		<input type="hidden" id="node-input-inputs" />
 		<select id="node-input-queryType" style="width:70%;">
+			<option value="msg" data-i18n="on-disconnect.queryType.msg"></option>
 			<option value="none" data-i18n="on-disconnect.queryType.none"></option>
 			<option value="cancel" data-i18n="on-disconnect.queryType.cancel"></option>
 			<option value="set" data-i18n="on-disconnect.queryType.set"></option>
@@ -109,7 +105,7 @@
 		</select>
 	</div>
 
-	<div class="form-row">
+	<div class="form-row form-row-path">
 		<label for="node-input-path"><i class="fa fa-sitemap"></i> <span data-i18n="on-disconnect.label.path"></span></label>
 		<input type="text" id="node-input-path" style="width:70%;" />
 		<input type="hidden" id="node-input-pathType" />

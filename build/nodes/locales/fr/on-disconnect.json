@@ -8,7 +8,8 @@
       "name": "Nom"
     },
     "queryType": {
-      "none": "- utiliser msg.method -",
+      "msg": "- utiliser msg.method -",
+      "none": "Aucune",
       "cancel": "Annuler",
       "set": "Définir",
       "update": "Mettre à jour",

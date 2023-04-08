@@ -23,14 +23,31 @@ import { printEnumKeys } from "./utils";
 
 /**
  * OnDisconnect Class
+ *
+ * This class is used to define the query to run when the client disconnects from the database.
+ *
+ * It is used to set, set with priority, update, remove, or cancel data when the client disconnects from the database.
+ *
+ * This class allows also to send a message when the client disconnects or is connected from the database.
+ *
+ * @param node The node to associate with this class
+ * @returns The `OnDisconnect` class
+ * @extends Firebase
+ * @class
  */
 export class OnDisconnect extends Firebase {
 	constructor(protected node: OnDisconnectNodeType) {
 		super(node);
 	}
 
+	/**
+	 * Callback called for the `Firebase:connected` event.
+	 */
 	private sendMsgOnConnected = () => this.sendMsgOnEvent("connected");
 
+	/**
+	 * Callback called for the `Firebase:disconnect` event.
+	 */
 	private sendMsgOnDisconnect = () => this.sendMsgOnEvent("disconnect");
 
 	/**
@@ -117,10 +134,14 @@ export class OnDisconnect extends Firebase {
 	 * @returns The query checked
 	 */
 	private getQuery(msg: InputMessageType) {
-		const query = this.node.config.queryType === "none" ? msg.method : this.node.config.queryType;
+		const query = this.node.config.queryType === "msg" ? msg.method : this.node.config.queryType;
 		return this.checkQuery(query);
 	}
 
+	/**
+	 * Sends a message when events `Firebase:connected` and `Firebase:disconnect` are triggered. Called by `setMsgSendHandler`.
+	 * @param event The event that sets the properties of the message sends.
+	 */
 	private sendMsgOnEvent(event: SendMsgEvent) {
 		try {
 			if (!this.node.database) return;
@@ -137,16 +158,38 @@ export class OnDisconnect extends Firebase {
 		}
 	}
 
+	/**
+	 * Subscribes to defined events that will send a payload (`Firebase:connected`, `Firebase:disconnect` or nothing).
+	 * Calls `sendMsgOnEvent` to send the message.
+	 */
+	public setMsgSendHandler() {
+		const events = this.node.config.sendMsgEvent?.split(",");
+		if (!events) return;
+
+		if (events.includes("onConnected")) this.node.RED.events.on("Firebase:connected", this.sendMsgOnConnected);
+		if (events.includes("onDisconnect")) this.node.RED.events.on("Firebase:disconnect", this.sendMsgOnDisconnect);
+	}
+
+	/**
+	 * Sets the node status to "Query Done!" for 500ms.
+	 */
 	private setNodeQueryDone() {
 		this.node.status({ fill: "blue", shape: "dot", text: "Query Done!" });
 		setTimeout(() => this.setNodeStatus(), 500);
 	}
 
+	/**
+	 * Defines the query to run when the client disconnects. Calls `setNodeQueryDone` to set the "Query Done!" node status
+	 * when the query is done.
+	 * @param msg The message received
+	 * @returns A promise that resolves when the query is done
+	 */
 	public async setOnDisconnectQuery(msg: InputMessageType) {
 		const path = this.getPath(msg);
 		const query = this.getQuery(msg);
 
 		if (!this.db) return;
+		if (query === "none") return Promise.resolve();
 
 		if (!(await this.isUserSignedIn())) return Promise.resolve();
 
@@ -180,13 +223,5 @@ export class OnDisconnect extends Firebase {
 		if (this.permissionDeniedStatus) {
 			this.permissionDeniedStatus = false;
 		}
-	}
-
-	public setMsgSendHandler() {
-		const events = this.node.config.sendMsgEvent?.split(",");
-		if (!events) return;
-
-		if (events.includes("onConnected")) this.node.RED.events.on("Firebase:connected", this.sendMsgOnConnected);
-		if (events.includes("onDisconnect")) this.node.RED.events.on("Firebase:disconnect", this.sendMsgOnDisconnect);
 	}
 }

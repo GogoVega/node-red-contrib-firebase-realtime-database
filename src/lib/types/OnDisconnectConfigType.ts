@@ -17,6 +17,7 @@
 import { NodeDef } from "node-red";
 
 export enum Query {
+	"none",
 	"cancel",
 	"set",
 	"update",
@@ -25,7 +26,7 @@ export enum Query {
 }
 
 type PathType = "msg" | "str";
-type QueryType = "none" | keyof typeof Query;
+type QueryType = "msg" | keyof typeof Query;
 type SendMsgEvent = "" | "onConnected" | "onConnected,onDisconnect";
 
 export type OnDisconnectConfigType = NodeDef & {
