@@ -27,7 +27,7 @@
     "placeholder": {
       "name": "Nom",
       "value": "Valeur",
-      "child": "Enfant"
+      "child": "Clé de l'enfant"
     },
     "tips": {
       "tips": "<strong>Astuces</strong> :",

@@ -35,7 +35,7 @@
     "placeholder": {
       "name": "Nom",
       "value": "Valeur",
-      "child": "Enfant"
+      "child": "Clé de l'enfant"
     },
     "useConstraint": "Souhaitez-vous trier et ordonner vos données ?",
     "addConstraint": "Ajouter une contrainte de requête"

@@ -35,7 +35,7 @@
     "placeholder": {
       "name": "Name",
       "value": "Value",
-      "child": "Child"
+      "child": "Child Key"
     },
     "useConstraint": "Use Query Constraint to sort and order your data.",
     "addConstraint": "Add Query Constraint Set"
