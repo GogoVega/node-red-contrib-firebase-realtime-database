@@ -27,10 +27,7 @@
 				name: { value: "" },
 				constraint: { value: {} },
 				database: { value: "", type: "database-config" },
-				listenerType: {
-					value: "value",
-					validate: RED.validators.regex(/^(value|child_added|child_changed|child_moved|child_removed)$/),
-				},
+				listenerType: { value: "value", validate: RED.validators.regex(/^(value|child_added|child_changed|child_moved|child_removed)$/) },
 				outputType: { value: "auto", validate: RED.validators.regex(/^(auto|string)$/) },
 				path: { value: "test/stream", validate: (v) => !v.match(/^\s+|[.#$\[\]]$/g) },
 				useConstraint: { value: false },
@@ -57,9 +54,9 @@
 					));
 				}
 
-				constraintContainer.css("min-height", "150px").css("min-width", "300px").editableList({
+				constraintContainer.css({ "min-height": "150px", "min-width": "300px" }).editableList({
 					addButton: node._("firebase-in.addConstraint"),
-					addItem: addItem,
+					addItem: addItem.bind(node),
 					removable: true,
 					sortable: true,
 				});
@@ -73,30 +70,29 @@
 			const id = Math.floor((0x99999 - 0x10000) * Math.random()).toString();
 
 			const HTMLBody = `
-				<div style="flex-grow:1">
-					<div style="display:flex;">
-						<input type="text" id="node-input-constraintType-case-${id}" style="width:165px; text-align:center;">
-						<div style="flex-grow:1; margin-left:5px;">
-							<input type="text" id="node-input-value-case-${id}" style="width:100%;" placeholder="Value" />
+				<div style="flex-grow:1;">
+					<div style="width:45%; vertical-align:top; display:inline-block;">
+						<input type="text" id="node-input-constraintType-case-${id}" style="width:100%; text-align:center;">
+					</div>
+					<div style="width:calc(54% - 5px); margin-left:5px; vertical-align:top; display:inline-block;">
+						<div class="container-row-value-case-${id}">
+							<input type="text" id="node-input-value-case-${id}" style="width:100%;" placeholder="${this._("firebase-in.placeholder.value")}" />
 							<input type="hidden" id="node-input-valueType-case-${id}" />
 						</div>
-					</div>
-					<div style="display:flex; padding-top:5px; align-items:center;">
-						<div style="flex-grow:1; margin-left:170px;">
-							<input type="text" id="node-input-child-case-${id}" style="width:100%;" placeholder="Child" />
-						</div>
+						<input type="text" id="node-input-child-case-${id}" style="width:100%;" placeholder="${this._("firebase-in.placeholder.child")}" />
 					</div>
 				</div>`;
 
 			container.css({
-				overflow: "hidden",
-				whiteSpace: "nowrap",
+				overflow: "auto",
+				whiteSpace: "normal",
 				display: "flex",
 				"align-items": "center",
 			});
 
 			$(container).html(HTMLBody);
 			const constraintType = $(container).find(`#node-input-constraintType-case-${id}`);
+			const valueContainer = $(container).find(`.container-row-value-case-${id}`);
 			const valueField = $(container).find(`#node-input-value-case-${id}`);
 			const childField = $(container).find(`#node-input-child-case-${id}`);
 
@@ -107,7 +103,7 @@
 
 			constraintType
 				.typedInput({ types: [{ options: queryConstraintFieldType }] })
-				.on("change", (_event, _type, value) => updateTypeOfTypedInput(valueField, childField, value))
+				.on("change", (_event, _type, value) => updateTypeOfTypedInput(valueField, valueContainer, childField, value))
 				.typedInput("value", "limitToLast");
 
 			if (Array.isArray(data)) {
@@ -184,9 +180,10 @@
 			});
 		}
 
-		function updateTypeOfTypedInput(value, child, key) {
+		function updateTypeOfTypedInput(value, valueContainer, child, key) {
 			// Initial state
 			value.typedInput("show");
+			valueContainer.css("padding-bottom", "0px");
 			child.typedInput("hide");
 
 			switch (key) {
@@ -196,6 +193,7 @@
 				case "startAfter":
 				case "startAt":
 					value.typedInput("types", ["bool", "num", "str"]);
+					valueContainer.css("padding-bottom", "5px");
 					child.typedInput("show");
 					break;
 				case "limitToFirst":
