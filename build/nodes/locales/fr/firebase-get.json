@@ -25,7 +25,9 @@
       "string": "une chaîne de caractères"
     },
     "placeholder": {
-      "name": "Nom"
+      "name": "Nom",
+      "value": "Valeur",
+      "child": "Enfant"
     },
     "tips": {
       "tips": "<strong>Astuces</strong> :",

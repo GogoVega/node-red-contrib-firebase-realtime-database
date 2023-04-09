@@ -25,7 +25,9 @@
       "string": "a String"
     },
     "placeholder": {
-      "name": "Name"
+      "name": "Name",
+      "value": "Value",
+      "child": "Child"
     },
     "tips": {
       "tips": "<strong>Tips</strong>:",

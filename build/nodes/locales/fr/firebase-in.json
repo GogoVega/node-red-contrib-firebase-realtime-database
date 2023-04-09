@@ -33,7 +33,9 @@
       "string": "une chaîne de caractères"
     },
     "placeholder": {
-      "name": "Nom"
+      "name": "Nom",
+      "value": "Valeur",
+      "child": "Enfant"
     },
     "useConstraint": "Souhaitez-vous trier et ordonner vos données ?",
     "addConstraint": "Ajouter une contrainte de requête"
