@@ -98,7 +98,7 @@
 
 			valueField.typedInput({ default: "num", typeField: `#node-input-valueType-case-${id}`, types: ["num"] });
 			childField
-				.typedInput({ default: "str", types: [{ value: "str", label: "string", icon: "red/images/typedInput/az.svg", validate: isChildValid }] })
+				.typedInput({ default: "str", types: [{ value: "str", label: "string", icon: "red/images/typedInput/az.svg", validate: (c) => isChildValid(c, constraintType.val()) }] })
 				.typedInput("hide");
 
 			constraintType
@@ -114,7 +114,7 @@
 				if (value && typeof value === "object") {
 					valueField.typedInput("value", value.value ?? "");
 					valueField.typedInput("type", value.type ?? "str");
-					childField.typedInput("value", value.child ?? "");
+					childField.typedInput("value", value.key ?? "");
 				} else {
 					if (key === "orderByChild") {
 						valueField.typedInput("value", "");
@@ -137,8 +137,11 @@
 			return a.index - b.index;
 		}
 
-		function isChildValid(child) {
-			if (!child || typeof child !== "string") return false;
+		function isChildValid(child, constraintType) {
+			// orderByChild cannot be empty!
+			const empty = constraintType === "orderByChild" ? false : true;
+
+			if ((!child && !empty) || typeof child !== "string") return false;
 			if (child.match(/^\s|[.#$\[\]]/g)) return false;
 			return true;
 		}
@@ -153,7 +156,7 @@
 				const id = $(this).data("data").id;
 				const constraintType = $(this).find(`#node-input-constraintType-case-${id}`).typedInput("value");
 				const value = $(this).find(`#node-input-value-case-${id}`).val();
-				const child = $(this).find(`#node-input-child-case-${id}`).val();
+				const child = $(this).find(`#node-input-child-case-${id}`).val() || undefined;
 				const type = $(this).find(`#node-input-valueType-case-${id}`).val();
 
 				switch (constraintType) {
@@ -162,14 +165,14 @@
 					case "equalTo":
 					case "startAfter":
 					case "startAt":
-						node.constraint[constraintType] = { value: value, child: child, type: type };
+						node.constraint[constraintType] = { value: value, key: child, type: type };
 						break;
 					case "limitToFirst":
 					case "limitToLast":
 						node.constraint[constraintType] = parseInt(value);
 						break;
 					case "orderByChild":
-						node.constraint[constraintType] = child;
+						node.constraint[constraintType] = child || null;
 						break;
 					case "orderByKey":
 					case "orderByPriority":
@@ -185,6 +188,7 @@
 			value.typedInput("show");
 			valueContainer.css("padding-bottom", "0px");
 			child.typedInput("hide");
+			child.typedInput("value", "");
 
 			switch (key) {
 				case "endAt":
