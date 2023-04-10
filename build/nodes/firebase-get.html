@@ -119,7 +119,7 @@
 				constraintType.typedInput("value", key);
 
 				if (value && typeof value === "object") {
-					valueField.typedInput("value", value.value ?? "");
+					valueField.typedInput("value", value.value?.toString() ?? "");
 					valueField.typedInput("type", value.type ?? "str");
 					childField.typedInput("value", value.key ?? "");
 				} else {
@@ -177,9 +177,16 @@
 					case "endBefore":
 					case "equalTo":
 					case "startAfter":
-					case "startAt":
-						node.constraint[constraintType] = { value: value, key: child, type: type };
+					case "startAt": {
+						const valueParsed = type === "date" ? Date.now() :
+							type === "null" ? null :
+							type === "num" ? Number(value) :
+							type === "bool" ? (value === "true" ? true : false) :
+							value;
+
+						node.constraint[constraintType] = { value: valueParsed, key: child, type: type };
 						break;
+					}
 					case "limitToFirst":
 					case "limitToLast":
 						node.constraint[constraintType] = parseInt(value);
@@ -209,7 +216,7 @@
 				case "equalTo":
 				case "startAfter":
 				case "startAt":
-					value.typedInput("types", ["bool", "num", "str"]);
+					value.typedInput("types", ["bool", "num", "str", "date", { value: "null", label: "null", hasValue: false }]);
 					valueContainer.css("padding-bottom", "5px");
 					child.typedInput("show");
 					break;
