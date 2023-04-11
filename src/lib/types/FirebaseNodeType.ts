@@ -34,18 +34,28 @@ export enum QueryConstraint {
 	"startAt",
 }
 
-/* eslint-disable no-mixed-spaces-and-tabs */
-export type QueryConstraintType =
-	| Record<"orderByKey" | "orderByPriority" | "orderByValue", null | undefined>
-	| Record<"limitToFirst" | "limitToLast", number>
-	| Record<"orderByChild", string>
-	| Record<
-			"endAt" | "endBefore" | "equalTo" | "startAfter" | "startAt",
-			{
-				key?: string;
-				value: number | string | boolean | null;
-			}
-	  >;
+export type ValueFieldType = number | string | boolean | null;
+export type ChildFieldType = "bool" | "date" | "flow" | "global" | "msg" | "num" | "str";
+
+interface RangeQueryType {
+	key?: string;
+	value: ValueFieldType;
+	type: ChildFieldType;
+}
+
+export interface QueryConstraintType {
+	orderByKey?: null;
+	orderByPriority?: null;
+	orderByValue?: null;
+	limitToFirst?: number;
+	limitToLast?: number;
+	orderByChild?: string;
+	endAt?: RangeQueryType;
+	endBefore?: RangeQueryType;
+	equalTo?: RangeQueryType;
+	startAfter?: RangeQueryType;
+	startAt?: RangeQueryType;
+}
 
 export type DataSnapshot = database.DataSnapshot | adminDatabase.DataSnapshot;
 export type DBRef = adminDatabase.Reference | adminDatabase.Query;

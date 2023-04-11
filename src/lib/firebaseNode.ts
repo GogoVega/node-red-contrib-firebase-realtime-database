@@ -20,6 +20,7 @@ import * as admin from "firebase-admin";
 import { ConnectionStatus } from "./types/DatabaseNodeType";
 import { Listener, ListenerType, Query } from "../lib/types/FirebaseConfigType";
 import {
+	ChildFieldType,
 	DataSnapshot,
 	DBRef,
 	FirebaseGetNodeType,
@@ -30,9 +31,11 @@ import {
 	OutputMessageType,
 	QueryConstraint,
 	QueryConstraintType,
+	ValueFieldType,
 } from "./types/FirebaseNodeType";
 import { Entry } from "./types/UtilType";
 import { printEnumKeys } from "./utils";
+import { deepCopy } from "@firebase/util";
 
 /**
  * Firebase Class
@@ -106,7 +109,7 @@ export class Firebase {
 		const constraints = this.checkQueryConstraints(method);
 		const query = [];
 
-		for (const [method, value] of Object.entries(constraints) as Entry<QueryConstraintType | Record<string, never>>[]) {
+		for (const [method, value] of Object.entries(constraints) as Entry<QueryConstraintType>[]) {
 			switch (method) {
 				case "endAt":
 				case "endBefore":
@@ -179,16 +182,7 @@ export class Firebase {
 	 * @param constraints The query constraints
 	 * @returns The query constraints checked
 	 */
-	protected checkQueryConstraints(constraints?: null): Record<string, never>;
-
-	/**
-	 * Checks the query constraints and throws an error if it is invalid.
-	 * @param constraints The query constraints
-	 * @returns The query constraints checked
-	 */
-	protected checkQueryConstraints(constraints: unknown): QueryConstraintType | Record<string, never>;
-
-	protected checkQueryConstraints(constraints: unknown) {
+	protected checkQueryConstraints(constraints: unknown): QueryConstraintType {
 		if (constraints === undefined || constraints === null) return {};
 		if (typeof constraints !== "object") throw new Error("Query Constraint must be an Object!");
 
@@ -258,6 +252,34 @@ export class Firebase {
 		} catch (error) {
 			done(error);
 		}
+	}
+
+	/**
+	 * Gets the Query Constraints from the message received or from the node configuration.
+	 * Calls the `valueFromType` method to replace the value of the value field with its real value from the type.
+	 *
+	 * Example: user defined `msg.topic`, type is `msg`, saved value `topic` and real value is the content of `msg.topic`.
+	 *
+	 * @param msg The message received
+	 * @returns The Query Constraints
+	 */
+	protected getQueryConstraints(msg?: InputMessageType) {
+		if (this.isFirebaseOutNode(this.node)) return {};
+
+		if (msg?.method) return msg.method;
+
+		const constraints = deepCopy(this.node.config.constraint ?? {});
+
+		if (!msg) return constraints;
+
+		for (const value of Object.values(constraints)) {
+			if (value && typeof value === "object") {
+				if (value.value === undefined) continue;
+				value.value = this.valueFromType(msg, value.value, value.type);
+			}
+		}
+
+		return constraints;
 	}
 
 	/**
@@ -426,6 +448,44 @@ export class Firebase {
 				break;
 		}
 	}
+
+	/**
+	 * Find the value based on the received type. The `value` parameter received can either be the returned value or
+	 * be the key of a content in the message or in the context.
+	 *
+	 * Example: msg contains `msg.uid`, the value is `uid` and the type is `msg`. The returned value is the content of `msg.uid`.
+	 *
+	 * @param msg The message received
+	 * @param value The value of the Value Field
+	 * @param type The type of the Value Field
+	 * @returns The content of the value associated to the type
+	 */
+	private valueFromType(msg: InputMessageType, value: ValueFieldType, type: ChildFieldType): ValueFieldType {
+		if (type === "bool" || type === "date" || type === "num" || type === "str") return value;
+
+		if (type !== "flow" && type !== "global" && type !== "msg")
+			throw new Error("The type of value field should be 'flow', 'global' or 'msg', please re-configure this node.");
+
+		if (type === "msg") return this.node.RED.util.getMessageProperty(msg, value as string);
+
+		const contextKey = this.node.RED.util.parseContextStore(value as string);
+
+		if (/\[msg\./.test(contextKey.key)) {
+			// The key has a nest msg. reference to evaluate first
+
+			// Error in @types/node-red
+			// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+			// @ts-ignore
+			contextKey.key = this.node.RED.util.normalisePropertyExpression(contextKey.key, msg, true);
+		}
+
+		const output = this.node.context()[type].get(contextKey.key, contextKey.store);
+
+		if (typeof output !== "boolean" && typeof output !== "number" && typeof output !== "string" && output !== null)
+			throw new Error("The context value used must be one of the types 'boolean', 'number', 'string' or 'null'");
+
+		return output;
+	}
 }
 
 /**
@@ -452,7 +512,7 @@ export class FirebaseGet extends Firebase {
 	 */
 	public async doGetQuery(msg: InputMessageType) {
 		const msg2PassThrough = this.node.config.passThrough ? msg : undefined;
-		const constraint = msg.method || this.node.config.constraint;
+		const constraint = this.getQueryConstraints(msg);
 		const path = this.getPath(msg);
 		let snapshot;
 
@@ -534,7 +594,7 @@ export class FirebaseIn extends Firebase {
 	public doSubscriptionQuery() {
 		(async () => {
 			try {
-				const constraint = this.node.config.constraint;
+				const constraint = this.getQueryConstraints();
 				const pathParsed = this.checkPath(this.path, true);
 
 				if (!this.db) return;
