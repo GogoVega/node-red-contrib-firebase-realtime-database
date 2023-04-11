@@ -543,14 +543,17 @@ export class FirebaseGet extends Firebase {
 	 * @returns The path checked to the database
 	 */
 	private getPath(msg: InputMessageType) {
+		const pathSetted = this.node.config.path;
 		let path;
+
+		if (pathSetted === undefined) throw new Error("The 'Path' field is undefined, please re-configure this node.");
 
 		switch (this.node.config.pathType) {
 			case "msg":
-				path = msg[this.node.config.path as keyof typeof msg];
+				path = this.node.RED.util.getMessageProperty(msg, pathSetted);
 				break;
 			case "str":
-				path = this.node.config.path;
+				path = pathSetted;
 				break;
 			default:
 				throw new Error("pathType should be 'msg' or 'str', please re-configure this node.");
@@ -585,7 +588,7 @@ export class FirebaseIn extends Firebase {
 	/**
 	 * Gets the path to the database from the node.
 	 */
-	private path = this.node.config.path?.toString() || undefined;
+	private path = this.checkPath(this.node.config.path || undefined, true);
 
 	/**
 	 * This property contains the **method to call** (`firebase`) or the **subscription callback** to give as an argument
@@ -601,14 +604,13 @@ export class FirebaseIn extends Firebase {
 		(async () => {
 			try {
 				const constraint = this.getQueryConstraints();
-				const pathParsed = this.checkPath(this.path, true);
 
 				if (!this.db) return;
 
 				if (!(await this.isUserSignedIn())) return;
 
 				if (this.isAdmin(this.db)) {
-					const databaseRef = pathParsed ? this.db.ref().child(pathParsed) : this.db.ref();
+					const databaseRef = this.path ? this.db.ref().child(this.path) : this.db.ref();
 
 					this.subscriptionCallback = this.applyQueryConstraints(constraint, databaseRef).on(
 						this.listener,
@@ -617,7 +619,7 @@ export class FirebaseIn extends Firebase {
 					);
 				} else {
 					this.subscriptionCallback = firebase[Listener[this.listener]](
-						query(ref(this.db, pathParsed), ...this.applyQueryConstraints(constraint)),
+						query(ref(this.db, this.path), ...this.applyQueryConstraints(constraint)),
 						(snapshot: firebase.DataSnapshot, child?: string | null) => this.sendMsg(snapshot, child),
 						(error) => this.onError(error)
 					);
@@ -771,14 +773,17 @@ export class FirebaseOut extends Firebase {
 	 * @returns The path checked to the database
 	 */
 	private getPath(msg: InputMessageType) {
+		const pathSetted = this.node.config.path;
 		let path;
+
+		if (pathSetted === undefined) throw new Error("The 'Path' field is undefined, please re-configure this node.");
 
 		switch (this.node.config.pathType) {
 			case "msg":
-				path = msg[this.node.config.path as keyof typeof msg];
+				path = this.node.RED.util.getMessageProperty(msg, pathSetted);
 				break;
 			case "str":
-				path = this.node.config.path;
+				path = pathSetted;
 				break;
 			default:
 				throw new Error("pathType should be 'msg' or 'str', please re-configure this node.");
