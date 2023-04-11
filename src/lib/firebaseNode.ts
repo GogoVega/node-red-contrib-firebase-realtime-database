@@ -270,6 +270,7 @@ export class Firebase {
 
 		const constraints = deepCopy(this.node.config.constraint ?? {});
 
+		// Firebase IN (no context/msg here)
 		if (!msg) return constraints;
 
 		for (const value of Object.values(constraints)) {
@@ -461,7 +462,7 @@ export class Firebase {
 	 * @returns The content of the value associated to the type
 	 */
 	private valueFromType(msg: InputMessageType, value: ValueFieldType, type: ChildFieldType): ValueFieldType {
-		if (type === "bool" || type === "date" || type === "num" || type === "str") return value;
+		if (type === "bool" || type === "date" || type === "null" || type === "num" || type === "str") return value;
 
 		if (type !== "flow" && type !== "global" && type !== "msg")
 			throw new Error("The type of value field should be 'flow', 'global' or 'msg', please re-configure this node.");

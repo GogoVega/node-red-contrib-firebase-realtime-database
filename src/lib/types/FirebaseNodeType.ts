@@ -35,7 +35,7 @@ export enum QueryConstraint {
 }
 
 export type ValueFieldType = number | string | boolean | null;
-export type ChildFieldType = "bool" | "date" | "flow" | "global" | "msg" | "num" | "str";
+export type ChildFieldType = "bool" | "date" | "flow" | "global" | "msg" | "null" | "num" | "str";
 
 interface RangeQueryType {
 	key?: string;
