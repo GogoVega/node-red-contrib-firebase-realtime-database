@@ -196,10 +196,15 @@ export class Firebase {
 					if (typeof value !== "object") throw new Error(`The value of the "${method}" constraint must be an object!`);
 					if (value.value === undefined)
 						throw new Error(`The value of the "${method}" constraint must be an object containing 'value' as key.`);
-					if (typeof value.value !== "string" && typeof value.value !== "boolean" && typeof value.value !== "number")
-						throw new Error(`The value of the "${method}.value" constraint must be a boolean or number or string!`);
+					if (
+						typeof value.value !== "string" &&
+						typeof value.value !== "boolean" &&
+						typeof value.value !== "number" &&
+						value.value !== null
+					)
+						throw new Error(`The value of the "${method}.value" constraint must be a boolean, number, string or null!`);
 
-					if (value.key && typeof value.key !== "string")
+					if (value.key === null || (value.key && typeof value.key !== "string"))
 						throw new Error(`The value of the "${method}.key" constraint must be a string!`);
 					break;
 				case "limitToFirst":
