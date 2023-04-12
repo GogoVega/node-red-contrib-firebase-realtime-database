@@ -144,13 +144,24 @@
 					const key = $(this).find(`#node-config-input-claimsKey-case-${id}`).val();
 					const value = $(this).find(`#node-config-input-claimsValue-case-${id}`).val();
 					const type = $(this).find(`#node-config-input-claimsValueType-case-${id}`).val();
+					try {
+						const valueParsed =
+							type === "date" ? Date.now() :
+							type === "num" ? Number(value) :
+							type === "bool" ? (value === "true" ? true : false) :
+							type === "json" ? JSON.parse(value) :
+							value;
 
-					const valueParsed = type === "date" ? Date.now() :
-						type === "num" ? Number(value) :
-						type === "bool" ? (value === "true" ? true : false) :
-						value;
+						if (type === "num" && Number.isNaN(valueParsed))
+							RED.notify("Additional Claims: Setted value is not a number!", "error");
 
-					node.claims[key] = { value: valueParsed, type: type };
+						node.claims[key] = { value: valueParsed, type: type };
+					} catch (error) {
+						// Save the value of field instead of the valueParsed
+						// Allows the user to re-modify the value
+						node.claims[key] = { value: value, type: type };
+						RED.notify("Additional Claims: Setted value is invalid JSON!", "error");
+					}
 				});
 			},
 		});
@@ -181,13 +192,13 @@
 			const valueField = $(container).find(`#node-config-input-claimsValue-case-${id}`);
 
 			keyField.typedInput({ default: "str", types: [{ value: "str", label: "string", icon: "red/images/typedInput/az.svg", validate: isClaimKeyValid }] });
-			valueField.typedInput({ default: "str", typeField: `#node-config-input-claimsValueType-case-${id}`, types: ["str", "num", "bool", "date"] });
+			valueField.typedInput({ default: "str", typeField: `#node-config-input-claimsValueType-case-${id}`, types: ["str", "num", "bool", "date", "json"] });
 
 			if (Array.isArray(data)) {
 				const [key, object] = data;
 
 				keyField.typedInput("value", key);
-				valueField.typedInput("value", object.value?.toString() ?? "");
+				valueField.typedInput("value", typeof object.value === "object" ? JSON.stringify(object.value) : object.value?.toString() ?? "");
 				valueField.typedInput("type", object.type ?? "str");
 
 				data = {};
