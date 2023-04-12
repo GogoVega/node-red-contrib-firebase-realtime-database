@@ -289,7 +289,8 @@
 		function isClaimsValid(claims = {}) {
 			if (typeof claims !== "object") return false;
 
-			for (const v of Object.values(claims)) {
+			for (const [k, v] of Object.entries(claims)) {
+				if (!isClaimKeyValid(k)) return false;
 				if (v.type.match(/^(num|date)$/) && (typeof v.value !== "number" || Number.isNaN(v.value))) return false;
 				if (v.type === "bool" && typeof v.value !== "boolean") return false;
 				if (v.type === "json" && typeof v.value !== "object") return false;
