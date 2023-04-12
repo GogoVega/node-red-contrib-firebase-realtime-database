@@ -101,7 +101,7 @@
 			defaults: {
 				name: { value: "My Database" },
 				authType: { value: "anonymous" },
-				claims: { value: {} },
+				claims: { value: {}, validate: isClaimsValid },
 				createUser: { value: false },
 				useClaims: { value: false },
 			},
@@ -283,6 +283,19 @@
 
 		function isClaimKeyValid(key) {
 			if (key.match(/^(acr|amr|at_hash|aud|auth_time|azp|cnf|c_hash|exp|iat|iss|jti|nbf|nonce|sub|firebase|user_id)$|^\s|\s$/)) return false;
+			return true;
+		}
+
+		function isClaimsValid(claims = {}) {
+			if (typeof claims !== "object") return false;
+
+			for (const v of Object.values(claims)) {
+				if (v.type.match(/^(num|date)$/) && (typeof v.value !== "number" || Number.isNaN(v.value))) return false;
+				if (v.type === "bool" && typeof v.value !== "boolean") return false;
+				if (v.type === "json" && typeof v.value !== "object") return false;
+				if (v.type === "str" && typeof v.value !== "string") return false;
+			}
+
 			return true;
 		}
 
