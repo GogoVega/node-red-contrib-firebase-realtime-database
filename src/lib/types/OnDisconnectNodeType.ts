@@ -18,13 +18,13 @@ import { NodeMessage } from "node-red";
 import { FirebaseNode } from "./FirebaseNodeType";
 import { OnDisconnectConfigType } from "./OnDisconnectConfigType";
 
+export type SendMsgEvent = "connected" | "disconnect";
+
 export interface OutputMessageType extends NodeMessage {
 	payload: number;
 	event: SendMsgEvent;
 	topic: string;
 }
-
-export type SendMsgEvent = "connected" | "disconnect";
 
 export type OnDisconnectNodeType = FirebaseNode & {
 	config: OnDisconnectConfigType;

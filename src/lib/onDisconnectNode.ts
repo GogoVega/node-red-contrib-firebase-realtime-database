@@ -24,7 +24,7 @@ import { printEnumKeys } from "./utils";
 /**
  * OnDisconnect Class
  *
- * This class is used to define the query to run when the client disconnects from the database.
+ * This class is used to define the query to run **when the client disconnects** from the database.
  *
  * It is used to set, set with priority, update, remove, or cancel data when the client disconnects from the database.
  *
@@ -74,6 +74,7 @@ export class OnDisconnect extends Firebase {
 		throw new Error(`msg.method must be one of ${printEnumKeys(Query)}.`);
 	}
 
+	/** @override */
 	public override deregisterNode(removed: boolean, done: (error?: unknown) => void) {
 		try {
 			const nodes = this.node.database?.nodes;
@@ -103,14 +104,17 @@ export class OnDisconnect extends Firebase {
 	 * @returns The path checked to the database
 	 */
 	private getPath(msg: InputMessageType) {
+		const pathSetted = this.node.config.path;
 		let path;
+
+		if (pathSetted === undefined) throw new Error("The 'Path' field is undefined, please re-configure this node.");
 
 		switch (this.node.config.pathType) {
 			case "msg":
-				path = msg[this.node.config.path as keyof typeof msg];
+				path = this.node.RED.util.getMessageProperty(msg, pathSetted);
 				break;
 			case "str":
-				path = this.node.config.path;
+				path = pathSetted;
 				break;
 			default:
 				throw new Error("pathType should be 'msg' or 'str', please re-configure this node.");
@@ -120,7 +124,7 @@ export class OnDisconnect extends Firebase {
 	}
 
 	/**
-	 * Gets the priority from the node or message. Calls `checkPriority` to check the priority.
+	 * Gets the priority from the message. Calls `checkPriority` to check the priority.
 	 * @param msg The message received
 	 * @returns The priority checked
 	 */
