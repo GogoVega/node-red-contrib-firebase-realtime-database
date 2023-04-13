@@ -1,0 +1,62 @@
+<!--
+  Copyright 2022-2023 Gauthier Dandele
+
+  Licensed under the MIT License,
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+  https://opensource.org/licenses/MIT.
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+
+<script type="text/html" data-help-name="on-disconnect">
+	<p>Connects to a Firebase Realtime Database and add/modify data to database when the client disconnects.</p>
+	<h3>Inputs</h3>
+	<dl class="message-properties">
+		<dt>payload<span class="property-type">string | boolean | number | array | object | null</span></dt>
+ 		<dd>the data that will be sent to the database.</dd>
+ 		<dt class="optional">method<span class="property-type">string</span></dt>
+ 		<dd>the type of query to apply to the data (set, cancel, update, remove or setWithPriority).</dd>
+ 		<dt class="optional">priority<span class="property-type">number</span></dt>
+ 		<dd>the priority to apply to the data. By default 1.</dd>
+ 		<dt class="optional">topic<span class="property-type">string</span></dt>
+ 		<dd>the path of the data to add/modify. By default 'topic'.</dd>
+	</dl>
+	<h3>Outputs</h3>
+	<dl class="message-properties">
+		<dt>payload<span class="property-type">number</span></dt>
+		<dd>contains the current time (timestamp).</dd>
+		<dt>event<span class="property-type">string</span></dt>
+		<dd>the triggered event (<code>connected</code> or <code>disconnect</code>).</dd>
+		<dt>topic<span class="property-type">string</span></dt>
+		<dd>the database URL.</dd>
+	</dl>
+	<h3>Details</h3>
+	<p>
+		This node allows you to write or clear data when your client disconnects from the Database server.
+		These updates occur whether your client disconnects cleanly or not, so you can rely on them to clean up data even if a connection is dropped or a client crashes.
+	</p>
+	<b>Note that <code>onDisconnect</code> operations are only triggered once!</b>
+	<p></p>
+	<p>Below is a list of query types with their description:</p>
+	<ul>
+		<li><strong>Set</strong>: overwrite data on every write.</li>
+		<li><strong>Cancel</strong>: Cancels all previously queued <code>onDisconnect</code> set or update events for this location and all children.</li>
+		<li><strong>Update</strong>: update values for each matching key in the database.</li>
+		<li><strong>Remove</strong>: the data at the Firebase reference and all child data is removed.</li>
+		<li><strong>Set With Priority</strong>: the priority and overwrite data.</li>
+	</ul>
+	<p>
+		The <strong>Path</strong> determines where the data will be written. It can be defined in the node or dynamically
+		with the <code>msg.topic</code> property
+	</p>
+	<p>
+		Learn more about how to use this node
+		<a href="https://github.com/GogoVega/node-red-contrib-firebase-realtime-database/wiki/on-disconnect">here</a>.
+	</p>
+</script>
