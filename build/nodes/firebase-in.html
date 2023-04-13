@@ -25,7 +25,7 @@
 			color: "#e2a12b",
 			defaults: {
 				name: { value: "" },
-				constraint: { value: {} },
+				constraint: { value: {}, validate: isConstraintValid },
 				database: { value: "", type: "database-config" },
 				listenerType: { value: "value", validate: RED.validators.regex(/^(value|child_added|child_changed|child_moved|child_removed)$/) },
 				outputType: { value: "auto", validate: RED.validators.regex(/^(auto|string)$/) },
@@ -142,7 +142,26 @@
 			const empty = constraintType === "orderByChild" ? false : true;
 
 			if ((!child && !empty) || typeof child !== "string") return false;
-			if (child.match(/^\s|[.#$\[\]]/g)) return false;
+			if (child?.match(/^\s|[.#$\[\]]/g)) return false;
+			return true;
+		}
+
+		function isConstraintValid(constraint = {}, opt) {
+			if (typeof constraint !== "object") return false;
+
+			for (let [k, v] of Object.entries(constraint)) {
+				if (!queryConstraintFieldType.some((q) => q.value === k || q === k)) return false;
+				if (v === null) v = {};
+				if (v.type && v.type.match(/^(num|date)$/) && (typeof v.value !== "number" || Number.isNaN(v.value))) return false;
+				if (v.type === "bool" && typeof v.value !== "boolean") return false;
+				if (v.type === "json" && typeof v.value !== "object") return false;
+				if (v.type === "str" && typeof v.value !== "string") return false;
+				if (k === "limitToFirst" && (!Number.isInteger(Number(v)) || Number(v) <= 0)) return false;
+				if (k === "limitToLast" && (!Number.isInteger(Number(v)) || Number(v) <= 0)) return false;
+				if (k === "orderByChild" && !isChildValid(v, k)) return false;
+				if (v.key && !isChildValid(v.key, k)) return false;
+			}
+
 			return true;
 		}
 
