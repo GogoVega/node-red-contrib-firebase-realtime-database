@@ -32,13 +32,14 @@ It allows to add, modify and fetch data from your databases aswell as subscribin
 
 ![nodes screenshot](./docs/images/nodes-screenshot.png)
 
-There are 3 nodes included with this contrib:
+There are 4 nodes included with this contrib:
 
 | Node              | Purpose                                                                                               |
 | ----------------- | ----------------------------------------------------------------------------------------------------- |
 | Firebase&nbsp;in  | Subscribes to data at the specified path,<br /> which yields a `payload` whenever a value changes.    |
 | Firebase&nbsp;get | Fetches data from the specified path.<br />Query constraints can be used to sort and order your data. |
 | Firebase&nbsp;out | `SET`, `PUSH`, `UPDATE`, `REMOVE`, `SET PRIORITY` or `SET WITH PRIORITY` data at the target Database. |
+| On&nbsp;Disconnect | `SET`, `CANCEL`, `UPDATE`, `REMOVE` or `SET WITH PRIORITY` data at the target Database **when the Client disconnects**. |
 
 On the video above, we can see the "Query Constraint" feature, which is used to sort and order your data as required, and also shown is the "Drag and drop JSON file" feature, which automatically populates the fields with the content of the JSON file you provide.
 
@@ -78,7 +79,7 @@ Read more about the different ways to authenticate [here](https://github.com/Gog
 ## TODO List
 
 - [x] ~~Sign in with Custom Token (Generated with Private Key)~~ (Generated with Service Account ID pending)
-- [ ] Add `onDisconnect` method
+- [x] ~~Add `onDisconnect` method~~
 - [ ] Sign in with Google (Provider)
 
 If you have any other suggestions, please let me know [here](https://github.com/GogoVega/node-red-contrib-firebase-realtime-database/discussions/new?category=ideas).

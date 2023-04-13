@@ -1,5 +1,36 @@
 # Change log
 
+## 0.5.0-beta.1
+
+### Changes
+
+- Bump `firebase-admin` from 11.5.0 to 11.6.0
+
+### Fixes
+
+- Errors in the description of message properties (data-help)
+- (database) No longer create the credential `json` for new configs (deprecated field)
+- Child key for `Range Queries` can be empty (undefined)
+- Child key for `Range Queries` is not saved correctly
+- Saved value of `Range Queries` does not have the correct type (always string)
+- `Query Constraints` accepts null as value for Range Queries
+- (database) Options allowed for `Additional Claims` are `string`, `number`, `boolean`, `date` and `json`
+- (database) Saved value for `Additional Claims` does not have the correct type (always string)
+
+### Improves
+
+- The style of `Query Constraints` container (alignment of fields)
+- You can now use the path as an object (Path field)
+
+### New Features
+
+- `On Disconnect` Node
+- (database) Validation of `Additional Claims` (does the value match the type and the key is it allowed)
+- (database) A notification is sent if the value of field `Value` is incorrect
+- (Firebase-get) Options `date`, `flow`, `global`, `msg` and `null` have been added
+- (Firebase-in) Options `date` and `null` have been added
+- (Firebase-get & Firebase-in) Validation of `Query Constraints` (does the value match the type and the child is it allowed)
+
 ## 0.4.0
 
 ### Changes
