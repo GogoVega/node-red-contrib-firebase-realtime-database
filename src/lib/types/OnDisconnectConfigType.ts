@@ -27,7 +27,7 @@ export enum Query {
 
 type PathType = "msg" | "str";
 type QueryType = "msg" | keyof typeof Query;
-type SendMsgEvent = "" | "onConnected" | "onConnected,onDisconnect";
+type SendMsgEvent = "" | "onConnected" | "onDisconnect" | "onConnected,onDisconnect";
 
 export type OnDisconnectConfigType = NodeDef & {
 	database: string;

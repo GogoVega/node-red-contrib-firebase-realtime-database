@@ -156,7 +156,9 @@ export class OnDisconnect extends Firebase {
 				topic: this.node.database.app?.options.databaseURL || "",
 			};
 
-			this.node.send(msg2Send);
+			const secondOutput = this.node.config.sendMsgEvent === "onConnected,onDisconnect" && event === "disconnect";
+
+			this.node.send(secondOutput ? [null, msg2Send] : msg2Send);
 		} catch (error) {
 			this.node.error(error);
 		}
