@@ -478,10 +478,6 @@ export class Firebase {
 
 		if (/\[msg\./.test(contextKey.key)) {
 			// The key has a nest msg. reference to evaluate first
-
-			// Error in @types/node-red
-			// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-			// @ts-ignore
 			contextKey.key = this.node.RED.util.normalisePropertyExpression(contextKey.key, msg, true);
 		}
 
