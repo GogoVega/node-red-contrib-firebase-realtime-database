@@ -33,7 +33,9 @@
       "string": "a String"
     },
     "placeholder": {
-      "name": "Name"
+      "name": "Name",
+      "value": "Value",
+      "child": "Child Key"
     },
     "useConstraint": "Use Query Constraint to sort and order your data.",
     "addConstraint": "Add Query Constraint Set"

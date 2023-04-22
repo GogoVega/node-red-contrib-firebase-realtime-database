@@ -18,14 +18,14 @@
 	<p>Se connecte à une base de données Firebase Realtime et ajoute/modifie des données à/de la base de données.</p>
 	<h3>Entrées</h3>
 	<dl class="message-properties">
-		<dt>payload<span class="property-type">chaîne | booléen | nombre | objet</span></dt>
-		<dd>le message contenant les données qui sera envoyées à la base de données.</dd>
+		<dt>payload<span class="property-type">chaîne | booléen | nombre | tableau | objet | nul</span></dt>
+		<dd>les données qui seront envoyées à la base de données.</dd>
 		<dt class="optional">method<span class="property-type">chaîne de caractères</span></dt>
-		<dd>la requête à appliquer au message (définir, pousser, mettre à jour, supprimer, définir la priorité ou définir avec priorité).</dd>
+		<dd>le type de requête à appliquer aux données (définir, pousser, mettre à jour, supprimer, définir la priorité ou définir avec priorité).</dd>
 		<dt class="optional">priority<span class="property-type">nombre</span></dt>
-		<dd>la priorité à appliquer au message. Par défaut 1.</dd>
+		<dd>la priorité à appliquer aux données. Par défaut 1.</dd>
 		<dt class="optional">topic<span class="property-type">chaîne de caractères</span></dt>
-		<dd>le message contenant le chemin des données à ajouter/modifier. Par défaut 'topic'.</dd>
+		<dd>le chemin des données à ajouter/modifier. Par défaut 'topic'.</dd>
 	</dl>
 	<h3>Détails</h3>
 	<p>Ce noeud vous permet d'ajouter/modifier des données à/de la base de données.</p>
@@ -43,5 +43,9 @@
 	<p>
 		Le <strong>Chemin</strong> détermine où les données seront écrites. Il peut être défini dans le noeud ou dynamiquement
 		avec la propriété <code>msg.topic</code>.
+	</p>
+	<p>
+		En savoir plus sur l'utilisation de ce noeud
+		<a href="https://github.com/GogoVega/node-red-contrib-firebase-realtime-database/wiki/firebase-out">ici</a>.
 	</p>
 </script>

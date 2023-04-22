@@ -234,9 +234,11 @@ export default class FirebaseDatabase {
 					}
 
 					this.setNodesConnected();
+					this.node.RED.events.emit("Firebase:connected");
 					this.node.log(`Connected to Firebase database: ${this.node.app?.options.databaseURL}`);
 				} else {
 					this.setNodesConnecting();
+					this.node.RED.events.emit("Firebase:disconnect");
 					// Based on maximum time for Firebase admin
 					this.timeoutID = setTimeout(() => this.setNodesDisconnected(), 30000);
 					this.node.log(`Connecting to Firebase database: ${this.node.app?.options.databaseURL}`);

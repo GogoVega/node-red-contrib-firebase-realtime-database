@@ -25,12 +25,9 @@
 			color: "#e2a12b",
 			defaults: {
 				name: { value: "" },
-				constraint: { value: {} },
+				constraint: { value: {}, validate: isConstraintValid },
 				database: { value: "", type: "database-config" },
-				listenerType: {
-					value: "value",
-					validate: RED.validators.regex(/^(value|child_added|child_changed|child_moved|child_removed)$/),
-				},
+				listenerType: { value: "value", validate: RED.validators.regex(/^(value|child_added|child_changed|child_moved|child_removed)$/) },
 				outputType: { value: "auto", validate: RED.validators.regex(/^(auto|string)$/) },
 				path: { value: "test/stream", validate: (v) => !v.match(/^\s+|[.#$\[\]]$/g) },
 				useConstraint: { value: false },
@@ -57,9 +54,9 @@
 					));
 				}
 
-				constraintContainer.css("min-height", "150px").css("min-width", "300px").editableList({
+				constraintContainer.css({ "min-height": "150px", "min-width": "300px" }).editableList({
 					addButton: node._("firebase-in.addConstraint"),
-					addItem: addItem,
+					addItem: addItem.bind(node),
 					removable: true,
 					sortable: true,
 				});
@@ -73,41 +70,40 @@
 			const id = Math.floor((0x99999 - 0x10000) * Math.random()).toString();
 
 			const HTMLBody = `
-				<div style="flex-grow:1">
-					<div style="display:flex;">
-						<input type="text" id="node-input-constraintType-case-${id}" style="width:165px; text-align:center;">
-						<div style="flex-grow:1; margin-left:5px;">
-							<input type="text" id="node-input-value-case-${id}" style="width:100%;" placeholder="Value" />
+				<div style="flex-grow:1;">
+					<div style="width:45%; vertical-align:top; display:inline-block;">
+						<input type="text" id="node-input-constraintType-case-${id}" style="width:100%; text-align:center;">
+					</div>
+					<div style="width:calc(54% - 5px); margin-left:5px; vertical-align:top; display:inline-block;">
+						<div class="container-row-value-case-${id}">
+							<input type="text" id="node-input-value-case-${id}" style="width:100%;" placeholder="${this._("firebase-in.placeholder.value")}" />
 							<input type="hidden" id="node-input-valueType-case-${id}" />
 						</div>
-					</div>
-					<div style="display:flex; padding-top:5px; align-items:center;">
-						<div style="flex-grow:1; margin-left:170px;">
-							<input type="text" id="node-input-child-case-${id}" style="width:100%;" placeholder="Child" />
-						</div>
+						<input type="text" id="node-input-child-case-${id}" style="width:100%;" placeholder="${this._("firebase-in.placeholder.child")}" />
 					</div>
 				</div>`;
 
 			container.css({
-				overflow: "hidden",
-				whiteSpace: "nowrap",
+				overflow: "auto",
+				whiteSpace: "normal",
 				display: "flex",
 				"align-items": "center",
 			});
 
 			$(container).html(HTMLBody);
 			const constraintType = $(container).find(`#node-input-constraintType-case-${id}`);
+			const valueContainer = $(container).find(`.container-row-value-case-${id}`);
 			const valueField = $(container).find(`#node-input-value-case-${id}`);
 			const childField = $(container).find(`#node-input-child-case-${id}`);
 
 			valueField.typedInput({ default: "num", typeField: `#node-input-valueType-case-${id}`, types: ["num"] });
 			childField
-				.typedInput({ default: "str", types: [{ value: "str", label: "string", icon: "red/images/typedInput/az.svg", validate: isChildValid }] })
+				.typedInput({ default: "str", types: [{ value: "str", label: "string", icon: "red/images/typedInput/az.svg", validate: (c) => isChildValid(c, constraintType.val()) }] })
 				.typedInput("hide");
 
 			constraintType
 				.typedInput({ types: [{ options: queryConstraintFieldType }] })
-				.on("change", (_event, _type, value) => updateTypeOfTypedInput(valueField, childField, value))
+				.on("change", (_event, _type, value) => updateTypeOfTypedInput(valueField, valueContainer, childField, value))
 				.typedInput("value", "limitToLast");
 
 			if (Array.isArray(data)) {
@@ -116,9 +112,9 @@
 				constraintType.typedInput("value", key);
 
 				if (value && typeof value === "object") {
-					valueField.typedInput("value", value.value ?? "");
+					valueField.typedInput("value", value.value?.toString() ?? "");
 					valueField.typedInput("type", value.type ?? "str");
-					childField.typedInput("value", value.child ?? "");
+					childField.typedInput("value", value.key ?? "");
 				} else {
 					if (key === "orderByChild") {
 						valueField.typedInput("value", "");
@@ -141,9 +137,31 @@
 			return a.index - b.index;
 		}
 
-		function isChildValid(child) {
-			if (!child || typeof child !== "string") return false;
-			if (child.match(/^\s|[.#$\[\]]/g)) return false;
+		function isChildValid(child, constraintType) {
+			// orderByChild cannot be empty!
+			const empty = constraintType === "orderByChild" ? false : true;
+
+			if ((!child && !empty) || typeof child !== "string") return false;
+			if (child?.match(/^\s|[.#$\[\]]/g)) return false;
+			return true;
+		}
+
+		function isConstraintValid(constraint = {}, opt) {
+			if (typeof constraint !== "object") return false;
+
+			for (let [k, v] of Object.entries(constraint)) {
+				if (!queryConstraintFieldType.some((q) => q.value === k || q === k)) return false;
+				if (v === null) v = {};
+				if (v.type && v.type.match(/^(num|date)$/) && (typeof v.value !== "number" || Number.isNaN(v.value))) return false;
+				if (v.type === "bool" && typeof v.value !== "boolean") return false;
+				if (v.type === "json" && typeof v.value !== "object") return false;
+				if (v.type === "str" && typeof v.value !== "string") return false;
+				if (k === "limitToFirst" && (!Number.isInteger(Number(v)) || Number(v) <= 0)) return false;
+				if (k === "limitToLast" && (!Number.isInteger(Number(v)) || Number(v) <= 0)) return false;
+				if (k === "orderByChild" && !isChildValid(v, k)) return false;
+				if (v.key && !isChildValid(v.key, k)) return false;
+			}
+
 			return true;
 		}
 
@@ -157,7 +175,7 @@
 				const id = $(this).data("data").id;
 				const constraintType = $(this).find(`#node-input-constraintType-case-${id}`).typedInput("value");
 				const value = $(this).find(`#node-input-value-case-${id}`).val();
-				const child = $(this).find(`#node-input-child-case-${id}`).val();
+				const child = $(this).find(`#node-input-child-case-${id}`).val() || undefined;
 				const type = $(this).find(`#node-input-valueType-case-${id}`).val();
 
 				switch (constraintType) {
@@ -165,15 +183,35 @@
 					case "endBefore":
 					case "equalTo":
 					case "startAfter":
-					case "startAt":
-						node.constraint[constraintType] = { value: value, child: child, type: type };
+					case "startAt": {
+						let valueParsed =
+							type === "date" ? Date.now() :
+							type === "null" ? null :
+							type === "num" ? Number(value) :
+							type === "bool" ? (value === "true" ? true : false) :
+							value;
+
+						if (type === "num" && Number.isNaN(valueParsed)) {
+							RED.notify("Query Constraints: Setted value is not a number!", "error");
+							valueParsed = value;
+						}
+
+						node.constraint[constraintType] = { value: valueParsed, key: child, type: type };
 						break;
+					}
 					case "limitToFirst":
-					case "limitToLast":
-						node.constraint[constraintType] = parseInt(value);
+					case "limitToLast": {
+						let valueParsed = Number(value);
+						if (!Number.isInteger(valueParsed) || valueParsed <= 0) {
+							RED.notify("Query Constraints: Setted value is not an integrer > 0!", "error");
+							valueParsed = value;
+						}
+
+						node.constraint[constraintType] = valueParsed;
 						break;
+					}
 					case "orderByChild":
-						node.constraint[constraintType] = child;
+						node.constraint[constraintType] = child || null;
 						break;
 					case "orderByKey":
 					case "orderByPriority":
@@ -184,10 +222,12 @@
 			});
 		}
 
-		function updateTypeOfTypedInput(value, child, key) {
+		function updateTypeOfTypedInput(value, valueContainer, child, key) {
 			// Initial state
 			value.typedInput("show");
+			valueContainer.css("padding-bottom", "0px");
 			child.typedInput("hide");
+			child.typedInput("value", "");
 
 			switch (key) {
 				case "endAt":
@@ -195,7 +235,8 @@
 				case "equalTo":
 				case "startAfter":
 				case "startAt":
-					value.typedInput("types", ["bool", "num", "str"]);
+					value.typedInput("types", ["bool", "num", "str", "date", { value: "null", label: "null", hasValue: false }]);
+					valueContainer.css("padding-bottom", "5px");
 					child.typedInput("show");
 					break;
 				case "limitToFirst":

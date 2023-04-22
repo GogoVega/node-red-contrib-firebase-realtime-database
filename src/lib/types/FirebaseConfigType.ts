@@ -57,7 +57,6 @@ export type FirebaseInConfigType = NodeDef & {
 
 export type FirebaseOutConfigType = NodeDef & {
 	database: string;
-	outputType?: OutputType;
 	path?: string;
 	pathType?: PathType;
 	priority?: number;

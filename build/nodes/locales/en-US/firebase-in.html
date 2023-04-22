@@ -25,7 +25,7 @@
 		<dt>priority<span class="property-type">number</span></dt>
 		<dd>the priority of the data.</dd>
 		<dt>topic<span class="property-type">string</span></dt>
-		<dd>contains the path where the data comes from.</dd>
+		<dd>contains the last part of the path where the data comes from.</dd>
 	</dl>
 	<h3>Details</h3>
 	<p>This node reads data from a path and will send a message whenever the data, including children, changes.</p>
@@ -39,11 +39,15 @@
 	</ul>
 	<p>You can define constraint(s) for the query to sort and order your data.</p>
 	<p>
-		The <strong>Path</strong> determines where the data will be written. It can be empty, in this case the data sent
+		The <strong>Path</strong> determines where the data will be read from. It can be empty, in this case the data sent
 		comes from the root of the database.
 	</p>
 	<p>
 		<strong>Output</strong> can be set to <strong>auto-detect</strong> to send an object containing the data, or
 		<strong>a String</strong> to send the data as a string.
+	</p>
+	<p>
+		Learn more about how to use this node
+		<a href="https://github.com/GogoVega/node-red-contrib-firebase-realtime-database/wiki/firebase-in">here</a>.
 	</p>
 </script>

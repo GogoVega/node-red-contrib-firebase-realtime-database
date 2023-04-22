@@ -1,0 +1,27 @@
+{
+  "on-disconnect": {
+    "label": {
+      "database": "Database",
+      "query": "Méthode",
+      "path": "Chemin",
+      "sendMsgEvent": "Envoie Msg",
+      "name": "Nom"
+    },
+    "queryType": {
+      "msg": "- utiliser msg.method -",
+      "none": "Aucune",
+      "cancel": "Annuler",
+      "set": "Définir",
+      "update": "Mettre à jour",
+      "remove": "Supprimer",
+      "setWithPriority": "Définir avec priorité"
+    },
+    "sendMsgEvent": {
+      "onConnected": "À la connexion établie",
+      "onDisconnect": "À la déconnexion"
+    },
+    "placeholder": {
+      "name": "Nom"
+    }
+  }
+}

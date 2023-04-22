@@ -20,6 +20,7 @@ import * as admin from "firebase-admin";
 import { ConnectionStatus } from "./types/DatabaseNodeType";
 import { Listener, ListenerType, Query } from "../lib/types/FirebaseConfigType";
 import {
+	ChildFieldType,
 	DataSnapshot,
 	DBRef,
 	FirebaseGetNodeType,
@@ -30,9 +31,11 @@ import {
 	OutputMessageType,
 	QueryConstraint,
 	QueryConstraintType,
+	ValueFieldType,
 } from "./types/FirebaseNodeType";
 import { Entry } from "./types/UtilType";
 import { printEnumKeys } from "./utils";
+import { deepCopy } from "@firebase/util";
 
 /**
  * Firebase Class
@@ -53,7 +56,7 @@ import { printEnumKeys } from "./utils";
  * @param node The node to associate with this class
  * @returns Firebase Class
  */
-class Firebase {
+export class Firebase {
 	constructor(protected node: FirebaseNodeType) {
 		node.onError = this.onError.bind(this);
 
@@ -106,7 +109,7 @@ class Firebase {
 		const constraints = this.checkQueryConstraints(method);
 		const query = [];
 
-		for (const [method, value] of Object.entries(constraints) as Entry<QueryConstraintType | Record<string, never>>[]) {
+		for (const [method, value] of Object.entries(constraints) as Entry<QueryConstraintType>[]) {
 			switch (method) {
 				case "endAt":
 				case "endBefore":
@@ -152,10 +155,20 @@ class Firebase {
 	/**
 	 * Checks path to match Firebase rules. Throws an error if does not match.
 	 * @param path The path to check
-	 * @param empty Can the path be empty. Default: `false`
+	 * @param empty Can the path be empty? Default: `false`
 	 * @returns The path checked to the database
 	 */
-	protected checkPath(path?: unknown, empty?: boolean) {
+	protected checkPath(path: unknown, empty: true): string | undefined;
+
+	/**
+	 * Checks path to match Firebase rules. Throws an error if does not match.
+	 * @param path The path to check
+	 * @param empty Can the path be empty? Default: `false`
+	 * @returns The path checked to the database
+	 */
+	protected checkPath(path: unknown, empty?: false): string;
+
+	protected checkPath(path: unknown, empty?: boolean) {
 		if (empty && path === undefined) return;
 		if (!empty && path === undefined) throw new Error("The msg containing the PATH do not exist!");
 		if (!empty && !path) throw new Error("PATH must be non-empty string!");
@@ -169,7 +182,7 @@ class Firebase {
 	 * @param constraints The query constraints
 	 * @returns The query constraints checked
 	 */
-	protected checkQueryConstraints(constraints: unknown): QueryConstraintType | Record<string, never> {
+	protected checkQueryConstraints(constraints: unknown): QueryConstraintType {
 		if (constraints === undefined || constraints === null) return {};
 		if (typeof constraints !== "object") throw new Error("Query Constraint must be an Object!");
 
@@ -183,10 +196,15 @@ class Firebase {
 					if (typeof value !== "object") throw new Error(`The value of the "${method}" constraint must be an object!`);
 					if (value.value === undefined)
 						throw new Error(`The value of the "${method}" constraint must be an object containing 'value' as key.`);
-					if (typeof value.value !== "string" && typeof value.value !== "boolean" && typeof value.value !== "number")
-						throw new Error(`The value of the "${method}.value" constraint must be a boolean or number or string!`);
+					if (
+						typeof value.value !== "string" &&
+						typeof value.value !== "boolean" &&
+						typeof value.value !== "number" &&
+						value.value !== null
+					)
+						throw new Error(`The value of the "${method}.value" constraint must be a boolean, number, string or null!`);
 
-					if (value.key && typeof value.key !== "string")
+					if (value.key === null || (value.key && typeof value.key !== "string"))
 						throw new Error(`The value of the "${method}.key" constraint must be a string!`);
 					break;
 				case "limitToFirst":
@@ -209,7 +227,7 @@ class Firebase {
 			}
 		}
 
-		return constraints as QueryConstraintType;
+		return constraints;
 	}
 
 	/**
@@ -221,9 +239,9 @@ class Firebase {
 	 * @param done A function to be called when all the work is complete.
 	 */
 	public deregisterNode(removed: boolean, done: (error?: unknown) => void) {
-		const nodes = this.node.database?.nodes;
-
 		try {
+			const nodes = this.node.database?.nodes;
+
 			if (this.signedInCallback) this.node.RED.events.removeListener("Firebase:signedIn", this.signedInCallback);
 
 			if (!nodes) return done();
@@ -242,6 +260,35 @@ class Firebase {
 	}
 
 	/**
+	 * Gets the Query Constraints from the message received or from the node configuration.
+	 * Calls the `valueFromType` method to replace the value of the value field with its real value from the type.
+	 *
+	 * Example: user defined `msg.topic`, type is `msg`, saved value `topic` and real value is the content of `msg.topic`.
+	 *
+	 * @param msg The message received
+	 * @returns The Query Constraints
+	 */
+	protected getQueryConstraints(msg?: InputMessageType) {
+		if (this.isFirebaseOutNode(this.node)) return {};
+
+		if (msg?.method) return msg.method;
+
+		const constraints = deepCopy(this.node.config.constraint ?? {});
+
+		// Firebase IN (no context/msg here)
+		if (!msg) return constraints;
+
+		for (const value of Object.values(constraints)) {
+			if (value && typeof value === "object") {
+				if (value.value === undefined) continue;
+				value.value = this.valueFromType(msg, value.value, value.type);
+			}
+		}
+
+		return constraints;
+	}
+
+	/**
 	 * This method checks if the database uses the `firebase-admin` module.
 	 * @param db The database used
 	 * @returns `true` if the database uses the `firebase-admin` module.
@@ -250,6 +297,36 @@ class Firebase {
 	// @ts-ignore
 	protected isAdmin(db: Database | admin.database.Database): db is admin.database.Database {
 		return this.node.database?.config.authType === "privateKey";
+	}
+
+	/**
+	 * Checks if the given node matches the `Firebase GET` node.
+	 * @param node The node to check.
+	 * @returns `true` if the node matches the `Firebase GET` node.
+	 */
+	protected isFirebaseGetNode(node: FirebaseNodeType): node is FirebaseGetNodeType {
+		if (node.type === "firebase-get") return true;
+		return false;
+	}
+
+	/**
+	 * Checks if the given node matches the `Firebase IN` node.
+	 * @param node The node to check.
+	 * @returns `true` if the node matches the `Firebase IN` node.
+	 */
+	protected isFirebaseInNode(node: FirebaseNodeType): node is FirebaseInNodeType {
+		if (node.type === "firebase-in") return true;
+		return false;
+	}
+
+	/**
+	 * Checks if the given node matches the `Firebase OUT` node.
+	 * @param node The node to check.
+	 * @returns `true` if the node matches the `Firebase OUT` node.
+	 */
+	protected isFirebaseOutNode(node: FirebaseNodeType): node is FirebaseOutNodeType {
+		if (node.type === "firebase-out") return true;
+		return false;
 	}
 
 	/**
@@ -316,6 +393,8 @@ class Firebase {
 	 * @param msg The message to pass through.
 	 */
 	protected sendMsg(snapshot: DataSnapshot, child?: string | null, msg?: InputMessageType) {
+		if (this.isFirebaseOutNode(this.node)) return;
+
 		try {
 			// Clear Permission Denied Status
 			if (this.permissionDeniedStatus) {
@@ -327,9 +406,15 @@ class Firebase {
 			const payload = this.node.config.outputType === "string" ? JSON.stringify(snapshot.val()) : snapshot.val();
 			const previousChildName = child !== undefined ? { previousChildName: child } : {};
 			const priority = snapshot instanceof firebase.DataSnapshot ? snapshot.priority : snapshot.getPriority();
-			const msgToSend = { ...(msg || {}), payload: payload, ...previousChildName, priority: priority, topic: topic };
+			const msgToSend: OutputMessageType = {
+				...(msg || {}),
+				payload: payload,
+				...previousChildName,
+				priority: priority,
+				topic: topic,
+			};
 
-			this.node.send(msgToSend as OutputMessageType);
+			this.node.send(msgToSend);
 		} catch (error) {
 			this.onError(error);
 		}
@@ -369,6 +454,40 @@ class Firebase {
 				break;
 		}
 	}
+
+	/**
+	 * Find the value based on the received type. The `value` parameter received can either be the returned value or
+	 * be the key of a content in the message or in the context.
+	 *
+	 * Example: msg contains `msg.uid`, the value is `uid` and the type is `msg`. The returned value is the content of `msg.uid`.
+	 *
+	 * @param msg The message received
+	 * @param value The value of the Value Field
+	 * @param type The type of the Value Field
+	 * @returns The content of the value associated to the type
+	 */
+	private valueFromType(msg: InputMessageType, value: ValueFieldType, type: ChildFieldType): ValueFieldType {
+		if (type === "bool" || type === "date" || type === "null" || type === "num" || type === "str") return value;
+
+		if (type !== "flow" && type !== "global" && type !== "msg")
+			throw new Error("The type of value field should be 'flow', 'global' or 'msg', please re-configure this node.");
+
+		if (type === "msg") return this.node.RED.util.getMessageProperty(msg, value as string);
+
+		const contextKey = this.node.RED.util.parseContextStore(value as string);
+
+		if (/\[msg\./.test(contextKey.key)) {
+			// The key has a nest msg. reference to evaluate first
+			contextKey.key = this.node.RED.util.normalisePropertyExpression(contextKey.key, msg, true);
+		}
+
+		const output = this.node.context()[type].get(contextKey.key, contextKey.store);
+
+		if (typeof output !== "boolean" && typeof output !== "number" && typeof output !== "string" && output !== null)
+			throw new Error("The context value used must be one of the types 'boolean', 'number', 'string' or 'null'");
+
+		return output;
+	}
 }
 
 /**
@@ -395,7 +514,7 @@ export class FirebaseGet extends Firebase {
 	 */
 	public async doGetQuery(msg: InputMessageType) {
 		const msg2PassThrough = this.node.config.passThrough ? msg : undefined;
-		const constraint = msg.method || this.node.config.constraint;
+		const constraint = this.getQueryConstraints(msg);
 		const path = this.getPath(msg);
 		let snapshot;
 
@@ -420,14 +539,17 @@ export class FirebaseGet extends Firebase {
 	 * @returns The path checked to the database
 	 */
 	private getPath(msg: InputMessageType) {
+		const pathSetted = this.node.config.path;
 		let path;
+
+		if (pathSetted === undefined) throw new Error("The 'Path' field is undefined, please re-configure this node.");
 
 		switch (this.node.config.pathType) {
 			case "msg":
-				path = msg[this.node.config.path as keyof typeof msg];
+				path = this.node.RED.util.getMessageProperty(msg, pathSetted);
 				break;
 			case "str":
-				path = this.node.config.path;
+				path = pathSetted;
 				break;
 			default:
 				throw new Error("pathType should be 'msg' or 'str', please re-configure this node.");
@@ -462,7 +584,7 @@ export class FirebaseIn extends Firebase {
 	/**
 	 * Gets the path to the database from the node.
 	 */
-	private path = this.node.config.path?.toString() || undefined;
+	private path = this.checkPath(this.node.config.path || undefined, true);
 
 	/**
 	 * This property contains the **method to call** (`firebase`) or the **subscription callback** to give as an argument
@@ -477,15 +599,14 @@ export class FirebaseIn extends Firebase {
 	public doSubscriptionQuery() {
 		(async () => {
 			try {
-				const constraint = this.node.config.constraint;
-				const pathParsed = this.checkPath(this.path, true);
+				const constraint = this.getQueryConstraints();
 
 				if (!this.db) return;
 
 				if (!(await this.isUserSignedIn())) return;
 
 				if (this.isAdmin(this.db)) {
-					const databaseRef = pathParsed ? this.db.ref().child(pathParsed) : this.db.ref();
+					const databaseRef = this.path ? this.db.ref().child(this.path) : this.db.ref();
 
 					this.subscriptionCallback = this.applyQueryConstraints(constraint, databaseRef).on(
 						this.listener,
@@ -494,7 +615,7 @@ export class FirebaseIn extends Firebase {
 					);
 				} else {
 					this.subscriptionCallback = firebase[Listener[this.listener]](
-						query(ref(this.db, pathParsed), ...this.applyQueryConstraints(constraint)),
+						query(ref(this.db, this.path), ...this.applyQueryConstraints(constraint)),
 						(snapshot: firebase.DataSnapshot, child?: string | null) => this.sendMsg(snapshot, child),
 						(error) => this.onError(error)
 					);
@@ -529,7 +650,7 @@ export class FirebaseIn extends Firebase {
 
 		if (listener in Listener) return listener as ListenerType;
 
-		throw new Error(`msg.method must be one of ${printEnumKeys(Listener)}.`);
+		throw new Error(`The Listener should be one of ${printEnumKeys(Listener)}. Please re-configure this node.`);
 	}
 }
 
@@ -648,20 +769,23 @@ export class FirebaseOut extends Firebase {
 	 * @returns The path checked to the database
 	 */
 	private getPath(msg: InputMessageType) {
+		const pathSetted = this.node.config.path;
 		let path;
+
+		if (pathSetted === undefined) throw new Error("The 'Path' field is undefined, please re-configure this node.");
 
 		switch (this.node.config.pathType) {
 			case "msg":
-				path = msg[this.node.config.path as keyof typeof msg];
+				path = this.node.RED.util.getMessageProperty(msg, pathSetted);
 				break;
 			case "str":
-				path = this.node.config.path;
+				path = pathSetted;
 				break;
 			default:
 				throw new Error("pathType should be 'msg' or 'str', please re-configure this node.");
 		}
 
-		return this.checkPath(path, false) as string;
+		return this.checkPath(path, false);
 	}
 
 	/**

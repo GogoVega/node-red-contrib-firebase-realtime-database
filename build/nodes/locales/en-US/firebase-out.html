@@ -18,14 +18,14 @@
 	<p>Connects to a Firebase Realtime Database and add/modify data to database.</p>
 	<h3>Inputs</h3>
 	<dl class="message-properties">
-		<dt>payload<span class="property-type">string | boolean | number | object</span></dt>
-		<dd>the message that will be sent to the database.</dd>
+		<dt>payload<span class="property-type">string | boolean | number | array | object | null</span></dt>
+		<dd>the data that will be sent to the database.</dd>
 		<dt class="optional">method<span class="property-type">string</span></dt>
-		<dd>the query to apply to the message (set, push, update, remove, setPriority or setWithPriority).</dd>
+		<dd>the type of query to apply to the data (set, push, update, remove, setPriority or setWithPriority).</dd>
 		<dt class="optional">priority<span class="property-type">number</span></dt>
-		<dd>the priority to apply to the message. By default 1.</dd>
+		<dd>the priority to apply to the data. By default 1.</dd>
 		<dt class="optional">topic<span class="property-type">string</span></dt>
-		<dd>the message containing the path of the data to add/modify. By default 'topic'.</dd>
+		<dd>the path of the data to add/modify. By default 'topic'.</dd>
 	</dl>
 	<h3>Details</h3>
 	<p>This node allows you to add/modify data to the database.</p>
@@ -43,5 +43,9 @@
 	<p>
 		The <strong>Path</strong> determines where the data will be written. It can be defined in the node or dynamically
 		with the <code>msg.topic</code> property
+	</p>
+	<p>
+		Learn more about how to use this node
+		<a href="https://github.com/GogoVega/node-red-contrib-firebase-realtime-database/wiki/firebase-out">here</a>.
 	</p>
 </script>
