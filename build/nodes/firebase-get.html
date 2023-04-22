@@ -197,19 +197,32 @@
 					case "equalTo":
 					case "startAfter":
 					case "startAt": {
-						const valueParsed = type === "date" ? Date.now() :
+						let valueParsed =
+							type === "date" ? Date.now() :
 							type === "null" ? null :
 							type === "num" ? Number(value) :
 							type === "bool" ? (value === "true" ? true : false) :
 							value;
 
+						if (type === "num" && Number.isNaN(valueParsed)) {
+							RED.notify("Query Constraints: Setted value is not a number!", "error");
+							valueParsed = value;
+						}
+
 						node.constraint[constraintType] = { value: valueParsed, key: child, type: type };
 						break;
 					}
 					case "limitToFirst":
-					case "limitToLast":
-						node.constraint[constraintType] = parseInt(value);
+					case "limitToLast": {
+						let valueParsed = Number(value);
+						if (!Number.isInteger(valueParsed) || valueParsed <= 0) {
+							RED.notify("Query Constraints: Setted value is not an integrer > 0!", "error");
+							valueParsed = value;
+						}
+
+						node.constraint[constraintType] = valueParsed;
 						break;
+					}
 					case "orderByChild":
 						node.constraint[constraintType] = child || null;
 						break;

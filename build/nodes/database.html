@@ -145,15 +145,17 @@
 					const value = $(this).find(`#node-config-input-claimsValue-case-${id}`).val();
 					const type = $(this).find(`#node-config-input-claimsValueType-case-${id}`).val();
 					try {
-						const valueParsed =
+						let valueParsed =
 							type === "date" ? Date.now() :
 							type === "num" ? Number(value) :
 							type === "bool" ? (value === "true" ? true : false) :
 							type === "json" ? JSON.parse(value) :
 							value;
 
-						if (type === "num" && Number.isNaN(valueParsed))
+						if (type === "num" && Number.isNaN(valueParsed)) {
 							RED.notify("Additional Claims: Setted value is not a number!", "error");
+							valueParsed = value;
+						}
 
 						node.claims[key] = { value: valueParsed, type: type };
 					} catch (error) {
