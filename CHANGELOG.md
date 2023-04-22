@@ -1,10 +1,11 @@
 # Change log
 
-## 0.5.0-beta.1
+## 0.5.0
 
 ### Changes
 
-- Bump `firebase-admin` from 11.5.0 to 11.6.0
+- Bump `firebase` from 9.19.1 to 9.20.0
+- Bump `firebase-admin` from 11.5.0 to 11.7.0
 
 ### Fixes
 
@@ -30,6 +31,7 @@
 - (Firebase-get) Options `date`, `flow`, `global`, `msg` and `null` have been added
 - (Firebase-in) Options `date` and `null` have been added
 - (Firebase-get & Firebase-in) Validation of `Query Constraints` (does the value match the type and the child is it allowed)
+- (Firebase-get & Firebase-in) A notification is sent if the value of field `Value` is incorrect
 
 ## 0.4.0
 

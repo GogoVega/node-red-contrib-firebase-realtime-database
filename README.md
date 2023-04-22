@@ -34,11 +34,11 @@ It allows to add, modify and fetch data from your databases aswell as subscribin
 
 There are 4 nodes included with this contrib:
 
-| Node              | Purpose                                                                                               |
-| ----------------- | ----------------------------------------------------------------------------------------------------- |
-| Firebase&nbsp;in  | Subscribes to data at the specified path,<br /> which yields a `payload` whenever a value changes.    |
-| Firebase&nbsp;get | Fetches data from the specified path.<br />Query constraints can be used to sort and order your data. |
-| Firebase&nbsp;out | `SET`, `PUSH`, `UPDATE`, `REMOVE`, `SET PRIORITY` or `SET WITH PRIORITY` data at the target Database. |
+| Node               | Purpose                                                                                                                 |
+| ------------------ | ----------------------------------------------------------------------------------------------------------------------- |
+| Firebase&nbsp;in   | Subscribes to data at the specified path,<br /> which yields a `payload` whenever a value changes.                      |
+| Firebase&nbsp;get  | Fetches data from the specified path.<br />Query constraints can be used to sort and order your data.                   |
+| Firebase&nbsp;out  | `SET`, `PUSH`, `UPDATE`, `REMOVE`, `SET PRIORITY` or `SET WITH PRIORITY` data at the target Database.                   |
 | On&nbsp;Disconnect | `SET`, `CANCEL`, `UPDATE`, `REMOVE` or `SET WITH PRIORITY` data at the target Database **when the Client disconnects**. |
 
 On the video above, we can see the "Query Constraint" feature, which is used to sort and order your data as required, and also shown is the "Drag and drop JSON file" feature, which automatically populates the fields with the content of the JSON file you provide.
