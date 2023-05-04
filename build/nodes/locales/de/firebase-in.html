@@ -1,0 +1,62 @@
+<!--
+  Copyright 2022-2023 Gauthier Dandele
+
+  Licensed under the MIT License,
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+  https://opensource.org/licenses/MIT.
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+
+<script type="text/html" data-help-name="firebase-in">
+	<p>
+		Stellt eine Verbindung zu einer Firebase Realtime Database her und abonniert die Daten unter dem angegebenen Pfad.
+	</p>
+	<h3>Ausgabe</h3>
+	<dl class="message-properties">
+		<dt>payload<span class="property-type">Zeichenkette | Wahrheitswert | Zahl | Liste | Objekt | Null</span></dt>
+		<dd>enthält die Ereignisdaten aus der Datenbank.</dd>
+		<dt class="optional">previousChildName<span class="property-type">Zeichenkette</span></dt>
+		<dd>
+			enthält den Schlüssel des vorhergehenden untergeordneten Elements, sortiert nach der Reihenfolge, oder
+			<code>null</code>, wenn es das erste untergeordnete Element ist.
+		</dd>
+		<dt>priority<span class="property-type">Zahl</span></dt>
+		<dd>Priorität der Daten.</dd>
+		<dt>topic<span class="property-type">Zeichenkette</span></dt>
+		<dd>enthält den letzten Teil des Pfades, aus dem die Daten stammen.</dd>
+	</dl>
+	<h3>Details</h3>
+	<p>
+		Dieser Node liest Daten aus einem Pfad und sendet eine Nachricht, wenn sich die Daten, einschließlich der Kinder,
+		ändern.
+	</p>
+	<p>Der <strong>Listener</strong> ermöglicht es Ihnen zu wählen, welche Art von Veränderung Sie verwenden möchten:</p>
+	<ul>
+		<li><code>Wert</code></li>
+		<li><code>Kind hinzugefügt</code></li>
+		<li><code>Kind aktualisiert</code></li>
+		<li><code>Kind verschoben</code></li>
+		<li><code>Kind gelöscht</code></li>
+	</ul>
+	<p>Sie können Beschränkungen für die Abfrage definieren, um Ihre Daten zu sortieren und zu ordnen.</p>
+	<p>
+		Der <strong>Pfad</strong> bestimmt, von wo die Daten gelesen werden. Er kann leer sein, in diesem Fall kommen die
+		Daten von der Wurzel der Datenbank kommen.
+	</p>
+	<p>
+		<strong>Ausgabe</strong> kann auf <strong>Automatisch erkennen</strong> gesetzt werden, um ein Objekt zu senden, das
+		die Daten enthält, oder <strong>eine Zeichenkette</strong> um die Daten als Zeichenkette zu senden.
+	</p>
+	<p>
+		Erfahren sie
+		<a href="https://github.com/GogoVega/node-red-contrib-firebase-realtime-database/wiki/firebase-in">hier</a> mehr
+		darüber, wie sie diesen Node verwenden können.
+	</p>
+</script>

@@ -1,0 +1,48 @@
+<!--
+  Copyright 2022-2023 Gauthier Dandele
+
+  Licensed under the MIT License,
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+  https://opensource.org/licenses/MIT.
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+
+<script type="text/html" data-help-name="database-config">
+	<p>Dieser Node wird für die Authentifizierung bei Firebase verwendet.</p>
+	<p>Es gibt folgende Authentifizierungsmethoden:</p>
+	<ul>
+		<li>Anonym</li>
+		<li>Email und Passwort</li>
+		<li>Privater Schlüssel (Admin SDK)</li>
+		<li>Benutzerdefinierter Token mit Privatem Schlüssel</li>
+	</ul>
+	<p><strong>API Key</strong>: kann in den Projekteinstellungen gefunden werden.</p>
+	<p><strong>URL</strong>: kann in der Echtzeitdatenbankkonsole gefunden werden.</p>
+	<p>
+		<strong>Email und Passwort</strong>: Sie müssen einen Benutzer entweder in der
+		<strong>Authentifizierungs</strong> Sektion der Konsole anlegen oder der node wird ihn anlegen.
+	</p>
+	<p>
+		<strong>JSON Privater Schlüssel</strong>: kann in den Projekteinstellungen im <strong>Service Konten</strong> Tab
+		und dann unter <strong>neuen Privaten Schlüssel generieren</strong> generiert werden. Sie können manuell die
+		<strong>Email Client</strong> und <strong>Private Key</strong> Felder ausfüllen oder es automatisch ausfüllen lassen
+		indem Sie die JSON Datei in den grauen Bereich ziehen.
+	</p>
+	<p><strong>UID</strong>: identifiziert eindeutig den Benutzer oder das Gerät, das Sie authentifizieren.</p>
+	<p>
+		<strong>Claims</strong>: zusätzliche claims, die in das benutzerdefinierte Token aufgenommen sollen werden, welche
+		in den <code>auth</code> / <code>request.auth</code> Objekten ihrer Sicherheitsregeln verfügbar sein sollen.
+	</p>
+	<p>
+		Erfahre Sie
+		<a href="https://github.com/GogoVega/node-red-contrib-firebase-realtime-database/wiki/config-node">hier</a> mehr
+		darüber wie Sie Authentifizierung konfigurieren können.
+	</p>
+</script>

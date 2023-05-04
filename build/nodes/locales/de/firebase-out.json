@@ -1,0 +1,28 @@
+{
+  "firebase-out": {
+    "label": {
+      "database": "Datenbank",
+      "query": "Methode",
+      "priority": "Priorität",
+      "path": "Pfad",
+      "name": "Name"
+    },
+    "queryType": {
+      "none": "- verwende msg.method -",
+      "set": "Setze",
+      "push": "Einschieben",
+      "update": "Aktualisieren",
+      "remove": "Löschen",
+      "setPriority": "Setzen Priorität",
+      "setWithPriority": "Setzen mit Priorität"
+    },
+    "placeholder": {
+      "name": "Name"
+    },
+    "tips": {
+      "tips": "<strong>Tips</strong>:",
+      "tip0": "Lasse Methode leer um sie dynamisch zu setzen anhand der Eigenschaft <code>msg.method</code> der Abfrage.",
+      "tip1": "Wenn <code>msg.priority</code> gesetzt ist wird die node Priorität überschrieben bei der der Nachricht."
+    }
+  }
+}
