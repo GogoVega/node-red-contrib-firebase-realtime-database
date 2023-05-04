@@ -1,0 +1,96 @@
+<!--
+  Copyright 2022-2023 Gauthier Dandele
+
+  Licensed under the MIT License,
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+  https://opensource.org/licenses/MIT.
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+
+<style>
+	.property-type {
+		float: right;
+	}
+</style>
+
+<script type="text/html" data-help-name="firebase-get">
+	<p>
+		Stellt eine Verbindung zu einer Firebase Realtime Database her und holt Daten aus dem angegebenen Pfad. Sie können
+		Einschränkung(en) für die die Abfrage definieren.
+	</p>
+	<h3>Eingaben</h3>
+	<dl class="message-properties">
+		<dt class="optional">method<span class="property-type">Objekt</span></dt>
+		<dd>ein Objekt, das die Einschränkung(en) enthält, die auf die Abfrage angewendet werden sollen.</dd>
+		<dt class="optional">topic<span class="property-type">Zeichenkette</span></dt>
+		<dd>der Pfad der abzurufenden Daten. Standardmäßig 'topic'.</dd>
+	</dl>
+	<h3>Ausgaben</h3>
+	<dl class="message-properties">
+		<dt>payload<span class="property-type">Zeichenkette | Wahrheitswert | Zahl | Liste | Objekt | Null</span></dt>
+		<dd>enthält Ihre Abfragedaten aus der Datenbank.</dd>
+		<dt class="optional">previousChildName<span class="property-type">Zeichenkette</span></dt>
+		<dd>
+			enthält den Schlüssel des vorhergehenden untergeordneten Elements, sortiert nach der Reihenfolge, oder
+			<code>null</code>, wenn es das erste untergeordnete Element ist.
+		</dd>
+		<dt>priority<span class="property-type">Zahl</span></dt>
+		<dd>Priorität der Daten.</dd>
+		<dt>topic<span class="property-type">Zeichenkette</span></dt>
+		<dd>enthält den letzten Teil des Pfades, aus dem die Daten stammen.</dd>
+	</dl>
+	<h3>Details</h3>
+	<p>
+		Dieser Node liest Daten aus einem Pfad und sendet sie in einer Nachricht, einschließlich der untergeordneten Daten.
+	</p>
+	<p>
+		Der <strong>Pfad</strong> bestimmt, von wo die Daten gelesen werden. Er kann im Node oder dynamisch mit der
+		Eigenschaft <code>msg.topic</code> definiert werden. Er kann leer sein, in diesem Fall kommen die gesendeten Daten
+		aus dem Stamm der Datenbank.
+	</p>
+	<p>
+		<strong>Ausgabe</strong> kann auf <strong>automatisch erkennen</strong> gesetzt werden um ein Objekt das die Daten
+		enthält zu verwenden, oder <strong>eine Zeichenkette</strong> um die Daten als Zeichenkette zu senden.
+	</p>
+	<p>
+		Sie können Einschränkungen für die Abfrage definieren, um Ihre Daten zu sortieren und zu ordnen. Sie können eine
+		oder mehrere der folgenden Einschränkungen in der Eigenschaft <code>msg.method</code> oder direkt im Node
+		definieren:
+	</p>
+	<ul>
+		<li><code>endAt</code><span class="property-type">Objekt</span></li>
+		<li><code>endBefore</code><span class="property-type">Objekt</span></li>
+		<li><code>equalTo</code><span class="property-type">Objekt</span></li>
+		<li><code>limitToFirst</code><span class="property-type">Zahl</span></li>
+		<li><code>limitToLast</code><span class="property-type">Zahl</span></li>
+		<li><code>orderByChild</code><span class="property-type">Zeichenkette</span></li>
+		<li><code>orderByKey</code><span class="property-type">Null</span></li>
+		<li><code>orderByPriority</code><span class="property-type">Null</span></li>
+		<li><code>orderByValue</code><span class="property-type">Null</span></li>
+		<li><code>startAfter</code><span class="property-type">Objekt</span></li>
+		<li><code>startAt</code><span class="property-type">Objekt</span></li>
+	</ul>
+	<p><code>msg.method</code> schaut folgendermaßen aus:</p>
+	<pre>
+{
+  "orderByChild": "name",
+  "limitToFirst": 5,
+  "startAt": {
+    "value": "Alex",
+    "key": "name"
+  }
+}</pre
+	>
+	<p>
+		Erfahre Sie
+		<a href="https://github.com/GogoVega/node-red-contrib-firebase-realtime-database/wiki/firebase-get">hier</a> mehr
+		darüber wie Sie diesen Node verwenden können.
+	</p>
+</script>
