@@ -34,7 +34,7 @@ describe("Firebase IN Node", function () {
 	});
 
 	afterEach(function () {
-		helper.unload();
+		return helper.unload();
 	});
 
 	context("When NODE is loaded", () => {

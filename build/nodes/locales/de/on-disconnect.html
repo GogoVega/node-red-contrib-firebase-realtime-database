@@ -1,0 +1,75 @@
+<!--
+  Copyright 2022-2023 Gauthier Dandele
+
+  Licensed under the MIT License,
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+  https://opensource.org/licenses/MIT.
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+
+<script type="text/html" data-help-name="on-disconnect">
+	<p>
+		Stellt eine Verbindung zu einer Firebase Realtime-Datenbank her und fügt Daten zur Datenbank hinzu oder ändert sie,
+		wenn der Client die Verbindung trennt.
+	</p>
+	<h3>Eingaben</h3>
+	<dl class="message-properties">
+		<dt>payload<span class="property-type">Zeichenkette | Wahrheitswert | Zahl | Liste | Objekt | Null</span></dt>
+		<dd>die Daten, die an die Datenbank gesendet werden.</dd>
+		<dt class="optional">method<span class="property-type">Zeichenkette</span></dt>
+		<dd>
+			die Art der Abfrage, die auf die Daten angewendet werden soll (set, cancel, update, remove oder setWithPriority).
+		</dd>
+		<dt class="optional">priority<span class="property-type">Zahl</span></dt>
+		<dd>die Priorität, die auf die Daten angewendet werden soll. Standardmäßig 1.</dd>
+		<dt class="optional">topic<span class="property-type">Zeichenkette</span></dt>
+		<dd>den Pfad der hinzuzufügenden/zu ändernden Daten. Standardmäßig 'topic'.</dd>
+	</dl>
+	<h3>Ausgaben</h3>
+	<dl class="message-properties">
+		<dt>payload<span class="property-type">Zahl</span></dt>
+		<dd>enthält die aktuelle Uhrzeit (Zeitstempel).</dd>
+		<dt>event<span class="property-type">Zeichenkette</span></dt>
+		<dd>das ausgelöste Ereignis (<code>connected</code> oder <code>disconnect</code>).</dd>
+		<dt>topic<span class="property-type">Zeichenkette</span></dt>
+		<dd>die Datenbank URL.</dd>
+	</dl>
+	<h3>Details</h3>
+	<p>
+		Dieser Node ermöglicht es Ihnen, Daten zu schreiben oder zu löschen, wenn Ihr Client die Verbindung zum
+		Datenbankserver trennt. Diese Aktualisierungen erfolgen unabhängig davon, ob Ihr Client die Verbindung sauber trennt
+		oder nicht. Sie können sich also darauf verlassen, dass die Daten auch dann bereinigt werden, wenn eine Verbindung
+		unterbrochen wird oder ein Client abstürzt.
+	</p>
+	<b>Beachten Sie, dass <code>onDisconnect</code> Operationen nur einmal ausgelöst werden!</b>
+	<p></p>
+	<p>Im Folgenden finden Sie eine Liste der Abfragetypen mit ihrer Beschreibung:</p>
+	<ul>
+		<li><strong>Setze</strong>: Daten bei jedem Schreibvorgang überschreiben.</li>
+		<li>
+			<strong>Abbrechen</strong>: Bricht alle zuvor in der Warteschlange stehenden <code>onDisconnect</code> Set- oder
+			Update-Ereignisse für diesen Ort und alle untergeordneten Orte ab.
+		</li>
+		<li><strong>Aktualisieren</strong>: Aktualisiere Werte für jeden passenden Schlüssel in der Datenbank.</li>
+		<li>
+			<strong>Löschen</strong>: die Daten in der Firebase-Referenz und alle untergeordneten Daten werden entfernt.
+		</li>
+		<li><strong>Setze mit Priorität</strong>: die Priorität und überschreiben die Daten.</li>
+	</ul>
+	<p>
+		Der <strong>Pfad</strong> bestimmt, wohin die Daten geschrieben werden sollen. Es kann im Node oder dynamisch mit
+		der Eigenschaft <code>msg.topic</code> definiert werden.
+	</p>
+	<p>
+		Erfahren sie
+		<a href="https://github.com/GogoVega/node-red-contrib-firebase-realtime-database/wiki/on-disconnect">hier</a> mehr
+		darüber, wie sie diesen Node verwenden können.
+	</p>
+</script>

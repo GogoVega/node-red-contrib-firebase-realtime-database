@@ -1,0 +1,27 @@
+{
+  "on-disconnect": {
+    "label": {
+      "database": "Datenbank",
+      "query": "Methode",
+      "path": "Pfad",
+      "sendMsgEvent": "Sende Msg",
+      "name": "Name"
+    },
+    "queryType": {
+      "msg": "- verwende msg.method -",
+      "none": "Keine",
+      "cancel": "Abbrechen",
+      "set": "Setzen",
+      "update": "Aktualisieren",
+      "remove": "Löschen",
+      "setWithPriority": "Setzen mit Priorität"
+    },
+    "sendMsgEvent": {
+      "onConnected": "Wenn verbunden",
+      "onDisconnect": "Wenn Verbindung verloren"
+    },
+    "placeholder": {
+      "name": "Name"
+    }
+  }
+}
