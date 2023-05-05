@@ -1,5 +1,16 @@
 # Change log
 
+## 0.5.1
+
+### Changes
+
+- Bump `firebase` from 9.20.0 to 9.21.0
+- Bump `firebase-admin` from 11.7.0 to 11.8.0
+
+### Enhancements
+
+- German translation
+
 ## 0.5.0
 
 ### Changes
