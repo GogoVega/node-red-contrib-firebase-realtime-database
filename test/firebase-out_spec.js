@@ -34,7 +34,7 @@ describe("Firebase OUT Node", function () {
 	});
 
 	afterEach(function () {
-		helper.unload();
+		return helper.unload();
 	});
 
 	context("When NODE is loaded", () => {
@@ -88,7 +88,7 @@ describe("Firebase OUT Node", function () {
 
 				n1.receive({ payload: "" });
 
-				setTimeout(function () {
+				setImmediate(function () {
 					try {
 						const logEvents = helper.log().args.filter(function (evt) {
 							return evt[0].type == "firebase-out";
@@ -99,7 +99,7 @@ describe("Firebase OUT Node", function () {
 					} catch (error) {
 						done(error);
 					}
-				}, 50);
+				});
 			});
 		});
 
@@ -114,7 +114,7 @@ describe("Firebase OUT Node", function () {
 
 				n1.receive({ payload: "" });
 
-				setTimeout(function () {
+				setImmediate(function () {
 					try {
 						const logEvents = helper.log().args.filter(function (evt) {
 							return evt[0].type == "firebase-out";
@@ -125,7 +125,7 @@ describe("Firebase OUT Node", function () {
 					} catch (error) {
 						done(error);
 					}
-				}, 50);
+				});
 			});
 		});
 
@@ -140,7 +140,7 @@ describe("Firebase OUT Node", function () {
 
 				n1.receive({ payload: "" });
 
-				setTimeout(function () {
+				setImmediate(function () {
 					try {
 						const logEvents = helper.log().args.filter(function (evt) {
 							return evt[0].type == "firebase-out";
@@ -151,7 +151,7 @@ describe("Firebase OUT Node", function () {
 					} catch (error) {
 						done(error);
 					}
-				}, 50);
+				});
 			});
 		});
 	});
@@ -168,7 +168,7 @@ describe("Firebase OUT Node", function () {
 
 				n1.receive({ payload: "", topic: 123 });
 
-				setTimeout(function () {
+				setImmediate(function () {
 					try {
 						const logEvents = helper.log().args.filter(function (evt) {
 							return evt[0].type == "firebase-out";
@@ -179,7 +179,7 @@ describe("Firebase OUT Node", function () {
 					} catch (error) {
 						done(error);
 					}
-				}, 50);
+				});
 			});
 		});
 
@@ -194,7 +194,7 @@ describe("Firebase OUT Node", function () {
 
 				n1.receive({ payload: "", topic: "test." });
 
-				setTimeout(function () {
+				setImmediate(function () {
 					try {
 						const logEvents = helper.log().args.filter(function (evt) {
 							return evt[0].type == "firebase-out";
@@ -205,7 +205,7 @@ describe("Firebase OUT Node", function () {
 					} catch (error) {
 						done(error);
 					}
-				}, 50);
+				});
 			});
 		});
 
@@ -220,7 +220,7 @@ describe("Firebase OUT Node", function () {
 
 				n1.receive({ payload: "", topic: "" });
 
-				setTimeout(function () {
+				setImmediate(function () {
 					try {
 						const logEvents = helper.log().args.filter(function (evt) {
 							return evt[0].type == "firebase-out";
@@ -231,7 +231,7 @@ describe("Firebase OUT Node", function () {
 					} catch (error) {
 						done(error);
 					}
-				}, 50);
+				});
 			});
 		});
 
@@ -246,7 +246,7 @@ describe("Firebase OUT Node", function () {
 
 				n1.receive({ payload: "", topic: "" });
 
-				setTimeout(function () {
+				setImmediate(function () {
 					try {
 						const logEvents = helper.log().args.filter(function (evt) {
 							return evt[0].type == "firebase-out";
@@ -257,7 +257,7 @@ describe("Firebase OUT Node", function () {
 					} catch (error) {
 						done(error);
 					}
-				}, 50);
+				});
 			});
 		});
 	});
@@ -274,7 +274,7 @@ describe("Firebase OUT Node", function () {
 
 				n1.receive({ payload: "", method: 123 });
 
-				setTimeout(function () {
+				setImmediate(function () {
 					try {
 						const logEvents = helper.log().args.filter(function (evt) {
 							return evt[0].type == "firebase-out";
@@ -285,7 +285,7 @@ describe("Firebase OUT Node", function () {
 					} catch (error) {
 						done(error);
 					}
-				}, 50);
+				});
 			});
 		});
 
@@ -295,7 +295,7 @@ describe("Firebase OUT Node", function () {
 
 				n1.receive({ payload: "", method: "badQuery" });
 
-				setTimeout(function () {
+				setImmediate(function () {
 					try {
 						const logEvents = helper.log().args.filter(function (evt) {
 							return evt[0].type == "firebase-out";
@@ -306,7 +306,7 @@ describe("Firebase OUT Node", function () {
 					} catch (error) {
 						done(error);
 					}
-				}, 50);
+				});
 			});
 		});
 
@@ -316,7 +316,7 @@ describe("Firebase OUT Node", function () {
 
 				n1.receive({ payload: "" });
 
-				setTimeout(function () {
+				setImmediate(function () {
 					try {
 						const logEvents = helper.log().args.filter(function (evt) {
 							return evt[0].type == "firebase-out";
@@ -327,7 +327,7 @@ describe("Firebase OUT Node", function () {
 					} catch (error) {
 						done(error);
 					}
-				}, 50);
+				});
 			});
 		});
 	});
