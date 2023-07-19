@@ -16,7 +16,6 @@
 
 import { NodeAPI } from "node-red";
 import { OnDisconnect } from "../lib/onDisconnectNode";
-import { DatabaseNodeType } from "../lib/types/DatabaseNodeType";
 import { InputMessageType } from "../lib/types/FirebaseNodeType";
 import { OnDisconnectConfigType } from "../lib/types/OnDisconnectConfigType";
 import { OnDisconnectNodeType } from "../lib/types/OnDisconnectNodeType";
@@ -26,12 +25,9 @@ module.exports = function (RED: NodeAPI) {
 		RED.nodes.createNode(this, config);
 		const self = this;
 
-		self.config = config;
-		self.database = RED.nodes.getNode(config.database) as DatabaseNodeType | null;
-		self.RED = RED;
+		const firebase = new OnDisconnect(self, config, RED);
 
-		const firebase = new OnDisconnect(self);
-
+		firebase.getDatabase();
 		firebase.registerNode();
 		firebase.setNodeStatus();
 		firebase.setMsgSendHandler();

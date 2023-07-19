@@ -16,7 +16,6 @@
 
 import { NodeAPI } from "node-red";
 import { FirebaseOut } from "../lib/firebaseNode";
-import { DatabaseNodeType } from "../lib/types/DatabaseNodeType";
 import { FirebaseOutConfigType } from "../lib/types/FirebaseConfigType";
 import { FirebaseOutNodeType, InputMessageType } from "../lib/types/FirebaseNodeType";
 
@@ -25,12 +24,9 @@ module.exports = function (RED: NodeAPI) {
 		RED.nodes.createNode(this, config);
 		const self = this;
 
-		self.config = config;
-		self.database = RED.nodes.getNode(config.database) as DatabaseNodeType | null;
-		self.RED = RED;
+		const firebase = new FirebaseOut(self, config, RED);
 
-		const firebase = new FirebaseOut(self);
-
+		firebase.getDatabase();
 		firebase.registerNode();
 		firebase.setNodeStatus();
 

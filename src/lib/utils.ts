@@ -35,4 +35,30 @@ function printEnumKeys(obj: object) {
 		.join(", ");
 }
 
+/*
+// A utiliser si le noeud de config n'est pas défini dans le package.json !
+import path from "path";
+function checkModuleAlreadyInstalled() {
+	const mainPath = require.main?.path;
+
+	console.log("FIREBASE: Checking if the module 'firebase-config-node' already exist...");
+
+	if (!mainPath) {
+		console.log("Failed to find the main path! Register anyway");
+		return false;
+	}
+
+	const registry = require(path.join(mainPath, "node_modules/@node-red/registry/lib/index.js"));
+	const modules: Record<string, object> = registry.getModuleList();
+
+	if (modules["@gogovega/firebase-config-node"]) {
+		console.log("The module already exist! Skipping register type");
+		return true;
+	}
+
+	console.log("The module do not exist, registry type");
+	return false;
+}
+*/
+
 export { printEnumKeys };

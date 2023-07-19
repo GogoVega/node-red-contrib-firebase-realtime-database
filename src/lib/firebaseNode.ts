@@ -14,28 +14,29 @@
  * limitations under the License.
  */
 
-import { Database, get, ref, query, Unsubscribe } from "firebase/database";
-import * as firebase from "firebase/database";
-import * as admin from "firebase-admin";
-import { ConnectionStatus } from "./types/DatabaseNodeType";
-import { Listener, ListenerType, Query } from "../lib/types/FirebaseConfigType";
+import { NodeAPI } from "node-red";
+import { NodeType as DatabaseNodeType } from "@gogovega/firebase-config-node";
+import { BothDataSnapshot, ConnectionState, DataSnapshot, deepCopy, Unsubscription } from "@gogovega/firebase-nodejs";
 import {
 	ChildFieldType,
-	DataSnapshot,
-	DBRef,
 	FirebaseGetNodeType,
 	FirebaseInNodeType,
 	FirebaseNodeType,
 	FirebaseOutNodeType,
 	InputMessageType,
 	OutputMessageType,
-	QueryConstraint,
-	QueryConstraintType,
 	ValueFieldType,
 } from "./types/FirebaseNodeType";
-import { Entry } from "./types/UtilType";
 import { printEnumKeys } from "./utils";
-import { deepCopy } from "@firebase/util";
+import {
+	FirebaseConfigType,
+	FirebaseGetConfigType,
+	FirebaseInConfigType,
+	FirebaseOutConfigType,
+	Listener,
+	ListenerType,
+	Query,
+} from "../lib/types/FirebaseConfigType";
 
 /**
  * Firebase Class
@@ -57,7 +58,9 @@ import { deepCopy } from "@firebase/util";
  * @returns Firebase Class
  */
 export class Firebase {
-	constructor(protected node: FirebaseNodeType) {
+	constructor(protected node: FirebaseNodeType, config: FirebaseConfigType, protected RED: NodeAPI) {
+		node.config = config;
+		node.database = RED.nodes.getNode(config.database) as DatabaseNodeType | null;
 		node.onError = this.onError.bind(this);
 
 		if (!node.database) {
@@ -67,10 +70,10 @@ export class Firebase {
 	}
 
 	/**
-	 * Gets the Firebase Database instance from the `config-node`.
+	 * Gets the RTDB instance from the `config-node`.
 	 */
 	protected get db() {
-		return this.node.database?.database;
+		return this.node.database?.rtdb;
 	}
 
 	/**
@@ -84,73 +87,6 @@ export class Firebase {
 	 * Error received when database rules deny reading/writing data.
 	 */
 	protected permissionDeniedStatus = false;
-
-	/**
-	 * This callback is used to subscribe and unsubscribe to the `signedIn` event.
-	 */
-	protected signedInCallback?: (isSignedIn: boolean) => void;
-
-	/**
-	 * Applies the query constraints to the database reference.
-	 * @param method The object containing the query constraints
-	 * @returns An array of query constraints checked
-	 */
-	protected applyQueryConstraints(method: unknown): firebase.QueryConstraint[];
-
-	/**
-	 * Applies the query constraints to the database reference.
-	 * @param method The object containing the query constraints
-	 * @param dbRef The database reference
-	 * @returns The database reference with the query constraints applied
-	 */
-	protected applyQueryConstraints(method: unknown, dbRef: DBRef): DBRef;
-
-	protected applyQueryConstraints(method: unknown, dbRef?: DBRef) {
-		const constraints = this.checkQueryConstraints(method);
-		const query = [];
-
-		for (const [method, value] of Object.entries(constraints) as Entry<QueryConstraintType>[]) {
-			switch (method) {
-				case "endAt":
-				case "endBefore":
-				case "equalTo":
-				case "startAfter":
-				case "startAt":
-					if (dbRef) {
-						dbRef = dbRef[method](value.value, value.key);
-					} else {
-						query.push(firebase[method](value.value, value.key));
-					}
-					break;
-				case "limitToFirst":
-				case "limitToLast":
-					if (dbRef) {
-						dbRef = dbRef[method](value);
-					} else {
-						query.push(firebase[method](value));
-					}
-					break;
-				case "orderByChild":
-					if (dbRef) {
-						dbRef = dbRef[method](value);
-					} else {
-						query.push(firebase[method](value));
-					}
-					break;
-				case "orderByKey":
-				case "orderByPriority":
-				case "orderByValue":
-					if (dbRef) {
-						dbRef = dbRef[method]();
-					} else {
-						query.push(firebase[method]());
-					}
-					break;
-			}
-		}
-
-		return dbRef || query;
-	}
 
 	/**
 	 * Checks path to match Firebase rules. Throws an error if does not match.
@@ -178,59 +114,6 @@ export class Firebase {
 	}
 
 	/**
-	 * Checks the query constraints and throws an error if it is invalid.
-	 * @param constraints The query constraints
-	 * @returns The query constraints checked
-	 */
-	protected checkQueryConstraints(constraints: unknown): QueryConstraintType {
-		if (constraints === undefined || constraints === null) return {};
-		if (typeof constraints !== "object") throw new Error("Query Constraint must be an Object!");
-
-		for (const [method, value] of Object.entries(constraints)) {
-			switch (method) {
-				case "endAt":
-				case "endBefore":
-				case "equalTo":
-				case "startAfter":
-				case "startAt":
-					if (typeof value !== "object") throw new Error(`The value of the "${method}" constraint must be an object!`);
-					if (value.value === undefined)
-						throw new Error(`The value of the "${method}" constraint must be an object containing 'value' as key.`);
-					if (
-						typeof value.value !== "string" &&
-						typeof value.value !== "boolean" &&
-						typeof value.value !== "number" &&
-						value.value !== null
-					)
-						throw new Error(`The value of the "${method}.value" constraint must be a boolean, number, string or null!`);
-
-					if (value.key === null || (value.key && typeof value.key !== "string"))
-						throw new Error(`The value of the "${method}.key" constraint must be a string!`);
-					break;
-				case "limitToFirst":
-				case "limitToLast":
-					if (typeof value !== "number") throw new Error(`The value of the "${method}" constraint must be a number!`);
-					break;
-				case "orderByChild":
-					if (typeof value !== "string") throw new Error(`The value of the "${method}" constraint must be a string!`);
-					break;
-				case "orderByKey":
-				case "orderByPriority":
-				case "orderByValue":
-					if (value !== undefined && value !== null)
-						throw new Error(`The value of the "${method}" constraint must be null or undefined!`);
-					break;
-				default:
-					throw new Error(
-						`Query constraint received: '${method}' but must be one of ${printEnumKeys(QueryConstraint)}.`
-					);
-			}
-		}
-
-		return constraints;
-	}
-
-	/**
 	 * Deregisters node from the database.
 	 *
 	 * Removes the node from the array of nodes linked to this same database and call the `destroyUnusedConnection` method
@@ -240,15 +123,13 @@ export class Firebase {
 	 */
 	public deregisterNode(removed: boolean, done: (error?: unknown) => void) {
 		try {
-			const nodes = this.node.database?.nodes;
-
-			if (this.signedInCallback) this.node.RED.events.removeListener("Firebase:signedIn", this.signedInCallback);
+			const nodes = this.node.database?.registeredNodes.rtdb;
 
 			if (!nodes) return done();
 
-			nodes.forEach((node) => {
-				if (node.id !== this.node.id) return;
-				nodes.splice(nodes.indexOf(node), 1);
+			nodes.forEach((id) => {
+				if (id !== this.node.id) return;
+				nodes.splice(nodes.indexOf(id), 1);
 			});
 
 			this.node.database?.destroyUnusedConnection(removed);
@@ -257,6 +138,10 @@ export class Firebase {
 		} catch (error) {
 			done(error);
 		}
+	}
+
+	public getDatabase() {
+		this.node.database?.getRTDB();
 	}
 
 	/**
@@ -286,17 +171,6 @@ export class Firebase {
 		}
 
 		return constraints;
-	}
-
-	/**
-	 * This method checks if the database uses the `firebase-admin` module.
-	 * @param db The database used
-	 * @returns `true` if the database uses the `firebase-admin` module.
-	 */
-	// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-	// @ts-ignore
-	protected isAdmin(db: Database | admin.database.Database): db is admin.database.Database {
-		return this.node.database?.config.authType === "privateKey";
 	}
 
 	/**
@@ -330,30 +204,6 @@ export class Firebase {
 	}
 
 	/**
-	 * Checks and waits for the user to be logged in.
-	 * The Promise will be resolved when the `signedIn` event is triggered with the status of the connection.
-	 * @returns A boolean promise of the user's login state.
-	 */
-	protected isUserSignedIn(): Promise<boolean> {
-		return new Promise((resolve, reject) => {
-			try {
-				if (this.node.database?.signedIn !== undefined) {
-					resolve(this.node.database?.signedIn);
-					return;
-				}
-
-				this.signedInCallback = (isSignedIn) => {
-					resolve(isSignedIn);
-				};
-
-				this.node.RED.events.on("Firebase:signedIn", this.signedInCallback);
-			} catch (error) {
-				reject(error);
-			}
-		});
-	}
-
-	/**
 	 * A custom method on error to set node status as `Error` or `Permission Denied`.
 	 * @param error The error received
 	 * @param done If defined, a function to be called when all the work is complete and return the error message.
@@ -380,8 +230,7 @@ export class Firebase {
 	 * because it is unused.
 	 */
 	public registerNode() {
-		// TODO: Limit properties (Omit)
-		this.node.database?.nodes.push(this.node);
+		this.node.database?.registeredNodes.rtdb.push(this.node.id);
 		this.node.database?.restoreDestroyedConnection();
 	}
 
@@ -392,7 +241,7 @@ export class Firebase {
 	 * or `null` if it is the first child.
 	 * @param msg The message to pass through.
 	 */
-	protected sendMsg(snapshot: DataSnapshot, child?: string | null, msg?: InputMessageType) {
+	protected sendMsg(snapshot: BothDataSnapshot, child?: string | null, msg?: InputMessageType) {
 		if (this.isFirebaseOutNode(this.node)) return;
 
 		try {
@@ -405,7 +254,7 @@ export class Firebase {
 			const topic = snapshot.ref.key?.toString() || "";
 			const payload = this.node.config.outputType === "string" ? JSON.stringify(snapshot.val()) : snapshot.val();
 			const previousChildName = child !== undefined ? { previousChildName: child } : {};
-			const priority = snapshot instanceof firebase.DataSnapshot ? snapshot.priority : snapshot.getPriority();
+			const priority = snapshot instanceof DataSnapshot ? snapshot.priority : snapshot.getPriority();
 			const msgToSend: OutputMessageType = {
 				...(msg || {}),
 				payload: payload,
@@ -426,7 +275,7 @@ export class Firebase {
 	 * @param time If defined, the status will be cleared (to current status) after `time` ms.
 	 */
 	public setNodeStatus(msg?: string, time?: number) {
-		if (!this.node.database) return;
+		if (!this.db) return;
 
 		// Corresponds to do a Clear Status
 		if (msg && time) {
@@ -436,20 +285,20 @@ export class Firebase {
 
 		if (msg) return this.node.status({ fill: "red", shape: "dot", text: msg });
 
-		switch (this.node.database.connectionStatus) {
-			case ConnectionStatus.DISCONNECTED:
+		switch (this.db.connectionState) {
+			case ConnectionState.DISCONNECTED:
 				this.node.status({ fill: "red", shape: "dot", text: "Disconnected" });
 				break;
-			case ConnectionStatus.CONNECTING:
+			case ConnectionState.CONNECTING:
 				this.node.status({ fill: "yellow", shape: "ring", text: "Connecting" });
 				break;
-			case ConnectionStatus.CONNECTED:
+			case ConnectionState.CONNECTED:
 				this.node.status({ fill: "green", shape: "dot", text: "Connected" });
 				break;
-			case ConnectionStatus.NO_NETWORK:
-				this.node.status({ fill: "red", shape: "ring", text: "No Network" });
+			case ConnectionState.RE_CONNECTING:
+				this.node.status({ fill: "yellow", shape: "ring", text: "Re-connecting" });
 				break;
-			case ConnectionStatus.ERROR:
+			default:
 				this.node.status({ fill: "red", shape: "dot", text: "Error" });
 				break;
 		}
@@ -472,13 +321,13 @@ export class Firebase {
 		if (type !== "flow" && type !== "global" && type !== "msg")
 			throw new Error("The type of value field should be 'flow', 'global' or 'msg', please re-configure this node.");
 
-		if (type === "msg") return this.node.RED.util.getMessageProperty(msg, value as string);
+		if (type === "msg") return this.RED.util.getMessageProperty(msg, value as string);
 
-		const contextKey = this.node.RED.util.parseContextStore(value as string);
+		const contextKey = this.RED.util.parseContextStore(value as string);
 
 		if (/\[msg\./.test(contextKey.key)) {
 			// The key has a nest msg. reference to evaluate first
-			contextKey.key = this.node.RED.util.normalisePropertyExpression(contextKey.key, msg, true);
+			contextKey.key = this.RED.util.normalisePropertyExpression(contextKey.key, msg, true);
 		}
 
 		const output = this.node.context()[type].get(contextKey.key, contextKey.store);
@@ -503,8 +352,8 @@ export class Firebase {
  * @returns FirebaseGet Class
  */
 export class FirebaseGet extends Firebase {
-	constructor(protected node: FirebaseGetNodeType) {
-		super(node);
+	constructor(protected node: FirebaseGetNodeType, config: FirebaseGetConfigType, RED: NodeAPI) {
+		super(node, config, RED);
 	}
 
 	/**
@@ -516,19 +365,12 @@ export class FirebaseGet extends Firebase {
 		const msg2PassThrough = this.node.config.passThrough ? msg : undefined;
 		const constraint = this.getQueryConstraints(msg);
 		const path = this.getPath(msg);
-		let snapshot;
 
 		if (!this.db) return;
 
-		if (!(await this.isUserSignedIn())) return;
+		if (!(await this.node.database?.clientSignedIn())) return;
 
-		if (this.isAdmin(this.db)) {
-			const database = path ? this.db.ref().child(path) : this.db.ref();
-
-			snapshot = await this.applyQueryConstraints(constraint, database).get();
-		} else {
-			snapshot = await get(query(ref(this.db, path), ...this.applyQueryConstraints(constraint)));
-		}
+		const snapshot = await this.db.doGetQuery(path, constraint);
 
 		this.sendMsg(snapshot, undefined, msg2PassThrough);
 	}
@@ -546,7 +388,7 @@ export class FirebaseGet extends Firebase {
 
 		switch (this.node.config.pathType) {
 			case "msg":
-				path = this.node.RED.util.getMessageProperty(msg, pathSetted);
+				path = this.RED.util.getMessageProperty(msg, pathSetted);
 				break;
 			case "str":
 				path = pathSetted;
@@ -572,8 +414,8 @@ export class FirebaseGet extends Firebase {
  * @returns A `FirebaseIn` Class
  */
 export class FirebaseIn extends Firebase {
-	constructor(protected node: FirebaseInNodeType) {
-		super(node);
+	constructor(protected node: FirebaseInNodeType, config: FirebaseInConfigType, RED: NodeAPI) {
+		super(node, config, RED);
 	}
 
 	/**
@@ -590,7 +432,7 @@ export class FirebaseIn extends Firebase {
 	 * This property contains the **method to call** (`firebase`) or the **subscription callback** to give as an argument
 	 * (`firebase-admin`) for the unsubscribe request.
 	 */
-	private subscriptionCallback?: Unsubscribe | ((a: admin.database.DataSnapshot | null, b?: string | null) => void);
+	private subscriptionCallback?: Unsubscription;
 
 	/**
 	 * Subscribes to a listener and attaches a callback (`sendMsg`) to send a `payload` containing the changed data.
@@ -600,26 +442,18 @@ export class FirebaseIn extends Firebase {
 		(async () => {
 			try {
 				const constraint = this.getQueryConstraints();
+				const listener = this.getListener();
 
 				if (!this.db) return;
 
-				if (!(await this.isUserSignedIn())) return;
+				if (!(await this.node.database?.clientSignedIn())) return;
 
-				if (this.isAdmin(this.db)) {
-					const databaseRef = this.path ? this.db.ref().child(this.path) : this.db.ref();
-
-					this.subscriptionCallback = this.applyQueryConstraints(constraint, databaseRef).on(
-						this.listener,
-						(snapshot, child) => this.sendMsg(snapshot, child),
-						(error) => this.onError(error)
-					);
-				} else {
-					this.subscriptionCallback = firebase[Listener[this.listener]](
-						query(ref(this.db, this.path), ...this.applyQueryConstraints(constraint)),
-						(snapshot: firebase.DataSnapshot, child?: string | null) => this.sendMsg(snapshot, child),
-						(error) => this.onError(error)
-					);
-				}
+				this.subscriptionCallback = this.db.doSubscriptionQuery(
+					listener,
+					(snapshot, child) => this.sendMsg(snapshot, child),
+					this.path,
+					constraint
+				);
 			} catch (error) {
 				this.node.error(error);
 			}
@@ -632,13 +466,7 @@ export class FirebaseIn extends Firebase {
 	public doUnSubscriptionQuery() {
 		if (!this.db) return;
 
-		if (this.isAdmin(this.db)) {
-			const databaseRef = this.path ? this.db.ref().child(this.path) : this.db.ref();
-
-			databaseRef.off(this.listener, this.subscriptionCallback);
-		} else {
-			if (this.subscriptionCallback) (this.subscriptionCallback as () => void)();
-		}
+		this.db.doUnSubscriptionQuery(this.listener, this.subscriptionCallback, this.path);
 	}
 
 	/**
@@ -664,8 +492,8 @@ export class FirebaseIn extends Firebase {
  * @returns A `FirebaseOut` Class
  */
 export class FirebaseOut extends Firebase {
-	constructor(protected node: FirebaseOutNodeType) {
-		super(node);
+	constructor(protected node: FirebaseOutNodeType, config: FirebaseOutConfigType, RED: NodeAPI) {
+		super(node, config, RED);
 	}
 
 	/**
@@ -703,57 +531,28 @@ export class FirebaseOut extends Firebase {
 
 		if (!this.db) return Promise.resolve();
 
-		if (!(await this.isUserSignedIn())) return Promise.resolve();
+		if (!(await this.node.database?.clientSignedIn())) return;
 
-		if (this.isAdmin(this.db)) {
-			switch (query) {
-				case "update":
-					if (msg.payload && typeof msg.payload === "object") {
-						await this.db.ref().child(path)[query](msg.payload);
-						break;
-					}
+		switch (query) {
+			case "update":
+				if (msg.payload && typeof msg.payload === "object") {
+					await this.db.doWriteQuery(query, path, msg.payload);
+					break;
+				}
 
-					throw new Error("msg.payload must be an object with 'update' query.");
-				case "remove":
-					await this.db.ref().child(path)[query]();
-					break;
-				case "setPriority":
-					await this.db
-						.ref()
-						.child(path)
-						.setPriority(this.getPriority(msg), (err) => {
-							if (err) this.node.error(err);
-						});
-					break;
-				case "setWithPriority":
-					await this.db.ref().child(path)[query](msg.payload, this.getPriority(msg));
-					break;
-				default:
-					await this.db.ref().child(path)[query](msg.payload);
-					break;
-			}
-		} else {
-			switch (query) {
-				case "update":
-					if (msg.payload && typeof msg.payload === "object") {
-						await firebase[query](ref(this.db, path), msg.payload);
-						break;
-					}
-
-					throw new Error("msg.payload must be an object with 'update' query.");
-				case "remove":
-					await firebase[query](ref(this.db, path));
-					break;
-				case "setPriority":
-					await firebase[query](ref(this.db, path), this.getPriority(msg));
-					break;
-				case "setWithPriority":
-					await firebase[query](ref(this.db, path), msg.payload, this.getPriority(msg));
-					break;
-				default:
-					await firebase[query](ref(this.db, path), msg.payload);
-					break;
-			}
+				throw new Error("msg.payload must be an object with 'update' query.");
+			case "remove":
+				await this.db.doWriteQuery(query, path);
+				break;
+			case "setPriority":
+				await this.db.doWriteQuery(query, path, this.getPriority(msg));
+				break;
+			case "setWithPriority":
+				await this.db.doWriteQuery(query, path, msg.payload, this.getPriority(msg));
+				break;
+			default:
+				await this.db.doWriteQuery(query, path, msg.payload);
+				break;
 		}
 
 		// Clear Permission Denied Status
@@ -776,7 +575,7 @@ export class FirebaseOut extends Firebase {
 
 		switch (this.node.config.pathType) {
 			case "msg":
-				path = this.node.RED.util.getMessageProperty(msg, pathSetted);
+				path = this.RED.util.getMessageProperty(msg, pathSetted);
 				break;
 			case "str":
 				path = pathSetted;

@@ -14,12 +14,9 @@
  * limitations under the License.
  */
 
-import * as database from "firebase/database";
-import * as adminDatabase from "firebase-admin/database";
-import { Node, NodeAPI, NodeMessage, NodeMessageInFlow } from "node-red";
-import { DatabaseNodeType } from "./DatabaseNodeType";
+import { Node, NodeMessage, NodeMessageInFlow } from "node-red";
+import { NodeType as DatabaseNodeType } from "@gogovega/firebase-config-node";
 import { FirebaseGetConfigType, FirebaseInConfigType, FirebaseOutConfigType } from "./FirebaseConfigType";
-
 export enum QueryConstraint {
 	"endAt",
 	"endBefore",
@@ -57,9 +54,6 @@ export interface QueryConstraintType {
 	startAt?: RangeQueryType;
 }
 
-export type DataSnapshot = database.DataSnapshot | adminDatabase.DataSnapshot;
-export type DBRef = adminDatabase.Reference | adminDatabase.Query;
-
 export interface InputMessageType extends NodeMessageInFlow {
 	method?: unknown;
 	priority?: unknown;
@@ -79,7 +73,6 @@ export interface FirebaseNode extends Node {
 	 * @param done If defined, a function to be called when all the work is complete and return the error message.
 	 */
 	onError: (error: unknown, done?: () => void) => void;
-	RED: NodeAPI;
 }
 
 export interface FirebaseGetNodeType extends FirebaseNode {

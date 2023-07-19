@@ -16,7 +16,6 @@
 
 import { NodeAPI } from "node-red";
 import { FirebaseGet } from "../lib/firebaseNode";
-import { DatabaseNodeType } from "../lib/types/DatabaseNodeType";
 import { FirebaseGetConfigType } from "../lib/types/FirebaseConfigType";
 import { FirebaseGetNodeType, InputMessageType } from "../lib/types/FirebaseNodeType";
 
@@ -25,12 +24,9 @@ module.exports = function (RED: NodeAPI) {
 		RED.nodes.createNode(this, config);
 		const self = this;
 
-		self.config = config;
-		self.database = RED.nodes.getNode(config.database) as DatabaseNodeType | null;
-		self.RED = RED;
+		const firebase = new FirebaseGet(self, config, RED);
 
-		const firebase = new FirebaseGet(self);
-
+		firebase.getDatabase();
 		firebase.registerNode();
 		firebase.setNodeStatus();
 

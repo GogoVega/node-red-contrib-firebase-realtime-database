@@ -14,12 +14,13 @@
  * limitations under the License.
  */
 
-import { onDisconnect, ref } from "firebase/database";
 import { Firebase } from "./firebaseNode";
 import { InputMessageType } from "./types/FirebaseNodeType";
 import { Query } from "./types/OnDisconnectConfigType";
 import { OnDisconnectNodeType, OutputMessageType, SendMsgEvent } from "./types/OnDisconnectNodeType";
 import { printEnumKeys } from "./utils";
+import { FirebaseConfigType } from "./types/FirebaseConfigType";
+import { NodeAPI } from "node-red";
 
 /**
  * OnDisconnect Class
@@ -36,8 +37,8 @@ import { printEnumKeys } from "./utils";
  * @class
  */
 export class OnDisconnect extends Firebase {
-	constructor(protected node: OnDisconnectNodeType) {
-		super(node);
+	constructor(protected node: OnDisconnectNodeType, config: FirebaseConfigType, protected RED: NodeAPI) {
+		super(node, config, RED);
 	}
 
 	/**
@@ -77,17 +78,13 @@ export class OnDisconnect extends Firebase {
 	/** @override */
 	public override deregisterNode(removed: boolean, done: (error?: unknown) => void) {
 		try {
-			const nodes = this.node.database?.nodes;
-
-			if (this.signedInCallback) this.node.RED.events.removeListener("Firebase:signedIn", this.signedInCallback);
-			this.node.RED.events.removeListener("Firebase:connected", this.sendMsgOnConnected);
-			this.node.RED.events.removeListener("Firebase:disconnect", this.sendMsgOnDisconnect);
+			const nodes = this.node.database?.registeredNodes.rtdb;
 
 			if (!nodes) return done();
 
-			nodes.forEach((node) => {
-				if (node.id !== this.node.id) return;
-				nodes.splice(nodes.indexOf(node), 1);
+			nodes.forEach((id) => {
+				if (id !== this.node.id) return;
+				nodes.splice(nodes.indexOf(id), 1);
 			});
 
 			this.node.database?.destroyUnusedConnection(removed);
@@ -111,7 +108,7 @@ export class OnDisconnect extends Firebase {
 
 		switch (this.node.config.pathType) {
 			case "msg":
-				path = this.node.RED.util.getMessageProperty(msg, pathSetted);
+				path = this.RED.util.getMessageProperty(msg, pathSetted);
 				break;
 			case "str":
 				path = pathSetted;
@@ -153,7 +150,7 @@ export class OnDisconnect extends Firebase {
 			const msg2Send: OutputMessageType = {
 				payload: Date.now(),
 				event: event,
-				topic: this.node.database.app?.options.databaseURL || "",
+				topic: this.node.database.rtdb?.client.app?.options.databaseURL || "",
 			};
 
 			const secondOutput = this.node.config.sendMsgEvent === "onConnected,onDisconnect" && event === "disconnect";
@@ -172,8 +169,8 @@ export class OnDisconnect extends Firebase {
 		const events = this.node.config.sendMsgEvent?.split(",");
 		if (!events) return;
 
-		if (events.includes("onConnected")) this.node.RED.events.on("Firebase:connected", this.sendMsgOnConnected);
-		if (events.includes("onDisconnect")) this.node.RED.events.on("Firebase:disconnect", this.sendMsgOnDisconnect);
+		if (events.includes("onConnected")) this.db?.on("connected", this.sendMsgOnConnected);
+		if (events.includes("onDisconnect")) this.db?.on("disconnect", this.sendMsgOnDisconnect);
 	}
 
 	/**
@@ -197,29 +194,25 @@ export class OnDisconnect extends Firebase {
 		if (!this.db) return;
 		if (query === "none") return Promise.resolve();
 
-		if (!(await this.isUserSignedIn())) return Promise.resolve();
-
-		const databaseRef = this.isAdmin(this.db)
-			? this.db.ref().child(path).onDisconnect()
-			: onDisconnect(ref(this.db, path));
+		if (!(await this.node.database?.clientSignedIn())) return Promise.resolve();
 
 		switch (query) {
 			case "cancel":
 			case "remove":
-				await databaseRef[query]();
+				await this.db.setOnDisconnectQuery(query, path);
 				break;
 			case "set":
-				await databaseRef[query](msg.payload);
+				await this.db.setOnDisconnectQuery(query, path, msg.payload);
 				break;
 			case "update":
 				if (msg.payload && typeof msg.payload === "object") {
-					await databaseRef[query](msg.payload);
+					await this.db.setOnDisconnectQuery(query, path, msg.payload);
 					break;
 				}
 
 				throw new Error("msg.payload must be an object with 'update' query.");
 			case "setWithPriority":
-				await databaseRef[query](msg.payload, this.getPriority(msg));
+				await this.db.setOnDisconnectQuery(query, path, msg.payload, this.getPriority(msg));
 				break;
 		}
 

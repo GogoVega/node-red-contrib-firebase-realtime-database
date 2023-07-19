@@ -62,3 +62,5 @@ export type FirebaseOutConfigType = NodeDef & {
 	priority?: number;
 	queryType?: QueryType;
 };
+
+export type FirebaseConfigType = FirebaseGetConfigType | FirebaseInConfigType | FirebaseOutConfigType;

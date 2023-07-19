@@ -26,7 +26,7 @@
 			defaults: {
 				name: { value: "" },
 				constraint: { value: {}, validate: isConstraintValid },
-				database: { value: "", type: "database-config" },
+				database: { value: "", type: "firebase-config" },
 				outputType: { value: "auto", validate: RED.validators.regex(/^(auto|string)$/) },
 				passThrough: { value: false },
 				path: { value: "topic" },
