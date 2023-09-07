@@ -1,5 +1,16 @@
 # Change log
 
+## 0.5.2
+
+### Changes
+
+- Bump `firebase` from 9.21.0 to 10.3.1
+- Bump `firebase-admin` from 11.8.0 to 11.10.1
+
+### Enhancements
+
+- Improve `Demo Flow` and add `On Disconnect Flow` and `Advanced Flow` examples
+
 ## 0.5.1
 
 ### Changes

@@ -55,7 +55,7 @@ Find this package `@gogovega/node-red-contrib-firebase-realtime-database` and cl
 
 ```bash
 cd ~/.node-red
-npm install @gogovega/node-red-contrib-firebase-realtime-database
+npm install @gogovega/node-red-contrib-firebase-realtime-database --omit=dev
 ```
 
 ## Authentication Methods
@@ -78,8 +78,6 @@ Read more about the different ways to authenticate [here](https://github.com/Gog
 
 ## TODO List
 
-- [x] ~~Sign in with Custom Token (Generated with Private Key)~~ (Generated with Service Account ID pending)
-- [x] ~~Add `onDisconnect` method~~
 - [ ] Sign in with Google (Provider)
 
 If you have any other suggestions, please let me know [here](https://github.com/GogoVega/node-red-contrib-firebase-realtime-database/discussions/new?category=ideas).
