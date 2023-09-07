@@ -1,277 +1,337 @@
 [
   {
-      "id": "73d271d7b26c7d87",
-      "type": "tab",
-      "label": "On Disconnect Flow",
-      "disabled": false,
-      "info": "",
-      "env": []
+    "id": "73d271d7b26c7d87",
+    "type": "tab",
+    "label": "On Disconnect Flow",
+    "disabled": false,
+    "info": "",
+    "env": []
   },
   {
-      "id": "b229f7c2aafdde4c",
-      "type": "on-disconnect",
-      "z": "73d271d7b26c7d87",
-      "name": "Set Status On Disconnect",
-      "database": "e8796a1869e179bc",
-      "inputs": 1,
-      "outputs": 0,
-      "path": "status",
-      "pathType": "str",
-      "sendMsgEvent": "",
-      "queryType": "set",
-      "x": 370,
-      "y": 200,
-      "wires": []
+    "id": "b229f7c2aafdde4c",
+    "type": "on-disconnect",
+    "z": "73d271d7b26c7d87",
+    "name": "Set Status On Disconnect",
+    "database": "e8796a1869e179bc",
+    "inputs": 1,
+    "outputs": 0,
+    "path": "status",
+    "pathType": "str",
+    "sendMsgEvent": "",
+    "queryType": "set",
+    "x": 370,
+    "y": 200,
+    "wires": []
   },
   {
-      "id": "4f49c996e33a5083",
-      "type": "inject",
-      "z": "73d271d7b26c7d87",
-      "name": "Connected",
-      "props": [
-          {
-              "p": "payload"
-          }
+    "id": "4f49c996e33a5083",
+    "type": "inject",
+    "z": "73d271d7b26c7d87",
+    "name": "Connected",
+    "props": [
+      {
+        "p": "payload"
+      }
+    ],
+    "repeat": "",
+    "crontab": "",
+    "once": false,
+    "onceDelay": 0.1,
+    "topic": "",
+    "payload": "Connected",
+    "payloadType": "str",
+    "x": 120,
+    "y": 80,
+    "wires": [
+      [
+        "8f8cae78c38f2f84"
+      ]
+    ]
+  },
+  {
+    "id": "68d94bfb96b2bca3",
+    "type": "inject",
+    "z": "73d271d7b26c7d87",
+    "name": "Disconnected",
+    "props": [
+      {
+        "p": "payload"
+      }
+    ],
+    "repeat": "",
+    "crontab": "",
+    "once": false,
+    "onceDelay": 0.1,
+    "topic": "",
+    "payload": "Disconnected",
+    "payloadType": "str",
+    "x": 130,
+    "y": 200,
+    "wires": [
+      [
+        "b229f7c2aafdde4c"
+      ]
+    ]
+  },
+  {
+    "id": "8f8cae78c38f2f84",
+    "type": "firebase-out",
+    "z": "73d271d7b26c7d87",
+    "name": "Set Status",
+    "database": "e8796a1869e179bc",
+    "path": "status",
+    "pathType": "str",
+    "priority": 1,
+    "queryType": "set",
+    "x": 330,
+    "y": 80,
+    "wires": []
+  },
+  {
+    "id": "1d33df3a8cc49288",
+    "type": "inject",
+    "z": "73d271d7b26c7d87",
+    "name": "Get Status Now",
+    "props": [
+      {
+        "p": "payload"
+      }
+    ],
+    "repeat": "",
+    "crontab": "",
+    "once": false,
+    "onceDelay": 0.1,
+    "topic": "",
+    "payload": "",
+    "payloadType": "date",
+    "x": 140,
+    "y": 440,
+    "wires": [
+      [
+        "41ab5a7e0fd91bba"
+      ]
+    ]
+  },
+  {
+    "id": "992a66506473e52c",
+    "type": "debug",
+    "z": "73d271d7b26c7d87",
+    "name": "debug 8",
+    "active": true,
+    "tosidebar": true,
+    "console": false,
+    "tostatus": false,
+    "complete": "false",
+    "statusVal": "",
+    "statusType": "auto",
+    "x": 460,
+    "y": 440,
+    "wires": []
+  },
+  {
+    "id": "41ab5a7e0fd91bba",
+    "type": "firebase-get",
+    "z": "73d271d7b26c7d87",
+    "name": "",
+    "constraint": {},
+    "database": "e8796a1869e179bc",
+    "outputType": "auto",
+    "passThrough": false,
+    "path": "status",
+    "pathType": "str",
+    "useConstraint": false,
+    "x": 310,
+    "y": 440,
+    "wires": [
+      [
+        "992a66506473e52c"
+      ]
+    ]
+  },
+  {
+    "id": "66e3db03ddc54dd1",
+    "type": "comment",
+    "z": "73d271d7b26c7d87",
+    "name": "1. Set Status to \"Connected\"",
+    "info": "",
+    "x": 180,
+    "y": 40,
+    "wires": []
+  },
+  {
+    "id": "1e63acd40b284879",
+    "type": "comment",
+    "z": "73d271d7b26c7d87",
+    "name": "2. Set the \"Disconnected\" Status Callback",
+    "info": "",
+    "x": 220,
+    "y": 160,
+    "wires": []
+  },
+  {
+    "id": "b0f654d8bf6d3193",
+    "type": "comment",
+    "z": "73d271d7b26c7d87",
+    "name": "3. Get Status Now",
+    "info": "",
+    "x": 150,
+    "y": 400,
+    "wires": []
+  },
+  {
+    "id": "d1ebb525d6a0aecb",
+    "type": "comment",
+    "z": "73d271d7b26c7d87",
+    "name": "4. Turn OFF your Wifi then ON",
+    "info": "",
+    "x": 180,
+    "y": 520,
+    "wires": []
+  },
+  {
+    "id": "f79ab60888b66690",
+    "type": "comment",
+    "z": "73d271d7b26c7d87",
+    "name": "5. Get Status Now",
+    "info": "",
+    "x": 150,
+    "y": 580,
+    "wires": []
+  },
+  {
+    "id": "7fcf973ffc82c6a7",
+    "type": "debug",
+    "z": "73d271d7b26c7d87",
+    "name": "On Connected",
+    "active": true,
+    "tosidebar": true,
+    "console": false,
+    "tostatus": false,
+    "complete": "payload",
+    "targetType": "msg",
+    "statusVal": "",
+    "statusType": "auto",
+    "x": 400,
+    "y": 700,
+    "wires": []
+  },
+  {
+    "id": "7d40cb2344acf904",
+    "type": "debug",
+    "z": "73d271d7b26c7d87",
+    "name": "On Disconnect",
+    "active": true,
+    "tosidebar": true,
+    "console": false,
+    "tostatus": false,
+    "complete": "payload",
+    "targetType": "msg",
+    "statusVal": "",
+    "statusType": "auto",
+    "x": 400,
+    "y": 740,
+    "wires": []
+  },
+  {
+    "id": "f6d4ef4943dc20d3",
+    "type": "on-disconnect",
+    "z": "73d271d7b26c7d87",
+    "name": "Send Status Changes",
+    "database": "e8796a1869e179bc",
+    "inputs": 0,
+    "outputs": 2,
+    "path": "topic",
+    "pathType": "msg",
+    "sendMsgEvent": "onConnected,onDisconnect",
+    "queryType": "none",
+    "x": 160,
+    "y": 720,
+    "wires": [
+      [
+        "7fcf973ffc82c6a7"
       ],
-      "repeat": "",
-      "crontab": "",
-      "once": false,
-      "onceDelay": 0.1,
-      "topic": "",
-      "payload": "Connected",
-      "payloadType": "str",
-      "x": 120,
-      "y": 80,
-      "wires": [
-          [
-              "8f8cae78c38f2f84"
-          ]
+      [
+        "7d40cb2344acf904"
       ]
+    ]
   },
   {
-      "id": "68d94bfb96b2bca3",
-      "type": "inject",
-      "z": "73d271d7b26c7d87",
-      "name": "Disconnected",
-      "props": [
-          {
-              "p": "payload"
-          }
-      ],
-      "repeat": "",
-      "crontab": "",
-      "once": false,
-      "onceDelay": 0.1,
-      "topic": "",
-      "payload": "Disconnected",
-      "payloadType": "str",
-      "x": 130,
-      "y": 200,
-      "wires": [
-          [
-              "b229f7c2aafdde4c"
-          ]
+    "id": "7cfce6e8688d0f87",
+    "type": "comment",
+    "z": "73d271d7b26c7d87",
+    "name": "Send Status Changes On Connected/Disconnect",
+    "info": "",
+    "x": 240,
+    "y": 660,
+    "wires": []
+  },
+  {
+    "id": "a667ac6296c9527e",
+    "type": "function",
+    "z": "73d271d7b26c7d87",
+    "name": "Use Server Timestamp",
+    "func": "// Don't forget to look at Setup panel\n// Returns a placeholder value for auto-populating the current timestamp\n// as determined by the Firebase servers.\nreturn {\n    payload: firebaseDatabase.serverTimestamp()\n};",
+    "outputs": 1,
+    "timeout": 0,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": [
+      {
+        "var": "firebaseDatabase",
+        "module": "firebase/database"
+      }
+    ],
+    "x": 300,
+    "y": 320,
+    "wires": [
+      [
+        "b229f7c2aafdde4c"
       ]
+    ]
   },
   {
-      "id": "8f8cae78c38f2f84",
-      "type": "firebase-out",
-      "z": "73d271d7b26c7d87",
-      "name": "Set Status",
-      "database": "e8796a1869e179bc",
-      "path": "status",
-      "pathType": "str",
-      "priority": 1,
-      "queryType": "set",
-      "x": 330,
-      "y": 80,
-      "wires": []
-  },
-  {
-      "id": "1d33df3a8cc49288",
-      "type": "inject",
-      "z": "73d271d7b26c7d87",
-      "name": "Get Status Now",
-      "props": [
-          {
-              "p": "payload"
-          }
-      ],
-      "repeat": "",
-      "crontab": "",
-      "once": false,
-      "onceDelay": 0.1,
-      "topic": "",
-      "payload": "",
-      "payloadType": "date",
-      "x": 140,
-      "y": 320,
-      "wires": [
-          [
-              "41ab5a7e0fd91bba"
-          ]
+    "id": "878787e8146fe6cd",
+    "type": "inject",
+    "z": "73d271d7b26c7d87",
+    "name": "Inject",
+    "props": [
+      {
+        "p": "payload"
+      }
+    ],
+    "repeat": "",
+    "crontab": "",
+    "once": false,
+    "onceDelay": 0.1,
+    "topic": "",
+    "payload": "{}",
+    "payloadType": "json",
+    "x": 110,
+    "y": 320,
+    "wires": [
+      [
+        "a667ac6296c9527e"
       ]
+    ]
   },
   {
-      "id": "992a66506473e52c",
-      "type": "debug",
-      "z": "73d271d7b26c7d87",
-      "name": "debug 8",
-      "active": true,
-      "tosidebar": true,
-      "console": false,
-      "tostatus": false,
-      "complete": "false",
-      "statusVal": "",
-      "statusType": "auto",
-      "x": 460,
-      "y": 320,
-      "wires": []
+    "id": "4f05c62bc41b6ff3",
+    "type": "comment",
+    "z": "73d271d7b26c7d87",
+    "name": "2 Bis. Set the “serverTimestamp” Status Callback",
+    "info": "",
+    "x": 240,
+    "y": 280,
+    "wires": []
   },
   {
-      "id": "41ab5a7e0fd91bba",
-      "type": "firebase-get",
-      "z": "73d271d7b26c7d87",
-      "name": "",
-      "constraint": {},
-      "database": "e8796a1869e179bc",
-      "outputType": "auto",
-      "passThrough": false,
-      "path": "status",
-      "pathType": "str",
-      "useConstraint": false,
-      "x": 310,
-      "y": 320,
-      "wires": [
-          [
-              "992a66506473e52c"
-          ]
-      ]
-  },
-  {
-      "id": "66e3db03ddc54dd1",
-      "type": "comment",
-      "z": "73d271d7b26c7d87",
-      "name": "1. Set Status to \"Connected\"",
-      "info": "",
-      "x": 180,
-      "y": 40,
-      "wires": []
-  },
-  {
-      "id": "1e63acd40b284879",
-      "type": "comment",
-      "z": "73d271d7b26c7d87",
-      "name": "2. Set the \"Disconnected\" Status Callback",
-      "info": "",
-      "x": 220,
-      "y": 160,
-      "wires": []
-  },
-  {
-      "id": "b0f654d8bf6d3193",
-      "type": "comment",
-      "z": "73d271d7b26c7d87",
-      "name": "3. Get Status Now",
-      "info": "",
-      "x": 150,
-      "y": 280,
-      "wires": []
-  },
-  {
-      "id": "d1ebb525d6a0aecb",
-      "type": "comment",
-      "z": "73d271d7b26c7d87",
-      "name": "4. Turn OFF your Wifi then ON",
-      "info": "",
-      "x": 240,
-      "y": 400,
-      "wires": []
-  },
-  {
-      "id": "f79ab60888b66690",
-      "type": "comment",
-      "z": "73d271d7b26c7d87",
-      "name": "5. Get Status Now",
-      "info": "",
-      "x": 150,
-      "y": 460,
-      "wires": []
-  },
-  {
-      "id": "7fcf973ffc82c6a7",
-      "type": "debug",
-      "z": "73d271d7b26c7d87",
-      "name": "On Connected",
-      "active": true,
-      "tosidebar": true,
-      "console": false,
-      "tostatus": false,
-      "complete": "payload",
-      "targetType": "msg",
-      "statusVal": "",
-      "statusType": "auto",
-      "x": 400,
-      "y": 580,
-      "wires": []
-  },
-  {
-      "id": "7d40cb2344acf904",
-      "type": "debug",
-      "z": "73d271d7b26c7d87",
-      "name": "On Disconnect",
-      "active": true,
-      "tosidebar": true,
-      "console": false,
-      "tostatus": false,
-      "complete": "payload",
-      "targetType": "msg",
-      "statusVal": "",
-      "statusType": "auto",
-      "x": 400,
-      "y": 620,
-      "wires": []
-  },
-  {
-      "id": "f6d4ef4943dc20d3",
-      "type": "on-disconnect",
-      "z": "73d271d7b26c7d87",
-      "name": "Send Status Changes",
-      "database": "e8796a1869e179bc",
-      "inputs": 0,
-      "outputs": 2,
-      "path": "topic",
-      "pathType": "msg",
-      "sendMsgEvent": "onConnected,onDisconnect",
-      "queryType": "none",
-      "x": 160,
-      "y": 600,
-      "wires": [
-          [
-              "7fcf973ffc82c6a7"
-          ],
-          [
-              "7d40cb2344acf904"
-          ]
-      ]
-  },
-  {
-      "id": "7cfce6e8688d0f87",
-      "type": "comment",
-      "z": "73d271d7b26c7d87",
-      "name": "Send Status Changes On Connected/Disconnect",
-      "info": "",
-      "x": 240,
-      "y": 540,
-      "wires": []
-  },
-  {
-      "id": "e8796a1869e179bc",
-      "type": "database-config",
-      "name": "My Database",
-      "authType": "privateKey",
-      "claims": {},
-      "createUser": false,
-      "useClaims": false
+    "id": "e8796a1869e179bc",
+    "type": "database-config",
+    "name": "My Database",
+    "authType": "privateKey",
+    "claims": {},
+    "createUser": false,
+    "useClaims": false
   }
 ]

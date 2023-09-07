@@ -1,457 +1,457 @@
 [
   {
-      "id": "28464b7f6be41cb4",
-      "type": "tab",
-      "label": "Advanced Flow",
-      "disabled": false,
-      "info": "",
-      "env": []
+    "id": "28464b7f6be41cb4",
+    "type": "tab",
+    "label": "Advanced Flow",
+    "disabled": false,
+    "info": "",
+    "env": []
   },
   {
-      "id": "f86f4fb427eea069",
-      "type": "group",
-      "z": "28464b7f6be41cb4",
-      "name": "",
-      "style": {
-          "stroke": "#3f93cf",
-          "label": true
+    "id": "f86f4fb427eea069",
+    "type": "group",
+    "z": "28464b7f6be41cb4",
+    "name": "",
+    "style": {
+      "stroke": "#3f93cf",
+      "label": true
+    },
+    "nodes": [
+      "51c61dc9691f4d53",
+      "d34451fd90ae82a6",
+      "8df6a68aa1f85985",
+      "b95cc8b6bb4641f9",
+      "6856f6ed196b81b2",
+      "9fdf67b627567ef1",
+      "4ad9408c81f44a83",
+      "0769472c8656fbb8",
+      "e32fbd31831fe40e"
+    ],
+    "x": 14,
+    "y": 19,
+    "w": 512,
+    "h": 342
+  },
+  {
+    "id": "de5313f319e7d726",
+    "type": "group",
+    "z": "28464b7f6be41cb4",
+    "name": "",
+    "style": {
+      "stroke": "#92d04f",
+      "label": true
+    },
+    "nodes": [
+      "f89e4d03772931b7",
+      "9388bae3361fa468",
+      "26f9f704cdf76441",
+      "87f0103a881e1d45",
+      "39502ae6fe86784c",
+      "04615d9d8657afb0",
+      "a09b6025b2f143ba",
+      "640edbe4ba13200e",
+      "6ac14c1db586a679",
+      "3e1c32a2c486a9bb",
+      "96ce93f2d3a45647"
+    ],
+    "x": 14,
+    "y": 399,
+    "w": 512,
+    "h": 422
+  },
+  {
+    "id": "51c61dc9691f4d53",
+    "type": "inject",
+    "z": "28464b7f6be41cb4",
+    "g": "f86f4fb427eea069",
+    "name": "Send Timestamp",
+    "props": [
+      {
+        "p": "payload"
+      }
+    ],
+    "repeat": "",
+    "crontab": "",
+    "once": false,
+    "onceDelay": 0.1,
+    "topic": "",
+    "payload": "",
+    "payloadType": "date",
+    "x": 140,
+    "y": 100,
+    "wires": [
+      [
+        "d34451fd90ae82a6"
+      ]
+    ]
+  },
+  {
+    "id": "d34451fd90ae82a6",
+    "type": "firebase-out",
+    "z": "28464b7f6be41cb4",
+    "g": "f86f4fb427eea069",
+    "name": "List of Timestamps",
+    "database": "e8796a1869e179bc",
+    "path": "timestampList",
+    "pathType": "str",
+    "priority": "",
+    "queryType": "push",
+    "x": 370,
+    "y": 100,
+    "wires": []
+  },
+  {
+    "id": "8df6a68aa1f85985",
+    "type": "firebase-in",
+    "z": "28464b7f6be41cb4",
+    "g": "f86f4fb427eea069",
+    "name": "List First 2 Changes",
+    "constraint": {
+      "limitToFirst": 2
+    },
+    "database": "e8796a1869e179bc",
+    "listenerType": "value",
+    "outputType": "auto",
+    "path": "timestampList",
+    "useConstraint": true,
+    "x": 150,
+    "y": 200,
+    "wires": [
+      [
+        "b95cc8b6bb4641f9"
+      ]
+    ]
+  },
+  {
+    "id": "b95cc8b6bb4641f9",
+    "type": "debug",
+    "z": "28464b7f6be41cb4",
+    "g": "f86f4fb427eea069",
+    "name": "debug 9",
+    "active": true,
+    "tosidebar": true,
+    "console": false,
+    "tostatus": false,
+    "complete": "false",
+    "statusVal": "",
+    "statusType": "auto",
+    "x": 340,
+    "y": 200,
+    "wires": []
+  },
+  {
+    "id": "6856f6ed196b81b2",
+    "type": "comment",
+    "z": "28464b7f6be41cb4",
+    "g": "f86f4fb427eea069",
+    "name": "Push Timestamp to \"timestampList\" and watch what happens",
+    "info": "",
+    "x": 280,
+    "y": 60,
+    "wires": []
+  },
+  {
+    "id": "9fdf67b627567ef1",
+    "type": "firebase-in",
+    "z": "28464b7f6be41cb4",
+    "g": "f86f4fb427eea069",
+    "name": "List Last 2 Changes",
+    "constraint": {
+      "limitToLast": 2
+    },
+    "database": "e8796a1869e179bc",
+    "listenerType": "value",
+    "outputType": "auto",
+    "path": "timestampList",
+    "useConstraint": true,
+    "x": 150,
+    "y": 320,
+    "wires": [
+      [
+        "4ad9408c81f44a83"
+      ]
+    ]
+  },
+  {
+    "id": "4ad9408c81f44a83",
+    "type": "debug",
+    "z": "28464b7f6be41cb4",
+    "g": "f86f4fb427eea069",
+    "name": "debug 10",
+    "active": true,
+    "tosidebar": true,
+    "console": false,
+    "tostatus": false,
+    "complete": "false",
+    "statusVal": "",
+    "statusType": "auto",
+    "x": 340,
+    "y": 320,
+    "wires": []
+  },
+  {
+    "id": "0769472c8656fbb8",
+    "type": "comment",
+    "z": "28464b7f6be41cb4",
+    "g": "f86f4fb427eea069",
+    "name": "Returns only the first two items",
+    "info": "",
+    "x": 190,
+    "y": 160,
+    "wires": []
+  },
+  {
+    "id": "e32fbd31831fe40e",
+    "type": "comment",
+    "z": "28464b7f6be41cb4",
+    "g": "f86f4fb427eea069",
+    "name": "Returns only the last two items",
+    "info": "",
+    "x": 190,
+    "y": 280,
+    "wires": []
+  },
+  {
+    "id": "f89e4d03772931b7",
+    "type": "inject",
+    "z": "28464b7f6be41cb4",
+    "g": "de5313f319e7d726",
+    "name": "Add Alan",
+    "props": [
+      {
+        "p": "payload"
       },
-      "nodes": [
-          "51c61dc9691f4d53",
-          "d34451fd90ae82a6",
-          "8df6a68aa1f85985",
-          "b95cc8b6bb4641f9",
-          "6856f6ed196b81b2",
-          "9fdf67b627567ef1",
-          "4ad9408c81f44a83",
-          "0769472c8656fbb8",
-          "e32fbd31831fe40e"
-      ],
-      "x": 14,
-      "y": 19,
-      "w": 512,
-      "h": 342
+      {
+        "p": "topic",
+        "vt": "str"
+      }
+    ],
+    "repeat": "",
+    "crontab": "",
+    "once": false,
+    "onceDelay": 0.1,
+    "topic": "users/alanisawesome",
+    "payload": "{\"full_name\":\"Alan Turing\",\"nickname\":\"Alan The Machine\",\"hobby\":\"Computer\",\"year_of_birth\":1912}",
+    "payloadType": "json",
+    "x": 120,
+    "y": 480,
+    "wires": [
+      [
+        "9388bae3361fa468"
+      ]
+    ]
   },
   {
-      "id": "de5313f319e7d726",
-      "type": "group",
-      "z": "28464b7f6be41cb4",
-      "name": "",
-      "style": {
-          "stroke": "#92d04f",
-          "label": true
+    "id": "9388bae3361fa468",
+    "type": "firebase-out",
+    "z": "28464b7f6be41cb4",
+    "g": "de5313f319e7d726",
+    "name": "Add User",
+    "database": "e8796a1869e179bc",
+    "path": "topic",
+    "pathType": "msg",
+    "priority": "",
+    "queryType": "set",
+    "x": 420,
+    "y": 520,
+    "wires": []
+  },
+  {
+    "id": "26f9f704cdf76441",
+    "type": "inject",
+    "z": "28464b7f6be41cb4",
+    "g": "de5313f319e7d726",
+    "name": "Add Steve",
+    "props": [
+      {
+        "p": "payload"
       },
-      "nodes": [
-          "f89e4d03772931b7",
-          "9388bae3361fa468",
-          "26f9f704cdf76441",
-          "87f0103a881e1d45",
-          "39502ae6fe86784c",
-          "04615d9d8657afb0",
-          "a09b6025b2f143ba",
-          "640edbe4ba13200e",
-          "6ac14c1db586a679",
-          "3e1c32a2c486a9bb",
-          "96ce93f2d3a45647"
-      ],
-      "x": 14,
-      "y": 399,
-      "w": 512,
-      "h": 422
-  },
-  {
-      "id": "51c61dc9691f4d53",
-      "type": "inject",
-      "z": "28464b7f6be41cb4",
-      "g": "f86f4fb427eea069",
-      "name": "Send Timestamp",
-      "props": [
-          {
-              "p": "payload"
-          }
-      ],
-      "repeat": "",
-      "crontab": "",
-      "once": false,
-      "onceDelay": 0.1,
-      "topic": "",
-      "payload": "",
-      "payloadType": "date",
-      "x": 140,
-      "y": 100,
-      "wires": [
-          [
-              "d34451fd90ae82a6"
-          ]
+      {
+        "p": "topic",
+        "vt": "str"
+      }
+    ],
+    "repeat": "",
+    "crontab": "",
+    "once": false,
+    "onceDelay": 0.1,
+    "topic": "users/steveisapple",
+    "payload": "{\"full_name\":\"Steve Jobs\",\"nickname\":\"Steve The King\",\"hobby\":\"Computer\",\"year_of_birth\":1955}",
+    "payloadType": "json",
+    "x": 120,
+    "y": 520,
+    "wires": [
+      [
+        "9388bae3361fa468"
       ]
+    ]
   },
   {
-      "id": "d34451fd90ae82a6",
-      "type": "firebase-out",
-      "z": "28464b7f6be41cb4",
-      "g": "f86f4fb427eea069",
-      "name": "List of Timestamps",
-      "database": "e8796a1869e179bc",
-      "path": "timestampList",
-      "pathType": "str",
-      "priority": "",
-      "queryType": "push",
-      "x": 370,
-      "y": 100,
-      "wires": []
+    "id": "87f0103a881e1d45",
+    "type": "comment",
+    "z": "28464b7f6be41cb4",
+    "g": "de5313f319e7d726",
+    "name": "Add User to \"users\"",
+    "info": "",
+    "x": 150,
+    "y": 440,
+    "wires": []
   },
   {
-      "id": "8df6a68aa1f85985",
-      "type": "firebase-in",
-      "z": "28464b7f6be41cb4",
-      "g": "f86f4fb427eea069",
-      "name": "List First 2 Changes",
-      "constraint": {
-          "limitToFirst": 2
+    "id": "39502ae6fe86784c",
+    "type": "debug",
+    "z": "28464b7f6be41cb4",
+    "g": "de5313f319e7d726",
+    "name": "debug 11",
+    "active": true,
+    "tosidebar": true,
+    "console": false,
+    "tostatus": false,
+    "complete": "false",
+    "statusVal": "",
+    "statusType": "auto",
+    "x": 420,
+    "y": 660,
+    "wires": []
+  },
+  {
+    "id": "04615d9d8657afb0",
+    "type": "firebase-in",
+    "z": "28464b7f6be41cb4",
+    "g": "de5313f319e7d726",
+    "name": "Sorts \"Computer\" as hobby",
+    "constraint": {
+      "orderByChild": "hobby",
+      "equalTo": {
+        "value": "Computer",
+        "type": "str"
+      }
+    },
+    "database": "e8796a1869e179bc",
+    "listenerType": "value",
+    "outputType": "auto",
+    "path": "users",
+    "useConstraint": true,
+    "x": 180,
+    "y": 660,
+    "wires": [
+      [
+        "39502ae6fe86784c"
+      ]
+    ]
+  },
+  {
+    "id": "a09b6025b2f143ba",
+    "type": "inject",
+    "z": "28464b7f6be41cb4",
+    "g": "de5313f319e7d726",
+    "name": "Add Albert",
+    "props": [
+      {
+        "p": "payload"
       },
-      "database": "e8796a1869e179bc",
-      "listenerType": "value",
-      "outputType": "auto",
-      "path": "timestampList",
-      "useConstraint": true,
-      "x": 150,
-      "y": 200,
-      "wires": [
-          [
-              "b95cc8b6bb4641f9"
-          ]
+      {
+        "p": "topic",
+        "vt": "str"
+      }
+    ],
+    "repeat": "",
+    "crontab": "",
+    "once": false,
+    "onceDelay": 0.1,
+    "topic": "users/albertthegenius",
+    "payload": "{\"full_name\":\"Albert Einstein\",\"nickname\":\"The Dopey One\",\"hobby\":\"Physicist\",\"year_of_birth\":1879}",
+    "payloadType": "json",
+    "x": 120,
+    "y": 560,
+    "wires": [
+      [
+        "9388bae3361fa468"
       ]
+    ]
   },
   {
-      "id": "b95cc8b6bb4641f9",
-      "type": "debug",
-      "z": "28464b7f6be41cb4",
-      "g": "f86f4fb427eea069",
-      "name": "debug 9",
-      "active": true,
-      "tosidebar": true,
-      "console": false,
-      "tostatus": false,
-      "complete": "false",
-      "statusVal": "",
-      "statusType": "auto",
-      "x": 340,
-      "y": 200,
-      "wires": []
+    "id": "640edbe4ba13200e",
+    "type": "debug",
+    "z": "28464b7f6be41cb4",
+    "g": "de5313f319e7d726",
+    "name": "debug 12",
+    "active": true,
+    "tosidebar": true,
+    "console": false,
+    "tostatus": false,
+    "complete": "false",
+    "statusVal": "",
+    "statusType": "auto",
+    "x": 420,
+    "y": 780,
+    "wires": []
   },
   {
-      "id": "6856f6ed196b81b2",
-      "type": "comment",
-      "z": "28464b7f6be41cb4",
-      "g": "f86f4fb427eea069",
-      "name": "Push Timestamp to \"timestampList\" and watch what happens",
-      "info": "",
-      "x": 280,
-      "y": 60,
-      "wires": []
-  },
-  {
-      "id": "9fdf67b627567ef1",
-      "type": "firebase-in",
-      "z": "28464b7f6be41cb4",
-      "g": "f86f4fb427eea069",
-      "name": "List Last 2 Changes",
-      "constraint": {
-          "limitToLast": 2
-      },
-      "database": "e8796a1869e179bc",
-      "listenerType": "value",
-      "outputType": "auto",
-      "path": "timestampList",
-      "useConstraint": true,
-      "x": 150,
-      "y": 320,
-      "wires": [
-          [
-              "4ad9408c81f44a83"
-          ]
+    "id": "6ac14c1db586a679",
+    "type": "firebase-in",
+    "z": "28464b7f6be41cb4",
+    "g": "de5313f319e7d726",
+    "name": "Sorts by year of birth after 1920",
+    "constraint": {
+      "orderByChild": "year_of_birth",
+      "startAt": {
+        "value": 1920,
+        "type": "num"
+      }
+    },
+    "database": "e8796a1869e179bc",
+    "listenerType": "value",
+    "outputType": "auto",
+    "path": "users",
+    "useConstraint": true,
+    "x": 190,
+    "y": 780,
+    "wires": [
+      [
+        "640edbe4ba13200e"
       ]
+    ]
   },
   {
-      "id": "4ad9408c81f44a83",
-      "type": "debug",
-      "z": "28464b7f6be41cb4",
-      "g": "f86f4fb427eea069",
-      "name": "debug 10",
-      "active": true,
-      "tosidebar": true,
-      "console": false,
-      "tostatus": false,
-      "complete": "false",
-      "statusVal": "",
-      "statusType": "auto",
-      "x": 340,
-      "y": 320,
-      "wires": []
+    "id": "3e1c32a2c486a9bb",
+    "type": "comment",
+    "z": "28464b7f6be41cb4",
+    "g": "de5313f319e7d726",
+    "name": "Returns all items having \"Computer\" as hobby",
+    "info": "",
+    "x": 230,
+    "y": 620,
+    "wires": []
   },
   {
-      "id": "0769472c8656fbb8",
-      "type": "comment",
-      "z": "28464b7f6be41cb4",
-      "g": "f86f4fb427eea069",
-      "name": "Returns only the first two items",
-      "info": "",
-      "x": 190,
-      "y": 160,
-      "wires": []
+    "id": "96ce93f2d3a45647",
+    "type": "comment",
+    "z": "28464b7f6be41cb4",
+    "g": "de5313f319e7d726",
+    "name": "Returns all items that were born after 1920",
+    "info": "",
+    "x": 220,
+    "y": 740,
+    "wires": []
   },
   {
-      "id": "e32fbd31831fe40e",
-      "type": "comment",
-      "z": "28464b7f6be41cb4",
-      "g": "f86f4fb427eea069",
-      "name": "Returns only the last two items",
-      "info": "",
-      "x": 190,
-      "y": 280,
-      "wires": []
+    "id": "856f5264fb9ebc35",
+    "type": "comment",
+    "z": "28464b7f6be41cb4",
+    "name": "Open me for read more",
+    "info": "Link to the wiki =>\n[Read more here](https://github.com/GogoVega/node-red-contrib-firebase-realtime-database/wiki/query-constraints#Example)",
+    "x": 160,
+    "y": 880,
+    "wires": []
   },
   {
-      "id": "f89e4d03772931b7",
-      "type": "inject",
-      "z": "28464b7f6be41cb4",
-      "g": "de5313f319e7d726",
-      "name": "Add Alan",
-      "props": [
-          {
-              "p": "payload"
-          },
-          {
-              "p": "topic",
-              "vt": "str"
-          }
-      ],
-      "repeat": "",
-      "crontab": "",
-      "once": false,
-      "onceDelay": 0.1,
-      "topic": "users/alanisawesome",
-      "payload": "{\"full_name\":\"Alan Turing\",\"nickname\":\"Alan The Machine\",\"hobby\":\"Computer\",\"year_of_birth\":1912}",
-      "payloadType": "json",
-      "x": 120,
-      "y": 480,
-      "wires": [
-          [
-              "9388bae3361fa468"
-          ]
-      ]
-  },
-  {
-      "id": "9388bae3361fa468",
-      "type": "firebase-out",
-      "z": "28464b7f6be41cb4",
-      "g": "de5313f319e7d726",
-      "name": "Add User",
-      "database": "e8796a1869e179bc",
-      "path": "topic",
-      "pathType": "msg",
-      "priority": "",
-      "queryType": "set",
-      "x": 420,
-      "y": 520,
-      "wires": []
-  },
-  {
-      "id": "26f9f704cdf76441",
-      "type": "inject",
-      "z": "28464b7f6be41cb4",
-      "g": "de5313f319e7d726",
-      "name": "Add Steve",
-      "props": [
-          {
-              "p": "payload"
-          },
-          {
-              "p": "topic",
-              "vt": "str"
-          }
-      ],
-      "repeat": "",
-      "crontab": "",
-      "once": false,
-      "onceDelay": 0.1,
-      "topic": "users/steveisapple",
-      "payload": "{\"full_name\":\"Steve Jobs\",\"nickname\":\"Steve The King\",\"hobby\":\"Computer\",\"year_of_birth\":1955}",
-      "payloadType": "json",
-      "x": 120,
-      "y": 520,
-      "wires": [
-          [
-              "9388bae3361fa468"
-          ]
-      ]
-  },
-  {
-      "id": "87f0103a881e1d45",
-      "type": "comment",
-      "z": "28464b7f6be41cb4",
-      "g": "de5313f319e7d726",
-      "name": "Add User to \"users\"",
-      "info": "",
-      "x": 150,
-      "y": 440,
-      "wires": []
-  },
-  {
-      "id": "39502ae6fe86784c",
-      "type": "debug",
-      "z": "28464b7f6be41cb4",
-      "g": "de5313f319e7d726",
-      "name": "debug 11",
-      "active": true,
-      "tosidebar": true,
-      "console": false,
-      "tostatus": false,
-      "complete": "false",
-      "statusVal": "",
-      "statusType": "auto",
-      "x": 420,
-      "y": 660,
-      "wires": []
-  },
-  {
-      "id": "04615d9d8657afb0",
-      "type": "firebase-in",
-      "z": "28464b7f6be41cb4",
-      "g": "de5313f319e7d726",
-      "name": "Sorts \"Computer\" as hobby",
-      "constraint": {
-          "orderByChild": "hobby",
-          "equalTo": {
-              "value": "Computer",
-              "type": "str"
-          }
-      },
-      "database": "e8796a1869e179bc",
-      "listenerType": "value",
-      "outputType": "auto",
-      "path": "users",
-      "useConstraint": true,
-      "x": 180,
-      "y": 660,
-      "wires": [
-          [
-              "39502ae6fe86784c"
-          ]
-      ]
-  },
-  {
-      "id": "a09b6025b2f143ba",
-      "type": "inject",
-      "z": "28464b7f6be41cb4",
-      "g": "de5313f319e7d726",
-      "name": "Add Albert",
-      "props": [
-          {
-              "p": "payload"
-          },
-          {
-              "p": "topic",
-              "vt": "str"
-          }
-      ],
-      "repeat": "",
-      "crontab": "",
-      "once": false,
-      "onceDelay": 0.1,
-      "topic": "users/albertthegenius",
-      "payload": "{\"full_name\":\"Albert Einstein\",\"nickname\":\"The Dopey One\",\"hobby\":\"Physicist\",\"year_of_birth\":1879}",
-      "payloadType": "json",
-      "x": 120,
-      "y": 560,
-      "wires": [
-          [
-              "9388bae3361fa468"
-          ]
-      ]
-  },
-  {
-      "id": "640edbe4ba13200e",
-      "type": "debug",
-      "z": "28464b7f6be41cb4",
-      "g": "de5313f319e7d726",
-      "name": "debug 12",
-      "active": true,
-      "tosidebar": true,
-      "console": false,
-      "tostatus": false,
-      "complete": "false",
-      "statusVal": "",
-      "statusType": "auto",
-      "x": 420,
-      "y": 780,
-      "wires": []
-  },
-  {
-      "id": "6ac14c1db586a679",
-      "type": "firebase-in",
-      "z": "28464b7f6be41cb4",
-      "g": "de5313f319e7d726",
-      "name": "Sorts by year of birth after 1920",
-      "constraint": {
-          "orderByChild": "year_of_birth",
-          "startAt": {
-              "value": 1920,
-              "type": "num"
-          }
-      },
-      "database": "e8796a1869e179bc",
-      "listenerType": "value",
-      "outputType": "auto",
-      "path": "users",
-      "useConstraint": true,
-      "x": 190,
-      "y": 780,
-      "wires": [
-          [
-              "640edbe4ba13200e"
-          ]
-      ]
-  },
-  {
-      "id": "3e1c32a2c486a9bb",
-      "type": "comment",
-      "z": "28464b7f6be41cb4",
-      "g": "de5313f319e7d726",
-      "name": "Returns all items having \"Computer\" as hobby",
-      "info": "",
-      "x": 230,
-      "y": 620,
-      "wires": []
-  },
-  {
-      "id": "96ce93f2d3a45647",
-      "type": "comment",
-      "z": "28464b7f6be41cb4",
-      "g": "de5313f319e7d726",
-      "name": "Returns all items that were born after 1920",
-      "info": "",
-      "x": 220,
-      "y": 740,
-      "wires": []
-  },
-  {
-      "id": "856f5264fb9ebc35",
-      "type": "comment",
-      "z": "28464b7f6be41cb4",
-      "name": "Open me for read more",
-      "info": "Link to the wiki =>\n[Read more here](https://github.com/GogoVega/node-red-contrib-firebase-realtime-database/wiki/query-constraints#Example)",
-      "x": 160,
-      "y": 880,
-      "wires": []
-  },
-  {
-      "id": "e8796a1869e179bc",
-      "type": "database-config",
-      "name": "My Database",
-      "authType": "privateKey",
-      "claims": {},
-      "createUser": false,
-      "useClaims": false
+    "id": "e8796a1869e179bc",
+    "type": "database-config",
+    "name": "My Database",
+    "authType": "privateKey",
+    "claims": {},
+    "createUser": false,
+    "useClaims": false
   }
 ]
