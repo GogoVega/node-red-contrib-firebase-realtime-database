@@ -28,6 +28,8 @@ jobs:
 
       - name: Run Lint
         run: npm run lint
+        # ESLint no longer supports node 14
+        if: ${{ matrix.node-version >= 16 }}
 
       - name: Run Build
         run: npm run build
