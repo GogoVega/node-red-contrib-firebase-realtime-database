@@ -14,22 +14,14 @@
  * limitations under the License.
  */
 
+import { OnDisconnectQueryMethodMap } from "@gogovega/firebase-config-node";
 import { NodeDef } from "node-red";
 
-export enum Query {
-	"none",
-	"cancel",
-	"set",
-	"update",
-	"remove",
-	"setWithPriority",
-}
-
 type PathType = "msg" | "str";
-type QueryType = "msg" | keyof typeof Query;
+type QueryType = "msg" | "none" | keyof typeof OnDisconnectQueryMethodMap;
 type SendMsgEvent = "" | "onConnected" | "onDisconnect" | "onConnected,onDisconnect";
 
-export type OnDisconnectConfigType = NodeDef & {
+export type OnDisconnectConfig = NodeDef & {
 	database: string;
 	path?: string;
 	pathType?: PathType;

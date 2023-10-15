@@ -14,18 +14,7 @@
  * limitations under the License.
  */
 
-import { NodeMessage } from "node-red";
-import { FirebaseNode } from "./FirebaseNodeType";
-import { OnDisconnectConfigType } from "./OnDisconnectConfigType";
-
-export type SendMsgEvent = "connected" | "disconnect";
-
-export interface OutputMessageType extends NodeMessage {
-	payload: number;
-	event: SendMsgEvent;
-	topic: string;
-}
-
-export type OnDisconnectNodeType = FirebaseNode & {
-	config: OnDisconnectConfigType;
-};
+export * from "./firebase-config";
+export * from "./firebase-node";
+export * from "./ondisconnect-config";
+export * from "./ondisconnect-node";

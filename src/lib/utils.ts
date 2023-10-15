@@ -14,51 +14,52 @@
  * limitations under the License.
  */
 
-declare global {
-	interface String {
-		toPascalCase(): string;
-	}
-}
-
-String.prototype.toPascalCase = function () {
-	const words = this.match(/[a-z]+/gi);
-
-	if (!words) return "";
-
-	return words.map((word) => word.charAt(0).toUpperCase() + word.substring(1).toLowerCase()).join(" ");
-};
-
 function printEnumKeys(obj: object) {
 	return Object.keys(obj)
-		.filter((x) => !Number.isInteger(parseInt(x)))
+		.filter((x) => !Number.isInteger(Number(x)))
 		.map((x) => `'${x}'`)
 		.join(", ");
 }
 
-/*
-// A utiliser si le noeud de config n'est pas défini dans le package.json !
-import path from "path";
-function checkModuleAlreadyInstalled() {
-	const mainPath = require.main?.path;
+/**
+ * Checks path to match Firebase rules. Throws an error if does not match.
+ * @param path The path to check
+ * @param empty Can the path be empty? Default: `false`
+ * @returns The path checked to the database
+ */
+function checkPath(path: unknown, empty: true): string | undefined;
 
-	console.log("FIREBASE: Checking if the module 'firebase-config-node' already exist...");
+/**
+ * Checks path to match Firebase rules. Throws an error if does not match.
+ * @param path The path to check
+ * @param empty Can the path be empty? Default: `false`
+ * @returns The path checked to the database
+ */
+function checkPath(path: unknown, empty?: false): string;
 
-	if (!mainPath) {
-		console.log("Failed to find the main path! Register anyway");
-		return false;
-	}
-
-	const registry = require(path.join(mainPath, "node_modules/@node-red/registry/lib/index.js"));
-	const modules: Record<string, object> = registry.getModuleList();
-
-	if (modules["@gogovega/firebase-config-node"]) {
-		console.log("The module already exist! Skipping register type");
-		return true;
-	}
-
-	console.log("The module do not exist, registry type");
-	return false;
+/**
+ * @overload
+ */
+function checkPath(path: unknown, empty?: boolean): string | undefined {
+	if (empty && path === "") return;
+	if (empty && path === undefined) return;
+	if (!empty && path === undefined) throw new Error("The msg containing the PATH do not exist!");
+	if (!empty && !path) throw new Error("PATH must be non-empty string!");
+	if (typeof path !== "string") throw new Error("PATH must be a string!");
+	if (path?.match(/[.#$\[\]]/g)) throw new Error(`PATH must not contain ".", "#", "$", "[", or "]"`);
+	return path.trim() || undefined;
 }
-*/
 
-export { printEnumKeys };
+/**
+ * Checks if the priority is valid otherwise throws an error.
+ * @param priority The priority to be checked
+ * @returns The priority checked
+ */
+function checkPriority(priority: unknown): number {
+	if (priority === undefined) throw new Error("msg.priority do not exist!");
+	if (typeof priority === "number") return priority;
+	if (typeof priority === "string" && Number.isInteger(Number(priority))) return parseInt(priority, 10);
+	throw new Error("msg.priority must be a number!");
+}
+
+export { checkPath, checkPriority, printEnumKeys };

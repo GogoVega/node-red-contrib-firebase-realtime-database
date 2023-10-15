@@ -15,30 +15,22 @@
  */
 
 import { NodeAPI } from "node-red";
-import { FirebaseIn } from "../lib/firebaseNode";
-import { FirebaseInConfigType } from "../lib/types/FirebaseConfigType";
-import { FirebaseInNodeType } from "../lib/types/FirebaseNodeType";
+import { FirebaseIn } from "../lib/firebase-node";
+import { FirebaseInConfig, FirebaseInNode } from "../lib/types";
 
 module.exports = function (RED: NodeAPI) {
-	function FirebaseInNode(this: FirebaseInNodeType, config: FirebaseInConfigType) {
+	function FirebaseInNode(this: FirebaseInNode, config: FirebaseInConfig) {
 		RED.nodes.createNode(this, config);
-		const self = this;
 
-		try {
-			const firebase = new FirebaseIn(self, config, RED);
+		const firebase = new FirebaseIn(this, config, RED);
 
-			firebase.getDatabase();
-			firebase.registerNode();
-			firebase.setNodeStatus();
-			firebase.doSubscriptionQuery();
+		firebase.attachStatusListener();
+		firebase.subscribe();
 
-			self.on("close", (removed: boolean, done: () => void) => {
-				firebase.doUnSubscriptionQuery();
-				firebase.deregisterNode(removed, done);
-			});
-		} catch (error) {
-			self.error(error);
-		}
+		this.on("close", (removed: boolean, done: () => void) => {
+			firebase.unsubscribe();
+			firebase.detachStatusListener(removed, done);
+		});
 	}
 
 	RED.nodes.registerType("firebase-in", FirebaseInNode);

@@ -15,29 +15,20 @@
  */
 
 import { NodeAPI } from "node-red";
-import { FirebaseOut } from "../lib/firebaseNode";
-import { FirebaseOutConfigType } from "../lib/types/FirebaseConfigType";
-import { FirebaseOutNodeType, InputMessageType } from "../lib/types/FirebaseNodeType";
+import { FirebaseOut } from "../lib/firebase-node";
+import { FirebaseOutConfig, FirebaseOutNode, IncomingMessage } from "../lib/types";
 
 module.exports = function (RED: NodeAPI) {
-	function FirebaseOutNode(this: FirebaseOutNodeType, config: FirebaseOutConfigType) {
+	function FirebaseOutNode(this: FirebaseOutNode, config: FirebaseOutConfig) {
 		RED.nodes.createNode(this, config);
-		const self = this;
 
-		const firebase = new FirebaseOut(self, config, RED);
+		const firebase = new FirebaseOut(this, config, RED);
 
-		firebase.getDatabase();
-		firebase.registerNode();
-		firebase.setNodeStatus();
+		firebase.attachStatusListener();
 
-		self.on("input", (msg: InputMessageType, _send, done) => {
-			firebase
-				.doWriteQuery(msg)
-				.then(() => done())
-				.catch((error: Error) => self.onError(error, done));
-		});
+		this.on("input", (msg: IncomingMessage, _send, done) => firebase.modify(msg, done));
 
-		self.on("close", (removed: boolean, done: () => void) => firebase.deregisterNode(removed, done));
+		this.on("close", (removed: boolean, done: () => void) => firebase.detachStatusListener(removed, done));
 	}
 
 	RED.nodes.registerType("firebase-out", FirebaseOutNode);
