@@ -16,22 +16,27 @@
 
 <script type="text/html" data-help-name="firebase-in">
 	<p>
-		Se connecte à une base de données en temps réel Firebase et s'abonne aux données du chemin spécifié.
-		Vous pouvez définir des contraintes pour la requête afin de trier et ordonner vos données.
+		Se connecte à une base de données en temps réel Firebase et s'abonne aux données du chemin spécifié. Vous pouvez
+		définir des contraintes pour la requête afin de trier et ordonner vos données.
 	</p>
 	<h3>Sorties</h3>
 	<dl class="message-properties">
 		<dt>payload<span class="property-type">chaîne | booléen | nombre | tableau | objet | nul</span></dt>
 		<dd>contient les données de la base de données pour cet événement.</dd>
 		<dt class="optional">previousChildName<span class="property-type">chaîne de caractères</span></dt>
-		<dd>contient la clé de l'enfant précédent, par ordre de tri, ou <code>null</code> s'il s'agit du premier enfant.</dd>
+		<dd>
+			contient la clé de l'enfant précédent, par ordre de tri, ou <code>null</code> s'il s'agit du premier enfant.
+		</dd>
 		<dt>priority<span class="property-type">nombre</span></dt>
 		<dd>la priorité des données.</dd>
 		<dt>topic<span class="property-type">chaîne de caractères</span></dt>
 		<dd>contient la dernière partie du chemin d'où proviennent les données.</dd>
 	</dl>
 	<h3>Détails</h3>
-	<p>Ce noeud lit les données d'un chemin et enverra un message chaque fois que les données, y compris les enfants, changent.</p>
+	<p>
+		Ce noeud lit les données d'un chemin et enverra un message chaque fois que les données, y compris les enfants,
+		changent.
+	</p>
 	<p>L' <strong>Écouteur</strong> vous permet de choisir le type de changement que vous souhaitez écouter :</p>
 	<ul>
 		<li><code>Valeur</code></li>
@@ -42,12 +47,13 @@
 	</ul>
 	<p>Vous pouvez définir des contraintes pour la requête afin de trier et d'ordonner vos données.</p>
 	<p>
-		Le <strong>Chemin</strong> détermine où les données seront lues. Il peut être vide, dans ce cas les données
-		envoyées proviennent de la racine de la base de données.
+		Le <strong>Chemin</strong> détermine où les données seront lues. Il peut être vide, dans ce cas les données envoyées
+		proviennent de la racine de la base de données.
 	</p>
 	<p>
-		La <strong>Sortie</strong> peut être définie sur <strong>détection automatique</strong> pour envoyer un objet contenant
-		les données, ou <strong>une chaîne de caractères</strong> pour envoyer les données sous forme de chaîne de caractères.
+		La <strong>Sortie</strong> peut être définie sur <strong>détection automatique</strong> pour envoyer un objet
+		contenant les données, ou <strong>une chaîne de caractères</strong> pour envoyer les données sous forme de chaîne de
+		caractères.
 	</p>
 	<p>
 		En savoir plus sur l'utilisation de ce noeud
