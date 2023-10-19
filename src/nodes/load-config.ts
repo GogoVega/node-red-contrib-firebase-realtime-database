@@ -74,7 +74,7 @@ module.exports = function (RED: NodeAPI) {
 			const installFromFile = `file:${path?.split(path2ConfigNode)[0]}`;
 			const installLink = valide ? installFromFile : installFromNPM;
 
-			console.log(`
+			console.error(`
 Firebase ERR!  Unable to find the config-node!
 The config-node is not located in
   ${relativePath.path}

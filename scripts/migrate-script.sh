@@ -87,8 +87,9 @@ else
 fi
 
 [[ $FLOW_FILE ]] && FILE_NAME="$FLOW_FILE" || FILE_NAME="flows.json"
+[[ $USER_DIR ]] && DIR_NAME="$USER_DIR" || DIR_NAME="~/.node-red"
 
-echo "The flow file that the script will analyze is: '$FILE_NAME' in the user directory: '$USER_DIR'"
+echo "The flow file that the script will analyze is: '$FILE_NAME' in the user directory: '$DIR_NAME'"
 echo " "
 
 yn="${CONFIRM_INSTALL}"
