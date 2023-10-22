@@ -30,7 +30,7 @@
     ],
     "x": 14,
     "y": 19,
-    "w": 952,
+    "w": 972,
     "h": 242
   },
   {
@@ -71,6 +71,28 @@
     "y": 299,
     "w": 972,
     "h": 542
+  },
+  {
+    "id": "2c9b5f4cd21831cb",
+    "type": "group",
+    "z": "13c4e8e8f85d50b9",
+    "name": "",
+    "style": {
+      "stroke": "#3f93cf",
+      "label": true
+    },
+    "nodes": [
+      "b6fe7042bd85ef5d",
+      "5395c1e6288eedd1",
+      "a946387bbf0e9716",
+      "909e56335c63fd16",
+      "a4532a063e702429",
+      "e8373909bb49fb32"
+    ],
+    "x": 14,
+    "y": 859,
+    "w": 972,
+    "h": 182
   },
   {
     "id": "5792767043952f56",
@@ -267,7 +289,7 @@
     "complete": "false",
     "statusVal": "",
     "statusType": "auto",
-    "x": 860,
+    "x": 880,
     "y": 100,
     "wires": []
   },
@@ -284,7 +306,7 @@
     "complete": "false",
     "statusVal": "",
     "statusType": "auto",
-    "x": 860,
+    "x": 880,
     "y": 220,
     "wires": []
   },
@@ -675,6 +697,148 @@
     "info": "",
     "x": 680,
     "y": 760,
+    "wires": []
+  },
+  {
+    "id": "b6fe7042bd85ef5d",
+    "type": "firebase-out",
+    "z": "13c4e8e8f85d50b9",
+    "g": "2c9b5f4cd21831cb",
+    "name": "Overwrite Index",
+    "database": "e8796a1869e179bc",
+    "path": "index",
+    "pathType": "str",
+    "priority": "",
+    "queryType": "set",
+    "x": 380,
+    "y": 900,
+    "wires": []
+  },
+  {
+    "id": "5395c1e6288eedd1",
+    "type": "inject",
+    "z": "13c4e8e8f85d50b9",
+    "g": "2c9b5f4cd21831cb",
+    "name": "Set index to 1",
+    "props": [
+      {
+        "p": "payload"
+      },
+      {
+        "p": "topic",
+        "vt": "str"
+      }
+    ],
+    "repeat": "",
+    "crontab": "",
+    "once": false,
+    "onceDelay": 0.1,
+    "topic": "",
+    "payload": "1",
+    "payloadType": "num",
+    "x": 130,
+    "y": 900,
+    "wires": [
+      [
+        "b6fe7042bd85ef5d"
+      ]
+    ]
+  },
+  {
+    "id": "a946387bbf0e9716",
+    "type": "inject",
+    "z": "13c4e8e8f85d50b9",
+    "g": "2c9b5f4cd21831cb",
+    "name": "Increment by 1",
+    "props": [
+      {
+        "p": "payload"
+      },
+      {
+        "p": "topic",
+        "vt": "str"
+      }
+    ],
+    "repeat": "",
+    "crontab": "",
+    "once": false,
+    "onceDelay": 0.1,
+    "topic": "",
+    "payload": "INCREMENT 1",
+    "payloadType": "str",
+    "x": 140,
+    "y": 960,
+    "wires": [
+      [
+        "b6fe7042bd85ef5d"
+      ]
+    ]
+  },
+  {
+    "id": "909e56335c63fd16",
+    "type": "inject",
+    "z": "13c4e8e8f85d50b9",
+    "g": "2c9b5f4cd21831cb",
+    "name": "Decrement by 1",
+    "props": [
+      {
+        "p": "payload"
+      },
+      {
+        "p": "topic",
+        "vt": "str"
+      }
+    ],
+    "repeat": "",
+    "crontab": "",
+    "once": false,
+    "onceDelay": 0.1,
+    "topic": "",
+    "payload": "INCREMENT -1",
+    "payloadType": "str",
+    "x": 140,
+    "y": 1000,
+    "wires": [
+      [
+        "b6fe7042bd85ef5d"
+      ]
+    ]
+  },
+  {
+    "id": "a4532a063e702429",
+    "type": "firebase-in",
+    "z": "13c4e8e8f85d50b9",
+    "g": "2c9b5f4cd21831cb",
+    "name": "Index Changes",
+    "constraint": {},
+    "database": "e8796a1869e179bc",
+    "listenerType": "value",
+    "outputType": "auto",
+    "path": "index",
+    "useConstraint": false,
+    "x": 660,
+    "y": 900,
+    "wires": [
+      [
+        "e8373909bb49fb32"
+      ]
+    ]
+  },
+  {
+    "id": "e8373909bb49fb32",
+    "type": "debug",
+    "z": "13c4e8e8f85d50b9",
+    "g": "2c9b5f4cd21831cb",
+    "name": "debug 13",
+    "active": true,
+    "tosidebar": true,
+    "console": false,
+    "tostatus": false,
+    "complete": "false",
+    "statusVal": "",
+    "statusType": "auto",
+    "x": 880,
+    "y": 900,
     "wires": []
   },
   {
