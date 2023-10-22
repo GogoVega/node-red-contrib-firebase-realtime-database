@@ -274,8 +274,8 @@ export class Firebase {
 			case "string": {
 				if (/^\s*TIMESTAMP\s*$/.test(payload)) return ServerValue.TIMESTAMP;
 
-				if (/^\s*INCREMENT\s*-?\d+\s*$/.test(payload)) {
-					const deltaString = payload.match(/-?\d+/)?.[0] || "";
+				if (/^\s*INCREMENT\s*-?\d+\.?\d*\s*$/.test(payload)) {
+					const deltaString = payload.match(/-?\d+\.?\d*/)?.[0] || "";
 					const delta = Number(deltaString);
 
 					if (Number.isNaN(delta) || !Number.isInteger(delta))
