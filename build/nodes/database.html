@@ -90,7 +90,7 @@
 		RED.nodes.registerType("database-config", {
 			category: "config",
 			credentials: {
-				apiKey: { type: "text", validate: RED.validators.regex(/^AIza[a-zA-Z0-9]{35}$/) },
+				apiKey: { type: "text", validate: RED.validators.regex(/^AIza[a-zA-Z0-9-_\\]{35}$/) },
 				clientEmail: { type: "password" },
 				email: { type: "text", validate: RED.validators.regex(/^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/i) },
 				password: { type: "password", validate: RED.validators.regex(/^.+$/) },
