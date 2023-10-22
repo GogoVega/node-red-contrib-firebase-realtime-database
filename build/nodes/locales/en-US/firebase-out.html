@@ -45,6 +45,29 @@
 		with the <code>msg.topic</code> property
 	</p>
 	<p>
+		The reserved keyword <code>"TIMESTAMP"</code> allows you to use the database timestamp.
+		It must be written in string format and can also be used in an array or an object.
+		The following example will write the server time in UNIX format to the "currentServerTimestamp" location.
+	</p>
+	<pre>
+{
+  payload: "TIMESTAMP",
+  method: "set",
+  path: "currentServerTimestamp"
+}</pre>
+	<p>
+		The reserved keyword <code>"INCREMENT [delta]"</code> preceded by a positive or negative integer allows you
+		to increment a numerical value by a delta.
+		It must be written in string format and can be used in an array or an object.
+		The following example will increment the value by 1 at the "updateIndex" location.
+	</p>
+	<pre>
+{
+  payload: "INCREMENT 1",
+  method: "set",
+  path: "updateIndex"
+}</pre>
+	<p>
 		Learn more about how to use this node
 		<a href="https://github.com/GogoVega/node-red-contrib-firebase-realtime-database/wiki/firebase-out">here</a>.
 	</p>

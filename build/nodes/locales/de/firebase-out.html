@@ -55,6 +55,29 @@
 		der Eigenschaft <code>msg.topic</code> definiert werden.
 	</p>
 	<p>
+		Mit dem reservierten Schlüsselwort <code>"TIMESTAMP"</code> können Sie den Datenbank-Zeitstempel verwenden.
+		Es muss im String-Format geschrieben werden und kann auch in einem Array oder einem Objekt verwendet werden.
+		Im folgenden Beispiel wird die Serverzeit im UNIX-Format an den Speicherort "currentServerTimestamp" geschrieben.
+	</p>
+	<pre>
+{
+  payload: "TIMESTAMP",
+  method: "set",
+  path: "currentServerTimestamp"
+}</pre>
+	<p>
+		Das reservierte Schlüsselwort <code>"INCREMENT [delta]"</code>, dem eine positive oder negative Ganzzahl vorangestellt ist, ermöglicht die Inkrementierung
+		ein numerischer Wert eines Deltas.
+		Es muss im String-Format geschrieben werden und kann in einem Array oder einem Objekt verwendet werden.
+		Im folgenden Beispiel wird der Wert am Speicherort „updateIndex“ um 1 erhöht.
+	</p>
+	<pre>
+{
+  payload: "INCREMENT 1",
+  method: "set",
+  path: "updateIndex"
+}</pre>
+	<p>
 		Erfahren Sie
 		<a href="https://github.com/GogoVega/node-red-contrib-firebase-realtime-database/wiki/firebase-out">hier</a> mehr
 		darüber, wie sie diesen Node verwenden können.

@@ -36,10 +36,6 @@ import { printEnumKeys } from "./utils";
  * @class
  */
 export class OnDisconnect extends Firebase {
-	constructor(protected node: OnDisconnectNodeType) {
-		super(node);
-	}
-
 	/**
 	 * Callback called for the `Firebase:connected` event.
 	 */
@@ -49,6 +45,10 @@ export class OnDisconnect extends Firebase {
 	 * Callback called for the `Firebase:disconnect` event.
 	 */
 	private sendMsgOnDisconnect = () => this.sendMsgOnEvent("disconnect");
+
+	constructor(protected node: OnDisconnectNodeType) {
+		super(node);
+	}
 
 	/**
 	 * Checks if the priority is valid otherwise throws an error.
@@ -193,6 +193,7 @@ export class OnDisconnect extends Firebase {
 	public async setOnDisconnectQuery(msg: InputMessageType) {
 		const path = this.getPath(msg);
 		const query = this.getQuery(msg);
+		const payload = this.evaluatePayloadForServerValue(msg.payload);
 
 		if (!this.db) return;
 		if (query === "none") return Promise.resolve();
@@ -209,17 +210,17 @@ export class OnDisconnect extends Firebase {
 				await databaseRef[query]();
 				break;
 			case "set":
-				await databaseRef[query](msg.payload);
+				await databaseRef[query](payload);
 				break;
 			case "update":
-				if (msg.payload && typeof msg.payload === "object") {
-					await databaseRef[query](msg.payload);
+				if (payload && typeof payload === "object") {
+					await databaseRef[query](payload);
 					break;
 				}
 
 				throw new Error("msg.payload must be an object with 'update' query.");
 			case "setWithPriority":
-				await databaseRef[query](msg.payload, this.getPriority(msg));
+				await databaseRef[query](payload, this.getPriority(msg));
 				break;
 		}
 
