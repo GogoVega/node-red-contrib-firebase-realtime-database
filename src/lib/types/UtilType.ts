@@ -16,7 +16,7 @@
 
 type TupleEntry<T extends readonly unknown[], I extends unknown[] = [], R = never> = T extends readonly [
 	infer Head,
-	...infer Tail
+	...infer Tail,
 ]
 	? TupleEntry<Tail, [...I, unknown], R | [`${I["length"]}`, Head]>
 	: R;

@@ -17,6 +17,7 @@
 import { Database, get, ref, query, Unsubscribe } from "firebase/database";
 import * as firebase from "firebase/database";
 import * as admin from "firebase-admin";
+import { ServerValue } from "firebase-admin/database";
 import { ConnectionStatus } from "./types/DatabaseNodeType";
 import { Listener, ListenerType, Query } from "../lib/types/FirebaseConfigType";
 import {
@@ -57,22 +58,6 @@ import { deepCopy } from "@firebase/util";
  * @returns Firebase Class
  */
 export class Firebase {
-	constructor(protected node: FirebaseNodeType) {
-		node.onError = this.onError.bind(this);
-
-		if (!node.database) {
-			node.error("Database not configured or disabled!");
-			node.status({ fill: "red", shape: "ring", text: "Database not ready!" });
-		}
-	}
-
-	/**
-	 * Gets the Firebase Database instance from the `config-node`.
-	 */
-	protected get db() {
-		return this.node.database?.database;
-	}
-
 	/**
 	 * This property contains the identifier of the timer used to define the error status of the node and will be used
 	 * to clear the timeout.
@@ -89,6 +74,22 @@ export class Firebase {
 	 * This callback is used to subscribe and unsubscribe to the `signedIn` event.
 	 */
 	protected signedInCallback?: (isSignedIn: boolean) => void;
+
+	constructor(protected node: FirebaseNodeType) {
+		node.onError = this.onError.bind(this);
+
+		if (!node.database) {
+			node.error("Database not configured or disabled!");
+			node.status({ fill: "red", shape: "ring", text: "Database not ready!" });
+		}
+	}
+
+	/**
+	 * Gets the Firebase Database instance from the `config-node`.
+	 */
+	protected get db() {
+		return this.node.database?.database;
+	}
 
 	/**
 	 * Applies the query constraints to the database reference.
@@ -256,6 +257,51 @@ export class Firebase {
 			done();
 		} catch (error) {
 			done(error);
+		}
+	}
+
+	/**
+	 * Evaluates the payload message to replace reserved keywords (`TIMESTAMP` and `INCREMENT`) with the corresponding server value.
+	 * @param payload The payload to be evaluated
+	 * @returns The payload evaluated
+	 */
+	protected evaluatePayloadForServerValue(payload: unknown): unknown {
+		switch (typeof payload) {
+			case "undefined":
+			case "boolean":
+			case "number":
+				return payload;
+			case "string": {
+				if (/^\s*TIMESTAMP\s*$/.test(payload)) return ServerValue.TIMESTAMP;
+
+				if (/^\s*INCREMENT\s*-?\d+\s*$/.test(payload)) {
+					const deltaString = payload.match(/-?\d+/)?.[0] || "";
+					const delta = Number(deltaString);
+
+					if (Number.isNaN(delta) || !Number.isInteger(delta))
+						throw new Error("The delta of increment function must be an integer.");
+
+					return ServerValue.increment(delta);
+				}
+
+				return payload;
+			}
+			case "object": {
+				if (payload === null) return payload;
+				if (Array.isArray(payload)) return payload.map((item) => this.evaluatePayloadForServerValue(item));
+
+				const newPayload = Object.entries(payload).reduce(
+					(acc, [key, value]) => {
+						acc[key] = this.evaluatePayloadForServerValue(value);
+						return acc;
+					},
+					{} as Record<string, unknown>
+				);
+
+				return newPayload;
+			}
+			default:
+				throw new TypeError(`Invalid incoming payload type: ${typeof payload}`);
 		}
 	}
 
@@ -700,6 +746,7 @@ export class FirebaseOut extends Firebase {
 	public async doWriteQuery(msg: InputMessageType) {
 		const path = this.getPath(msg);
 		const query = this.getQuery(msg);
+		const payload = this.evaluatePayloadForServerValue(msg.payload);
 
 		if (!this.db) return Promise.resolve();
 
@@ -708,8 +755,8 @@ export class FirebaseOut extends Firebase {
 		if (this.isAdmin(this.db)) {
 			switch (query) {
 				case "update":
-					if (msg.payload && typeof msg.payload === "object") {
-						await this.db.ref().child(path)[query](msg.payload);
+					if (payload && typeof payload === "object") {
+						await this.db.ref().child(path)[query](payload);
 						break;
 					}
 
@@ -726,17 +773,17 @@ export class FirebaseOut extends Firebase {
 						});
 					break;
 				case "setWithPriority":
-					await this.db.ref().child(path)[query](msg.payload, this.getPriority(msg));
+					await this.db.ref().child(path)[query](payload, this.getPriority(msg));
 					break;
 				default:
-					await this.db.ref().child(path)[query](msg.payload);
+					await this.db.ref().child(path)[query](payload);
 					break;
 			}
 		} else {
 			switch (query) {
 				case "update":
-					if (msg.payload && typeof msg.payload === "object") {
-						await firebase[query](ref(this.db, path), msg.payload);
+					if (payload && typeof payload === "object") {
+						await firebase[query](ref(this.db, path), payload);
 						break;
 					}
 
@@ -748,10 +795,10 @@ export class FirebaseOut extends Firebase {
 					await firebase[query](ref(this.db, path), this.getPriority(msg));
 					break;
 				case "setWithPriority":
-					await firebase[query](ref(this.db, path), msg.payload, this.getPriority(msg));
+					await firebase[query](ref(this.db, path), payload, this.getPriority(msg));
 					break;
 				default:
-					await firebase[query](ref(this.db, path), msg.payload);
+					await firebase[query](ref(this.db, path), payload);
 					break;
 			}
 		}
