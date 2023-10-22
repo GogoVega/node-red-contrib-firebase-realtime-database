@@ -266,35 +266,10 @@
     "wires": []
   },
   {
-    "id": "a667ac6296c9527e",
-    "type": "function",
-    "z": "73d271d7b26c7d87",
-    "name": "Use Server Timestamp",
-    "func": "// Don't forget to look at Setup panel\n// Returns a placeholder value for auto-populating the current timestamp\n// as determined by the Firebase servers.\nreturn {\n    payload: firebaseDatabase.serverTimestamp()\n};",
-    "outputs": 1,
-    "timeout": 0,
-    "noerr": 0,
-    "initialize": "",
-    "finalize": "",
-    "libs": [
-      {
-        "var": "firebaseDatabase",
-        "module": "firebase/database"
-      }
-    ],
-    "x": 300,
-    "y": 320,
-    "wires": [
-      [
-        "b229f7c2aafdde4c"
-      ]
-    ]
-  },
-  {
     "id": "878787e8146fe6cd",
     "type": "inject",
     "z": "73d271d7b26c7d87",
-    "name": "Inject",
+    "name": "Use Server Timestamp",
     "props": [
       {
         "p": "payload"
@@ -305,13 +280,13 @@
     "once": false,
     "onceDelay": 0.1,
     "topic": "",
-    "payload": "{}",
-    "payloadType": "json",
-    "x": 110,
+    "payload": "TIMESTAMP",
+    "payloadType": "str",
+    "x": 160,
     "y": 320,
     "wires": [
       [
-        "a667ac6296c9527e"
+        "b229f7c2aafdde4c"
       ]
     ]
   },
