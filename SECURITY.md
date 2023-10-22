@@ -10,7 +10,7 @@ You can set your own key using the 'credentialSecret' option in your settings fi
 
 | Version  | Supported          |
 | -------- | ------------------ |
-| >= 0.1.0 | :white_check_mark: |
+| >= 0.0.1 | :white_check_mark: |
 
 ## Reporting a Vulnerability
 
