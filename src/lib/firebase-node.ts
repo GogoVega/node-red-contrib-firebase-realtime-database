@@ -17,16 +17,15 @@
 import { NodeAPI, NodeMessage } from "node-red";
 import {
 	BothDataSnapshot,
-	ConfigNode,
 	Constraint,
-	deepCopy,
 	isAdminDataSnapshot,
 	ListenerMap,
 	QueryMethod,
 	QueryMethodMap,
-	ServiceType,
 	Unsubscribe,
-} from "@gogovega/firebase-config-node";
+} from "@gogovega/firebase-config-node/rtdb";
+import { ConfigNode, ServiceType } from "@gogovega/firebase-config-node/types";
+import { deepCopy } from "@gogovega/firebase-config-node/utils";
 import {
 	ChildFieldType,
 	FirebaseConfig,
@@ -260,7 +259,7 @@ export class Firebase {
 		if (type !== "flow" && type !== "global" && type !== "msg")
 			throw new Error("The type of value field should be 'flow', 'global' or 'msg', please re-configure this node.");
 
-		if (typeof value !== "string") throw new Error("The value field must be a string.");
+		if (typeof value !== "string") throw new TypeError("The value field must be a string.");
 
 		if (type === "msg") return this.RED.util.getMessageProperty(msg, value);
 
@@ -274,7 +273,7 @@ export class Firebase {
 		const output = this.node.context()[type].get(contextKey.key, contextKey.store);
 
 		if (typeof output !== "boolean" && typeof output !== "number" && typeof output !== "string" && output !== null)
-			throw new Error("The context value used must be one of the types 'boolean', 'number', 'string' or 'null'");
+			throw new TypeError("The context value used must be one of the types 'boolean', 'number', 'string' or 'null'");
 
 		return output;
 	}

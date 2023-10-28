@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { OnDisconnectQueryMethodMap } from "@gogovega/firebase-config-node";
+import { OnDisconnectQueryMethodMap } from "@gogovega/firebase-config-node/rtdb";
 import { NodeDef } from "node-red";
 
 type PathType = "msg" | "str";

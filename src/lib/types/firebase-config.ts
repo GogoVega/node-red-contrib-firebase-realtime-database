@@ -15,7 +15,7 @@
  */
 
 import { NodeDef } from "node-red";
-import { ListenerMap, QueryMethodMap } from "@gogovega/firebase-config-node";
+import { ListenerMap, QueryMethodMap } from "@gogovega/firebase-config-node/rtdb";
 
 export type ListenerType = keyof typeof ListenerMap;
 export type PathType = "msg" | "str";
@@ -45,25 +45,26 @@ export interface QueryConstraint {
 	startAt?: RangeQueryType;
 }
 
-export type FirebaseGetConfig = NodeDef & {
-	constraint?: QueryConstraint;
+type BaseConfig = NodeDef & {
 	database: string;
+};
+
+export type FirebaseGetConfig = BaseConfig & {
+	constraint?: QueryConstraint;
 	outputType?: OutputType;
 	passThrough?: boolean;
 	path?: string;
 	pathType?: PathType;
 };
 
-export type FirebaseInConfig = NodeDef & {
+export type FirebaseInConfig = BaseConfig & {
 	constraint?: QueryConstraint;
-	database: string;
 	listenerType?: ListenerType;
 	outputType?: OutputType;
 	path?: string;
 };
 
-export type FirebaseOutConfig = NodeDef & {
-	database: string;
+export type FirebaseOutConfig = BaseConfig & {
 	path?: string;
 	pathType?: PathType;
 	priority?: number;

@@ -18,7 +18,7 @@ import { NodeAPI } from "node-red";
 import { Firebase } from "./firebase-node";
 import { IncomingMessage, OnDisconnectConfig, OnDisconnectMessage, OnDisconnectNode, SendMsgEvent } from "./types";
 import { checkPath, checkPriority, printEnumKeys } from "./utils";
-import { OnDisconnectQueryMethod, OnDisconnectQueryMethodMap } from "@gogovega/firebase-config-node";
+import { OnDisconnectQueryMethod, OnDisconnectQueryMethodMap } from "@gogovega/firebase-config-node/rtdb";
 
 /**
  * OnDisconnect Class

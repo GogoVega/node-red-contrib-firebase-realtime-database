@@ -15,7 +15,8 @@
  */
 
 import { Node, NodeMessage, NodeMessageInFlow } from "node-red";
-import { ConfigNode, Constraint, QueryMethod } from "@gogovega/firebase-config-node";
+import { ConfigNode } from "@gogovega/firebase-config-node/types";
+import { Constraint, QueryMethod } from "@gogovega/firebase-config-node/rtdb";
 import { FirebaseGetConfig, FirebaseInConfig, FirebaseOutConfig } from "./firebase-config";
 
 export enum QueryConstraintMap {
