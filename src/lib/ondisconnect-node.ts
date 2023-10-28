@@ -150,6 +150,7 @@ export class OnDisconnect extends Firebase {
 		(async () => {
 			try {
 				const query = this.getQueryMethod(msg);
+				const payload = this.evaluatePayloadForServerValue(msg.payload);
 
 				if (!this.rtdb) return;
 				if (query === "none") return Promise.resolve();
@@ -164,17 +165,17 @@ export class OnDisconnect extends Firebase {
 						await this.rtdb.modifyOnDisconnect(query, path);
 						break;
 					case "set":
-						await this.rtdb.modifyOnDisconnect(query, path, msg.payload);
+						await this.rtdb.modifyOnDisconnect(query, path, payload);
 						break;
 					case "update":
-						if (msg.payload && typeof msg.payload === "object") {
-							await this.rtdb.modifyOnDisconnect(query, path, msg.payload);
+						if (payload && typeof payload === "object") {
+							await this.rtdb.modifyOnDisconnect(query, path, payload);
 							break;
 						}
 
 						throw new Error("msg.payload must be an object with 'update' query.");
 					case "setWithPriority":
-						await this.rtdb.modifyOnDisconnect(query, path, msg.payload, this.getPriority(msg));
+						await this.rtdb.modifyOnDisconnect(query, path, payload, this.getPriority(msg));
 						break;
 				}
 

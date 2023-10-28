@@ -54,10 +54,10 @@
     "@gogovega/firebase-config-node": "~0.0.1-alpha.1"
   },
   "devDependencies": {
-    "@types/node-red": "^1.3.2",
-    "@typescript-eslint/eslint-plugin": "^6.7.5",
-    "@typescript-eslint/parser": "^6.7.5",
-    "eslint": "^8.51.0",
+    "@types/node-red": "^1.3.3",
+    "@typescript-eslint/eslint-plugin": "^6.8.0",
+    "@typescript-eslint/parser": "^6.8.0",
+    "eslint": "^8.52.0",
     "mocha": "^10.2.0",
     "node-red": "^3.1.0",
     "node-red-node-test-helper": "^0.3.2",
@@ -66,5 +66,14 @@
   },
   "engines": {
     "node": ">=14"
-  }
+  },
+  "files": [
+    "build/",
+    "CHANGELOG.md",
+    "examples/",
+    "LICENSE",
+    "README.md",
+    "SECURITY.md",
+    "package.json"
+  ]
 }

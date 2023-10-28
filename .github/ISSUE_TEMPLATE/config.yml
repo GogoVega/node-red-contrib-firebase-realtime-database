@@ -1,0 +1,11 @@
+blank_issues_enabled: true
+contact_links:
+  - name: ❓ Questions
+    url: https://github.com/GogoVega/node-red-contrib-firebase-realtime-database/discussions/new?category=q-a
+    about: Ask your question on the Q&A forum
+  - name: ⭐️ Feature Request
+    url: https://github.com/GogoVega/node-red-contrib-firebase-realtime-database/discussions/new?category=ideas
+    about: Discuss your request with the community
+  - name: 🗂 Documentation
+    url: https://github.com/GogoVega/node-red-contrib-firebase-realtime-database/wiki
+    about: Go straight to the documentation

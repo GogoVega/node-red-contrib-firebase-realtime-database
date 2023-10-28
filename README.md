@@ -1,6 +1,6 @@
 <div align="center">
   <h1>Node-RED nodes to communicate with <a href="https://firebase.google.com">Firebase Realtime Databases</a></h1>
-  <a href="https://firebase.google.com"><img src="docs/images/node-red-firebase-logo.svg" alt="Logo" width="70%"></a>
+  <a href="https://firebase.google.com"><img src="assets/images/node-red-firebase-rtdb-logo.svg" alt="Logo" width="70%"></a>
   <p align="center">
     <br />
     <a href="https://github.com/GogoVega/node-red-contrib-firebase-realtime-database/issues">Report Bug</a>
@@ -21,7 +21,7 @@
 </div>
 <br />
 
-![demo nodes](./docs/images/demo-nodes.gif)
+![demo nodes](./assets/images/demo-nodes.gif)
 
 ## What is it?
 
@@ -30,7 +30,7 @@ It allows to add, modify and fetch data from your databases aswell as subscribin
 
 ## The Nodes
 
-![nodes screenshot](./docs/images/nodes-screenshot.png)
+![nodes screenshot](./assets/images/nodes-screenshot.png)
 
 There are 4 nodes included with this contrib:
 

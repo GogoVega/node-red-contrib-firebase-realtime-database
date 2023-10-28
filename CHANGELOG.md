@@ -1,5 +1,32 @@
 # Change log
 
+## 0.5.3
+
+### Changes
+
+- Bump `firebase` from 10.3.1 to 10.5.0
+- Bump `firebase-admin` from 11.10.1 to 11.11.0
+
+### Enhancements
+
+- Support for built-in `TIMESTAMP` and `increment` server values (#51)
+- Update examples to support `ServerValue` (#51)
+
+### Fixes
+
+- Invalid `API Key` input pattern (#49)
+
+## 0.5.2
+
+### Changes
+
+- Bump `firebase` from 9.21.0 to 10.3.1
+- Bump `firebase-admin` from 11.8.0 to 11.10.1
+
+### Enhancements
+
+- Improve `Demo Flow` and add `On Disconnect Flow` and `Advanced Flow` examples
+
 ## 0.5.1
 
 ### Changes

@@ -1,1 +1,853 @@
-[{"id":"13c4e8e8f85d50b9","type":"tab","label":"Demo Flow","disabled":false,"info":"","env":[]},{"id":"57c1f30f8a825e5c","type":"group","z":"13c4e8e8f85d50b9","name":"Set \"Hello\" to \"test/stream\"","style":{"label":true,"stroke":"#7fb7df"},"nodes":["5792767043952f56","d4443dc473b7c4f6"],"x":14,"y":19,"w":452,"h":82},{"id":"8f193a9c1fc939fb","type":"group","z":"13c4e8e8f85d50b9","name":"Set/Update two leds to \"test/cmd\"","style":{"stroke":"#c8e7a7","label":true},"nodes":["7376db537268899b","b830fde9b0b58bad","c571be138972b9e2","7307a36364f06013"],"x":14,"y":119,"w":472,"h":142},{"id":"fc76c3f064a0477a","type":"group","z":"13c4e8e8f85d50b9","name":"Push Timestamp to \"test/timestamp\"","style":{"stroke":"#ffdf7f","label":true},"nodes":["0aec6d8fe15f899e","6c8775eb87a84afe"],"x":14,"y":279,"w":392,"h":82},{"id":"46b2c2b0193cbcce","type":"group","z":"13c4e8e8f85d50b9","name":"Get all timestamps from \"test/timestamp\"","style":{"stroke":"#b797cf","label":true},"nodes":["41b56060aa915b9d","18c3c3d3b515c709","51707ebd32d0c239"],"x":14,"y":379,"w":652,"h":82},{"id":"f1f2616bdd73320c","type":"group","z":"13c4e8e8f85d50b9","name":"Print all root data","style":{"stroke":"#ff0000","label":true},"nodes":["c352d41a4a3a172c","a7ffd5eee64c6ea8"],"x":14,"y":479,"w":412,"h":82},{"id":"5792767043952f56","type":"inject","z":"13c4e8e8f85d50b9","g":"57c1f30f8a825e5c","name":"Set Hello","props":[{"p":"payload"}],"repeat":"","crontab":"","once":false,"onceDelay":0.1,"topic":"","payload":"Hello","payloadType":"str","x":120,"y":60,"wires":[["d4443dc473b7c4f6"]]},{"id":"d4443dc473b7c4f6","type":"firebase-out","z":"13c4e8e8f85d50b9","g":"57c1f30f8a825e5c","name":"","database":"e8796a1869e179bc","path":"test/stream","pathType":"str","priority":"","queryType":"set","x":360,"y":60,"wires":[]},{"id":"a7ffd5eee64c6ea8","type":"debug","z":"13c4e8e8f85d50b9","g":"f1f2616bdd73320c","name":"","active":true,"tosidebar":true,"console":false,"tostatus":false,"complete":"true","targetType":"full","statusVal":"","statusType":"auto","x":330,"y":520,"wires":[]},{"id":"c352d41a4a3a172c","type":"firebase-in","z":"13c4e8e8f85d50b9","g":"f1f2616bdd73320c","name":"All Data","database":"e8796a1869e179bc","listenerType":"value","outputType":"auto","path":"","x":90,"y":520,"wires":[["a7ffd5eee64c6ea8"]]},{"id":"41b56060aa915b9d","type":"firebase-get","z":"13c4e8e8f85d50b9","g":"46b2c2b0193cbcce","name":"Firebase GET","constraint":{"limitToLast":2},"database":"e8796a1869e179bc","outputType":"auto","path":"topic","pathType":"msg","useConstraint":true,"x":360,"y":420,"wires":[["18c3c3d3b515c709"]]},{"id":"18c3c3d3b515c709","type":"debug","z":"13c4e8e8f85d50b9","g":"46b2c2b0193cbcce","name":"","active":true,"tosidebar":true,"console":false,"tostatus":false,"complete":"payload","targetType":"msg","statusVal":"","statusType":"auto","x":550,"y":420,"wires":[]},{"id":"51707ebd32d0c239","type":"inject","z":"13c4e8e8f85d50b9","g":"46b2c2b0193cbcce","name":"Get All Timestamps","props":[{"p":"topic","vt":"str"}],"repeat":"","crontab":"","once":false,"onceDelay":0.1,"topic":"test/timestamp","x":150,"y":420,"wires":[["41b56060aa915b9d"]]},{"id":"0aec6d8fe15f899e","type":"inject","z":"13c4e8e8f85d50b9","g":"fc76c3f064a0477a","name":"Push Timestamp","props":[{"p":"payload"},{"p":"topic","vt":"str"}],"repeat":"","crontab":"","once":false,"onceDelay":0.1,"topic":"test/timestamp","payload":"","payloadType":"date","x":140,"y":320,"wires":[["6c8775eb87a84afe"]]},{"id":"6c8775eb87a84afe","type":"firebase-out","z":"13c4e8e8f85d50b9","g":"fc76c3f064a0477a","name":"","database":"e8796a1869e179bc","path":"topic","pathType":"msg","queryType":"push","x":330,"y":320,"wires":[]},{"id":"7376db537268899b","type":"inject","z":"13c4e8e8f85d50b9","g":"8f193a9c1fc939fb","name":"Set Object","props":[{"p":"payload"}],"repeat":"","crontab":"","once":false,"onceDelay":0.1,"topic":"","payload":"{\"led_one\": true, \"led_two\": false}","payloadType":"json","x":120,"y":160,"wires":[["b830fde9b0b58bad"]]},{"id":"b830fde9b0b58bad","type":"firebase-out","z":"13c4e8e8f85d50b9","g":"8f193a9c1fc939fb","name":"","database":"e8796a1869e179bc","path":"test/cmd","pathType":"str","queryType":"set","x":360,"y":160,"wires":[]},{"id":"c571be138972b9e2","type":"firebase-out","z":"13c4e8e8f85d50b9","g":"8f193a9c1fc939fb","name":"","database":"e8796a1869e179bc","path":"test/cmd","pathType":"str","queryType":"update","x":370,"y":220,"wires":[]},{"id":"7307a36364f06013","type":"inject","z":"13c4e8e8f85d50b9","g":"8f193a9c1fc939fb","name":"Update Object","props":[{"p":"payload"}],"repeat":"","crontab":"","once":false,"onceDelay":0.1,"topic":"","payload":"{\"led_one\": false, \"led_two\": true}","payloadType":"json","x":140,"y":220,"wires":[["c571be138972b9e2"]]},{"id":"e8796a1869e179bc","type":"database-config","name":"My Database","authType":"privateKey","createUser":false}]
+[
+  {
+    "id": "13c4e8e8f85d50b9",
+    "type": "tab",
+    "label": "Demo Flow",
+    "disabled": false,
+    "info": "",
+    "env": []
+  },
+  {
+    "id": "57c1f30f8a825e5c",
+    "type": "group",
+    "z": "13c4e8e8f85d50b9",
+    "name": "",
+    "style": {
+      "label": true,
+      "stroke": "#7fb7df"
+    },
+    "nodes": [
+      "5792767043952f56",
+      "d4443dc473b7c4f6",
+      "ab41c49f03bf8362",
+      "bfaa7a9c78a7a2de",
+      "3b7037559c318361",
+      "7fe43d2d1d7a9c40",
+      "15d852f4a29abec1",
+      "7ae6239a6e476d5f",
+      "16c12e22e1f3b257",
+      "16911b0ec2002d9e"
+    ],
+    "x": 14,
+    "y": 19,
+    "w": 972,
+    "h": 242
+  },
+  {
+    "id": "8f193a9c1fc939fb",
+    "type": "group",
+    "z": "13c4e8e8f85d50b9",
+    "name": "",
+    "style": {
+      "stroke": "#c8e7a7",
+      "label": true
+    },
+    "nodes": [
+      "7376db537268899b",
+      "b830fde9b0b58bad",
+      "c571be138972b9e2",
+      "bd18e498f7c61507",
+      "19355c55dc280ad7",
+      "0ef7c0721cf81927",
+      "aebe2e693a217767",
+      "b8efe4c50983c5a5",
+      "f2f9ba519492522d",
+      "d2b8ac5b67999199",
+      "29aaf3383098e09e",
+      "735b562a594841f3",
+      "6a90881898ed3551",
+      "74b469a486ba4f81",
+      "ee3a2b0bc367a47e",
+      "ca1a112e5c6cbdb2",
+      "9acbf29beeba99c3",
+      "a62c4dd343cccc7f",
+      "ce937eb6b8c8ca65",
+      "16d258ae4b97ca34",
+      "78d3b0d5f0f884f4",
+      "cf5f66733f714098",
+      "fe80dd5b71c8eebe"
+    ],
+    "x": 14,
+    "y": 299,
+    "w": 972,
+    "h": 542
+  },
+  {
+    "id": "2c9b5f4cd21831cb",
+    "type": "group",
+    "z": "13c4e8e8f85d50b9",
+    "name": "",
+    "style": {
+      "stroke": "#3f93cf",
+      "label": true
+    },
+    "nodes": [
+      "b6fe7042bd85ef5d",
+      "5395c1e6288eedd1",
+      "a946387bbf0e9716",
+      "909e56335c63fd16",
+      "a4532a063e702429",
+      "e8373909bb49fb32"
+    ],
+    "x": 14,
+    "y": 859,
+    "w": 972,
+    "h": 182
+  },
+  {
+    "id": "5792767043952f56",
+    "type": "inject",
+    "z": "13c4e8e8f85d50b9",
+    "g": "57c1f30f8a825e5c",
+    "name": "Send Timestamp",
+    "props": [
+      {
+        "p": "payload"
+      }
+    ],
+    "repeat": "",
+    "crontab": "",
+    "once": false,
+    "onceDelay": 0.1,
+    "topic": "",
+    "payload": "",
+    "payloadType": "date",
+    "x": 140,
+    "y": 100,
+    "wires": [
+      [
+        "d4443dc473b7c4f6"
+      ]
+    ]
+  },
+  {
+    "id": "d4443dc473b7c4f6",
+    "type": "firebase-out",
+    "z": "13c4e8e8f85d50b9",
+    "g": "57c1f30f8a825e5c",
+    "name": "Overwrite Timestamp",
+    "database": "e8796a1869e179bc",
+    "path": "timestampOverwrited",
+    "pathType": "str",
+    "priority": "",
+    "queryType": "set",
+    "x": 360,
+    "y": 100,
+    "wires": []
+  },
+  {
+    "id": "7376db537268899b",
+    "type": "inject",
+    "z": "13c4e8e8f85d50b9",
+    "g": "8f193a9c1fc939fb",
+    "name": "Add Alan",
+    "props": [
+      {
+        "p": "payload"
+      },
+      {
+        "p": "topic",
+        "vt": "str"
+      }
+    ],
+    "repeat": "",
+    "crontab": "",
+    "once": false,
+    "onceDelay": 0.1,
+    "topic": "users/alanisawesome",
+    "payload": "{\"date_of_birth\":\"June 23, 1912\",\"full_name\":\"Alan Turing\",\"nickname\":\"Alan The Machine\"}",
+    "payloadType": "json",
+    "x": 120,
+    "y": 380,
+    "wires": [
+      [
+        "b830fde9b0b58bad"
+      ]
+    ]
+  },
+  {
+    "id": "b830fde9b0b58bad",
+    "type": "firebase-out",
+    "z": "13c4e8e8f85d50b9",
+    "g": "8f193a9c1fc939fb",
+    "name": "Add User",
+    "database": "e8796a1869e179bc",
+    "path": "topic",
+    "pathType": "msg",
+    "priority": "",
+    "queryType": "set",
+    "x": 360,
+    "y": 380,
+    "wires": []
+  },
+  {
+    "id": "c571be138972b9e2",
+    "type": "firebase-out",
+    "z": "13c4e8e8f85d50b9",
+    "g": "8f193a9c1fc939fb",
+    "name": "Update User Nickname",
+    "database": "e8796a1869e179bc",
+    "path": "topic",
+    "pathType": "msg",
+    "priority": "",
+    "queryType": "update",
+    "x": 410,
+    "y": 560,
+    "wires": []
+  },
+  {
+    "id": "ab41c49f03bf8362",
+    "type": "inject",
+    "z": "13c4e8e8f85d50b9",
+    "g": "57c1f30f8a825e5c",
+    "name": "Send Timestamp",
+    "props": [
+      {
+        "p": "payload"
+      }
+    ],
+    "repeat": "",
+    "crontab": "",
+    "once": false,
+    "onceDelay": 0.1,
+    "topic": "",
+    "payload": "",
+    "payloadType": "date",
+    "x": 140,
+    "y": 220,
+    "wires": [
+      [
+        "bfaa7a9c78a7a2de"
+      ]
+    ]
+  },
+  {
+    "id": "bfaa7a9c78a7a2de",
+    "type": "firebase-out",
+    "z": "13c4e8e8f85d50b9",
+    "g": "57c1f30f8a825e5c",
+    "name": "List of Timestamps",
+    "database": "e8796a1869e179bc",
+    "path": "timestampList",
+    "pathType": "str",
+    "priority": "",
+    "queryType": "push",
+    "x": 350,
+    "y": 220,
+    "wires": []
+  },
+  {
+    "id": "3b7037559c318361",
+    "type": "firebase-in",
+    "z": "13c4e8e8f85d50b9",
+    "g": "57c1f30f8a825e5c",
+    "name": "Timestamp Changes",
+    "constraint": {},
+    "database": "e8796a1869e179bc",
+    "listenerType": "value",
+    "outputType": "auto",
+    "path": "timestampOverwrited",
+    "useConstraint": false,
+    "x": 670,
+    "y": 100,
+    "wires": [
+      [
+        "15d852f4a29abec1"
+      ]
+    ]
+  },
+  {
+    "id": "7fe43d2d1d7a9c40",
+    "type": "firebase-in",
+    "z": "13c4e8e8f85d50b9",
+    "g": "57c1f30f8a825e5c",
+    "name": "List Changes",
+    "constraint": {},
+    "database": "e8796a1869e179bc",
+    "listenerType": "value",
+    "outputType": "auto",
+    "path": "timestampList",
+    "useConstraint": false,
+    "x": 650,
+    "y": 220,
+    "wires": [
+      [
+        "7ae6239a6e476d5f"
+      ]
+    ]
+  },
+  {
+    "id": "15d852f4a29abec1",
+    "type": "debug",
+    "z": "13c4e8e8f85d50b9",
+    "g": "57c1f30f8a825e5c",
+    "name": "debug 1",
+    "active": true,
+    "tosidebar": true,
+    "console": false,
+    "tostatus": false,
+    "complete": "false",
+    "statusVal": "",
+    "statusType": "auto",
+    "x": 880,
+    "y": 100,
+    "wires": []
+  },
+  {
+    "id": "7ae6239a6e476d5f",
+    "type": "debug",
+    "z": "13c4e8e8f85d50b9",
+    "g": "57c1f30f8a825e5c",
+    "name": "debug 2",
+    "active": true,
+    "tosidebar": true,
+    "console": false,
+    "tostatus": false,
+    "complete": "false",
+    "statusVal": "",
+    "statusType": "auto",
+    "x": 880,
+    "y": 220,
+    "wires": []
+  },
+  {
+    "id": "bd18e498f7c61507",
+    "type": "inject",
+    "z": "13c4e8e8f85d50b9",
+    "g": "8f193a9c1fc939fb",
+    "name": "Add Steve",
+    "props": [
+      {
+        "p": "payload"
+      },
+      {
+        "p": "topic",
+        "vt": "str"
+      }
+    ],
+    "repeat": "",
+    "crontab": "",
+    "once": false,
+    "onceDelay": 0.1,
+    "topic": "users/steveisapple",
+    "payload": "{\"full_name\":\"Steve Jobs\",\"nickname\":\"Steve The King\",\"hobby\":\"Computer\"}",
+    "payloadType": "json",
+    "x": 120,
+    "y": 440,
+    "wires": [
+      [
+        "b830fde9b0b58bad"
+      ]
+    ]
+  },
+  {
+    "id": "19355c55dc280ad7",
+    "type": "inject",
+    "z": "13c4e8e8f85d50b9",
+    "g": "8f193a9c1fc939fb",
+    "name": "Modify Alan Nickname",
+    "props": [
+      {
+        "p": "payload"
+      },
+      {
+        "p": "topic",
+        "vt": "str"
+      }
+    ],
+    "repeat": "",
+    "crontab": "",
+    "once": false,
+    "onceDelay": 0.1,
+    "topic": "users/alanisawesome",
+    "payload": "{\"nickname\":\"Alan is Genius\"}",
+    "payloadType": "json",
+    "x": 160,
+    "y": 560,
+    "wires": [
+      [
+        "c571be138972b9e2"
+      ]
+    ]
+  },
+  {
+    "id": "0ef7c0721cf81927",
+    "type": "inject",
+    "z": "13c4e8e8f85d50b9",
+    "g": "8f193a9c1fc939fb",
+    "name": "Remove Steve",
+    "props": [
+      {
+        "p": "topic",
+        "vt": "str"
+      }
+    ],
+    "repeat": "",
+    "crontab": "",
+    "once": false,
+    "onceDelay": 0.1,
+    "topic": "users/steveisapple",
+    "x": 140,
+    "y": 680,
+    "wires": [
+      [
+        "aebe2e693a217767"
+      ]
+    ]
+  },
+  {
+    "id": "aebe2e693a217767",
+    "type": "firebase-out",
+    "z": "13c4e8e8f85d50b9",
+    "g": "8f193a9c1fc939fb",
+    "name": "Remove User",
+    "database": "e8796a1869e179bc",
+    "path": "topic",
+    "pathType": "msg",
+    "priority": 1,
+    "queryType": "remove",
+    "x": 380,
+    "y": 680,
+    "wires": []
+  },
+  {
+    "id": "b8efe4c50983c5a5",
+    "type": "firebase-in",
+    "z": "13c4e8e8f85d50b9",
+    "g": "8f193a9c1fc939fb",
+    "name": "User Removed",
+    "constraint": {},
+    "database": "e8796a1869e179bc",
+    "listenerType": "child_removed",
+    "outputType": "auto",
+    "path": "users",
+    "useConstraint": false,
+    "x": 660,
+    "y": 680,
+    "wires": [
+      [
+        "6a90881898ed3551"
+      ]
+    ]
+  },
+  {
+    "id": "f2f9ba519492522d",
+    "type": "firebase-in",
+    "z": "13c4e8e8f85d50b9",
+    "g": "8f193a9c1fc939fb",
+    "name": "User added",
+    "constraint": {},
+    "database": "e8796a1869e179bc",
+    "listenerType": "child_added",
+    "outputType": "auto",
+    "path": "users",
+    "useConstraint": false,
+    "x": 650,
+    "y": 380,
+    "wires": [
+      [
+        "29aaf3383098e09e"
+      ]
+    ]
+  },
+  {
+    "id": "d2b8ac5b67999199",
+    "type": "firebase-in",
+    "z": "13c4e8e8f85d50b9",
+    "g": "8f193a9c1fc939fb",
+    "name": "User Modified",
+    "constraint": {},
+    "database": "e8796a1869e179bc",
+    "listenerType": "child_changed",
+    "outputType": "auto",
+    "path": "users",
+    "useConstraint": false,
+    "x": 650,
+    "y": 560,
+    "wires": [
+      [
+        "735b562a594841f3"
+      ]
+    ]
+  },
+  {
+    "id": "29aaf3383098e09e",
+    "type": "debug",
+    "z": "13c4e8e8f85d50b9",
+    "g": "8f193a9c1fc939fb",
+    "name": "debug 3",
+    "active": true,
+    "tosidebar": true,
+    "console": false,
+    "tostatus": false,
+    "complete": "false",
+    "statusVal": "",
+    "statusType": "auto",
+    "x": 880,
+    "y": 380,
+    "wires": []
+  },
+  {
+    "id": "735b562a594841f3",
+    "type": "debug",
+    "z": "13c4e8e8f85d50b9",
+    "g": "8f193a9c1fc939fb",
+    "name": "debug 4",
+    "active": true,
+    "tosidebar": true,
+    "console": false,
+    "tostatus": false,
+    "complete": "false",
+    "statusVal": "",
+    "statusType": "auto",
+    "x": 880,
+    "y": 560,
+    "wires": []
+  },
+  {
+    "id": "6a90881898ed3551",
+    "type": "debug",
+    "z": "13c4e8e8f85d50b9",
+    "g": "8f193a9c1fc939fb",
+    "name": "debug 5",
+    "active": true,
+    "tosidebar": true,
+    "console": false,
+    "tostatus": false,
+    "complete": "false",
+    "statusVal": "",
+    "statusType": "auto",
+    "x": 880,
+    "y": 680,
+    "wires": []
+  },
+  {
+    "id": "74b469a486ba4f81",
+    "type": "firebase-in",
+    "z": "13c4e8e8f85d50b9",
+    "g": "8f193a9c1fc939fb",
+    "name": "All Users Changes",
+    "constraint": {},
+    "database": "e8796a1869e179bc",
+    "listenerType": "value",
+    "outputType": "auto",
+    "path": "users",
+    "useConstraint": false,
+    "x": 670,
+    "y": 800,
+    "wires": [
+      [
+        "ee3a2b0bc367a47e"
+      ]
+    ]
+  },
+  {
+    "id": "ee3a2b0bc367a47e",
+    "type": "debug",
+    "z": "13c4e8e8f85d50b9",
+    "g": "8f193a9c1fc939fb",
+    "name": "debug 6",
+    "active": true,
+    "tosidebar": true,
+    "console": false,
+    "tostatus": false,
+    "complete": "false",
+    "statusVal": "",
+    "statusType": "auto",
+    "x": 880,
+    "y": 800,
+    "wires": []
+  },
+  {
+    "id": "ca1a112e5c6cbdb2",
+    "type": "inject",
+    "z": "13c4e8e8f85d50b9",
+    "g": "8f193a9c1fc939fb",
+    "name": "Get All Users",
+    "props": [
+      {
+        "p": "topic",
+        "vt": "str"
+      }
+    ],
+    "repeat": "",
+    "crontab": "",
+    "once": false,
+    "onceDelay": 0.1,
+    "topic": "users",
+    "x": 130,
+    "y": 800,
+    "wires": [
+      [
+        "a62c4dd343cccc7f"
+      ]
+    ]
+  },
+  {
+    "id": "9acbf29beeba99c3",
+    "type": "debug",
+    "z": "13c4e8e8f85d50b9",
+    "g": "8f193a9c1fc939fb",
+    "name": "debug 7",
+    "active": true,
+    "tosidebar": true,
+    "console": false,
+    "tostatus": false,
+    "complete": "payload",
+    "targetType": "msg",
+    "statusVal": "",
+    "statusType": "auto",
+    "x": 460,
+    "y": 800,
+    "wires": []
+  },
+  {
+    "id": "a62c4dd343cccc7f",
+    "type": "firebase-get",
+    "z": "13c4e8e8f85d50b9",
+    "g": "8f193a9c1fc939fb",
+    "name": "Get Users",
+    "constraint": {},
+    "database": "e8796a1869e179bc",
+    "outputType": "auto",
+    "passThrough": false,
+    "path": "topic",
+    "pathType": "msg",
+    "useConstraint": false,
+    "x": 300,
+    "y": 800,
+    "wires": [
+      [
+        "9acbf29beeba99c3"
+      ]
+    ]
+  },
+  {
+    "id": "16c12e22e1f3b257",
+    "type": "comment",
+    "z": "13c4e8e8f85d50b9",
+    "g": "57c1f30f8a825e5c",
+    "name": "Set Timestamp to \"timestampOverwrited\"",
+    "info": "",
+    "x": 220,
+    "y": 60,
+    "wires": []
+  },
+  {
+    "id": "16911b0ec2002d9e",
+    "type": "comment",
+    "z": "13c4e8e8f85d50b9",
+    "g": "57c1f30f8a825e5c",
+    "name": "Push Timestamp to \"timestampList\"",
+    "info": "",
+    "x": 200,
+    "y": 180,
+    "wires": []
+  },
+  {
+    "id": "ce937eb6b8c8ca65",
+    "type": "comment",
+    "z": "13c4e8e8f85d50b9",
+    "g": "8f193a9c1fc939fb",
+    "name": "Add Alan to \"users\"",
+    "info": "",
+    "x": 150,
+    "y": 340,
+    "wires": []
+  },
+  {
+    "id": "16d258ae4b97ca34",
+    "type": "comment",
+    "z": "13c4e8e8f85d50b9",
+    "g": "8f193a9c1fc939fb",
+    "name": "Modify the Alan's Nickname",
+    "info": "",
+    "x": 180,
+    "y": 520,
+    "wires": []
+  },
+  {
+    "id": "78d3b0d5f0f884f4",
+    "type": "comment",
+    "z": "13c4e8e8f85d50b9",
+    "g": "8f193a9c1fc939fb",
+    "name": "Remove Alan from \"users\"",
+    "info": "",
+    "x": 170,
+    "y": 640,
+    "wires": []
+  },
+  {
+    "id": "cf5f66733f714098",
+    "type": "comment",
+    "z": "13c4e8e8f85d50b9",
+    "g": "8f193a9c1fc939fb",
+    "name": "Get All Users from \"users\"",
+    "info": "",
+    "x": 170,
+    "y": 760,
+    "wires": []
+  },
+  {
+    "id": "fe80dd5b71c8eebe",
+    "type": "comment",
+    "z": "13c4e8e8f85d50b9",
+    "g": "8f193a9c1fc939fb",
+    "name": "Print All Users Changes",
+    "info": "",
+    "x": 680,
+    "y": 760,
+    "wires": []
+  },
+  {
+    "id": "b6fe7042bd85ef5d",
+    "type": "firebase-out",
+    "z": "13c4e8e8f85d50b9",
+    "g": "2c9b5f4cd21831cb",
+    "name": "Overwrite Index",
+    "database": "e8796a1869e179bc",
+    "path": "index",
+    "pathType": "str",
+    "priority": "",
+    "queryType": "set",
+    "x": 380,
+    "y": 900,
+    "wires": []
+  },
+  {
+    "id": "5395c1e6288eedd1",
+    "type": "inject",
+    "z": "13c4e8e8f85d50b9",
+    "g": "2c9b5f4cd21831cb",
+    "name": "Set index to 1",
+    "props": [
+      {
+        "p": "payload"
+      },
+      {
+        "p": "topic",
+        "vt": "str"
+      }
+    ],
+    "repeat": "",
+    "crontab": "",
+    "once": false,
+    "onceDelay": 0.1,
+    "topic": "",
+    "payload": "1",
+    "payloadType": "num",
+    "x": 130,
+    "y": 900,
+    "wires": [
+      [
+        "b6fe7042bd85ef5d"
+      ]
+    ]
+  },
+  {
+    "id": "a946387bbf0e9716",
+    "type": "inject",
+    "z": "13c4e8e8f85d50b9",
+    "g": "2c9b5f4cd21831cb",
+    "name": "Increment by 1",
+    "props": [
+      {
+        "p": "payload"
+      },
+      {
+        "p": "topic",
+        "vt": "str"
+      }
+    ],
+    "repeat": "",
+    "crontab": "",
+    "once": false,
+    "onceDelay": 0.1,
+    "topic": "",
+    "payload": "INCREMENT 1",
+    "payloadType": "str",
+    "x": 140,
+    "y": 960,
+    "wires": [
+      [
+        "b6fe7042bd85ef5d"
+      ]
+    ]
+  },
+  {
+    "id": "909e56335c63fd16",
+    "type": "inject",
+    "z": "13c4e8e8f85d50b9",
+    "g": "2c9b5f4cd21831cb",
+    "name": "Decrement by 1",
+    "props": [
+      {
+        "p": "payload"
+      },
+      {
+        "p": "topic",
+        "vt": "str"
+      }
+    ],
+    "repeat": "",
+    "crontab": "",
+    "once": false,
+    "onceDelay": 0.1,
+    "topic": "",
+    "payload": "INCREMENT -1",
+    "payloadType": "str",
+    "x": 140,
+    "y": 1000,
+    "wires": [
+      [
+        "b6fe7042bd85ef5d"
+      ]
+    ]
+  },
+  {
+    "id": "a4532a063e702429",
+    "type": "firebase-in",
+    "z": "13c4e8e8f85d50b9",
+    "g": "2c9b5f4cd21831cb",
+    "name": "Index Changes",
+    "constraint": {},
+    "database": "e8796a1869e179bc",
+    "listenerType": "value",
+    "outputType": "auto",
+    "path": "index",
+    "useConstraint": false,
+    "x": 660,
+    "y": 900,
+    "wires": [
+      [
+        "e8373909bb49fb32"
+      ]
+    ]
+  },
+  {
+    "id": "e8373909bb49fb32",
+    "type": "debug",
+    "z": "13c4e8e8f85d50b9",
+    "g": "2c9b5f4cd21831cb",
+    "name": "debug 13",
+    "active": true,
+    "tosidebar": true,
+    "console": false,
+    "tostatus": false,
+    "complete": "false",
+    "statusVal": "",
+    "statusType": "auto",
+    "x": 880,
+    "y": 900,
+    "wires": []
+  },
+  {
+    "id": "e8796a1869e179bc",
+    "type": "database-config",
+    "name": "My Database",
+    "authType": "privateKey",
+    "claims": {},
+    "createUser": false,
+    "useClaims": false
+  }
+]

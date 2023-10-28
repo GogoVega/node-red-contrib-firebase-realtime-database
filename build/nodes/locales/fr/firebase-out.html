@@ -55,7 +55,30 @@
 		dynamiquement avec la propriété <code>msg.topic</code>.
 	</p>
 	<p>
-		En savoir plus sur l'utilisation de ce noeud
-		<a href="https://github.com/GogoVega/node-red-contrib-firebase-realtime-database/wiki/firebase-out">ici</a>.
+		Le mot-clé réservé <code>"TIMESTAMP"</code> permet d'utiliser l'horodatage de la base de données.
+		Il doit être écrit au format chaîne de caractères et peut également être utilisé dans un tableau ou un objet.
+		L'exemple suivant écrira l'heure du serveur au format UNIX à l'emplacement "currentServerTimestamp".
+	</p>
+	<pre>
+{
+  payload: "TIMESTAMP",
+  method: "set",
+  path: "currentServerTimestamp"
+}</pre>
+	<p>
+		Le mot-clé réservé <code>"INCREMENT [delta]"</code> précédé d'un entier positif ou négatif permet d'incrémenter
+		une valeur numérique d'un delta.
+		Il doit être écrit au format chaîne de caractères et peut être utilisé dans un tableau ou un objet.
+		L'exemple suivant incrémentera la valeur de 1 à l'emplacement "updateIndex".
+	</p>
+	<pre>
+{
+  payload: "INCREMENT 1",
+  method: "set",
+  path: "updateIndex"
+}</pre>
+	<p>
+		Cliquer <a href="https://github.com/GogoVega/node-red-contrib-firebase-realtime-database/wiki/firebase-out">ici</a> 
+		pour en savoir plus sur l'utilisation de ce noeud.
 	</p>
 </script>

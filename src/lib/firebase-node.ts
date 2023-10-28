@@ -22,6 +22,7 @@ import {
 	ListenerMap,
 	QueryMethod,
 	QueryMethodMap,
+	ServerValue,
 	Unsubscribe,
 } from "@gogovega/firebase-config-node/rtdb";
 import { ConfigNode, ServiceType } from "@gogovega/firebase-config-node/types";
@@ -104,6 +105,51 @@ export class Firebase {
 
 	public detachStatusListener(removed: boolean, done: () => void) {
 		this.node.database?.removeStatusListener(this.node.id, this.serviceType, removed, done);
+	}
+
+	/**
+	 * Evaluates the payload message to replace reserved keywords (`TIMESTAMP` and `INCREMENT`) with the corresponding server value.
+	 * @param payload The payload to be evaluated
+	 * @returns The payload evaluated
+	 */
+	protected evaluatePayloadForServerValue(payload: unknown): unknown {
+		switch (typeof payload) {
+			case "undefined":
+			case "boolean":
+			case "number":
+				return payload;
+			case "string": {
+				if (/^\s*TIMESTAMP\s*$/.test(payload)) return ServerValue.TIMESTAMP;
+
+				if (/^\s*INCREMENT\s*-?\d+\.?\d*\s*$/.test(payload)) {
+					const deltaString = payload.match(/-?\d+\.?\d*/)?.[0] || "";
+					const delta = Number(deltaString);
+
+					if (Number.isNaN(delta) || !Number.isInteger(delta))
+						throw new Error("The delta of increment function must be an integer.");
+
+					return ServerValue.increment(delta);
+				}
+
+				return payload;
+			}
+			case "object": {
+				if (payload === null) return payload;
+				if (Array.isArray(payload)) return payload.map((item) => this.evaluatePayloadForServerValue(item));
+
+				const newPayload = Object.entries(payload).reduce(
+					(acc, [key, value]) => {
+						acc[key] = this.evaluatePayloadForServerValue(value);
+						return acc;
+					},
+					{} as Record<string, unknown>
+				);
+
+				return newPayload;
+			}
+			default:
+				throw new TypeError(`Invalid incoming payload type: ${typeof payload}`);
+		}
 	}
 
 	protected getPathFromType(path?: string, type?: PathType, msg?: IncomingMessage) {
@@ -509,6 +555,7 @@ export class FirebaseOut extends Firebase {
 			try {
 				const path = this.getPath(msg);
 				const query = this.getQueryMethod(msg);
+				const payload = this.evaluatePayloadForServerValue(msg.payload);
 
 				if (!this.rtdb) return Promise.resolve();
 
@@ -516,8 +563,8 @@ export class FirebaseOut extends Firebase {
 
 				switch (query) {
 					case "update":
-						if (msg.payload && typeof msg.payload === "object") {
-							await this.rtdb.modify(query, path, msg.payload);
+						if (payload && typeof payload === "object") {
+							await this.rtdb.modify(query, path, payload);
 							break;
 						}
 
@@ -529,10 +576,10 @@ export class FirebaseOut extends Firebase {
 						await this.rtdb.modify(query, path, this.getPriority(msg));
 						break;
 					case "setWithPriority":
-						await this.rtdb.modify(query, path, msg.payload, this.getPriority(msg));
+						await this.rtdb.modify(query, path, payload, this.getPriority(msg));
 						break;
 					default:
-						await this.rtdb.modify(query, path, msg.payload);
+						await this.rtdb.modify(query, path, payload);
 						break;
 				}
 
