@@ -1,6 +1,6 @@
 <div align="center">
   <h1>Node-RED nodes to communicate with <a href="https://firebase.google.com">Firebase Realtime Databases</a></h1>
-  <a href="https://firebase.google.com"><img src="assets/images/node-red-firebase-logo.svg" alt="Logo" width="70%"></a>
+  <a href="https://firebase.google.com"><img src="assets/images/node-red-firebase-rtdb-logo.svg" alt="Logo" width="70%"></a>
   <p align="center">
     <br />
     <a href="https://github.com/GogoVega/node-red-contrib-firebase-realtime-database/issues">Report Bug</a>
