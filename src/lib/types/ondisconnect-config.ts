@@ -14,17 +14,17 @@
  * limitations under the License.
  */
 
+import { OnDisconnectQueryMethodMap } from "@gogovega/firebase-config-node/rtdb";
 import { NodeDef } from "node-red";
 
-type AuthType = "anonymous" | "email" | "privateKey" | "customToken";
+type PathType = "msg" | "str";
+type QueryType = "msg" | "none" | keyof typeof OnDisconnectQueryMethodMap;
+type SendMsgEvent = "" | "onConnected" | "onDisconnect" | "onConnected,onDisconnect";
 
-type ClaimsType = Record<string, { value?: unknown; type?: unknown } | never>;
-
-type DatabaseConfigType = NodeDef & {
-	authType?: AuthType;
-	claims?: ClaimsType;
-	createUser?: boolean;
-	useClaims?: boolean;
+export type OnDisconnectConfig = NodeDef & {
+	database: string;
+	path?: string;
+	pathType?: PathType;
+	queryType?: QueryType;
+	sendMsgEvent?: SendMsgEvent;
 };
-
-export default DatabaseConfigType;

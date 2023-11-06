@@ -14,25 +14,18 @@
  * limitations under the License.
  */
 
-import { NodeDef } from "node-red";
+import { NodeMessage } from "node-red";
+import { FirebaseBaseNode } from "./firebase-node";
+import { OnDisconnectConfig } from "./ondisconnect-config";
 
-export enum Query {
-	"none",
-	"cancel",
-	"set",
-	"update",
-	"remove",
-	"setWithPriority",
+export type SendMsgEvent = "connected" | "disconnect";
+
+export interface OnDisconnectMessage extends NodeMessage {
+	payload: number;
+	event: SendMsgEvent;
+	topic: string;
 }
 
-type PathType = "msg" | "str";
-type QueryType = "msg" | keyof typeof Query;
-type SendMsgEvent = "" | "onConnected" | "onDisconnect" | "onConnected,onDisconnect";
-
-export type OnDisconnectConfigType = NodeDef & {
-	database: string;
-	path?: string;
-	pathType?: PathType;
-	queryType?: QueryType;
-	sendMsgEvent?: SendMsgEvent;
+export type OnDisconnectNode = FirebaseBaseNode & {
+	config: OnDisconnectConfig;
 };

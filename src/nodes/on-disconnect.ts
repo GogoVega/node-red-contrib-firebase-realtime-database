@@ -15,35 +15,21 @@
  */
 
 import { NodeAPI } from "node-red";
-import { OnDisconnect } from "../lib/onDisconnectNode";
-import { DatabaseNodeType } from "../lib/types/DatabaseNodeType";
-import { InputMessageType } from "../lib/types/FirebaseNodeType";
-import { OnDisconnectConfigType } from "../lib/types/OnDisconnectConfigType";
-import { OnDisconnectNodeType } from "../lib/types/OnDisconnectNodeType";
+import { OnDisconnect } from "../lib/ondisconnect-node";
+import { IncomingMessage, OnDisconnectConfig, OnDisconnectNode } from "../lib/types";
 
 module.exports = function (RED: NodeAPI) {
-	function OnDisconnectNode(this: OnDisconnectNodeType, config: OnDisconnectConfigType) {
+	function OnDisconnectNode(this: OnDisconnectNode, config: OnDisconnectConfig) {
 		RED.nodes.createNode(this, config);
-		const self = this;
 
-		self.config = config;
-		self.database = RED.nodes.getNode(config.database) as DatabaseNodeType | null;
-		self.RED = RED;
+		const firebase = new OnDisconnect(this, config, RED);
 
-		const firebase = new OnDisconnect(self);
-
-		firebase.registerNode();
-		firebase.setNodeStatus();
+		firebase.attachStatusListener();
 		firebase.setMsgSendHandler();
 
-		self.on("input", (msg: InputMessageType, _send, done) => {
-			firebase
-				.setOnDisconnectQuery(msg)
-				.then(() => done())
-				.catch((error: Error) => self.onError(error, done));
-		});
+		this.on("input", (msg: IncomingMessage, _send, done) => firebase.mofifyOnDisconnect(msg, done));
 
-		self.on("close", (removed: boolean, done: () => void) => firebase.deregisterNode(removed, done));
+		this.on("close", (removed: boolean, done: () => void) => firebase.detachStatusListener(removed, done));
 	}
 
 	RED.nodes.registerType("on-disconnect", OnDisconnectNode);

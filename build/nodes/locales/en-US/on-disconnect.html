@@ -19,13 +19,13 @@
 	<h3>Inputs</h3>
 	<dl class="message-properties">
 		<dt>payload<span class="property-type">string | boolean | number | array | object | null</span></dt>
- 		<dd>the data that will be sent to the database.</dd>
- 		<dt class="optional">method<span class="property-type">string</span></dt>
- 		<dd>the type of query to apply to the data (set, cancel, update, remove or setWithPriority).</dd>
- 		<dt class="optional">priority<span class="property-type">number</span></dt>
- 		<dd>the priority to apply to the data. By default 1.</dd>
- 		<dt class="optional">topic<span class="property-type">string</span></dt>
- 		<dd>the path of the data to add/modify. By default 'topic'.</dd>
+		<dd>the data that will be sent to the database.</dd>
+		<dt class="optional">method<span class="property-type">string</span></dt>
+		<dd>the type of query to apply to the data (set, cancel, update, remove or setWithPriority).</dd>
+		<dt class="optional">priority<span class="property-type">number</span></dt>
+		<dd>the priority to apply to the data. By default 1.</dd>
+		<dt class="optional">topic<span class="property-type">string</span></dt>
+		<dd>the path of the data to add/modify. By default 'topic'.</dd>
 	</dl>
 	<h3>Outputs</h3>
 	<dl class="message-properties">
@@ -38,15 +38,19 @@
 	</dl>
 	<h3>Details</h3>
 	<p>
-		This node allows you to write or clear data when your client disconnects from the Database server.
-		These updates occur whether your client disconnects cleanly or not, so you can rely on them to clean up data even if a connection is dropped or a client crashes.
+		This node allows you to write or clear data when your client disconnects from the Database server. These updates
+		occur whether your client disconnects cleanly or not, so you can rely on them to clean up data even if a connection
+		is dropped or a client crashes.
 	</p>
 	<b>Note that <code>onDisconnect</code> operations are only triggered once!</b>
 	<p></p>
 	<p>Below is a list of query types with their description:</p>
 	<ul>
 		<li><strong>Set</strong>: overwrite data on every write.</li>
-		<li><strong>Cancel</strong>: Cancels all previously queued <code>onDisconnect</code> set or update events for this location and all children.</li>
+		<li>
+			<strong>Cancel</strong>: Cancels all previously queued <code>onDisconnect</code> set or update events for this
+			location and all children.
+		</li>
 		<li><strong>Update</strong>: update values for each matching key in the database.</li>
 		<li><strong>Remove</strong>: the data at the Firebase reference and all child data is removed.</li>
 		<li><strong>Set With Priority</strong>: the priority and overwrite data.</li>

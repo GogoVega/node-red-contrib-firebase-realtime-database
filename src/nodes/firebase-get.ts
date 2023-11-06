@@ -15,33 +15,20 @@
  */
 
 import { NodeAPI } from "node-red";
-import { FirebaseGet } from "../lib/firebaseNode";
-import { DatabaseNodeType } from "../lib/types/DatabaseNodeType";
-import { FirebaseGetConfigType } from "../lib/types/FirebaseConfigType";
-import { FirebaseGetNodeType, InputMessageType } from "../lib/types/FirebaseNodeType";
+import { FirebaseGet } from "../lib/firebase-node";
+import { FirebaseGetConfig, FirebaseGetNode } from "../lib/types";
 
 module.exports = function (RED: NodeAPI) {
-	function FirebaseGetNode(this: FirebaseGetNodeType, config: FirebaseGetConfigType) {
+	function FirebaseGetNode(this: FirebaseGetNode, config: FirebaseGetConfig) {
 		RED.nodes.createNode(this, config);
-		const self = this;
 
-		self.config = config;
-		self.database = RED.nodes.getNode(config.database) as DatabaseNodeType | null;
-		self.RED = RED;
+		const firebase = new FirebaseGet(this, config, RED);
 
-		const firebase = new FirebaseGet(self);
+		firebase.attachStatusListener();
 
-		firebase.registerNode();
-		firebase.setNodeStatus();
+		this.on("input", (msg, send, done) => firebase.get(msg, send, done));
 
-		self.on("input", (msg: InputMessageType, _send, done) => {
-			firebase
-				.doGetQuery(msg)
-				.then(() => done())
-				.catch((error) => self.onError(error, done));
-		});
-
-		self.on("close", (removed: boolean, done: () => void) => firebase.deregisterNode(removed, done));
+		this.on("close", (removed: boolean, done: () => void) => firebase.detachStatusListener(removed, done));
 	}
 
 	RED.nodes.registerType("firebase-get", FirebaseGetNode);
