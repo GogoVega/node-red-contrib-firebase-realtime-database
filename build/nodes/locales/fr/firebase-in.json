@@ -9,6 +9,7 @@
       "name": "Nom"
     },
     "listenerType": {
+      "none": "- utiliser msg.listener -",
       "value": "Valeur",
       "child_added": "Enfant ajouté",
       "child_changed": "Enfant modifié",
@@ -38,6 +39,7 @@
       "child": "Clé de l'enfant"
     },
     "useConstraint": "Souhaitez-vous trier et ordonner vos données ?",
-    "addConstraint": "Ajouter une contrainte de requête"
+    "addConstraint": "Ajouter une contrainte de requête",
+    "passThrough": "Si un message arrive, transmettre le message ?"
   }
 }
