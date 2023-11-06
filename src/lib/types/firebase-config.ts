@@ -14,21 +14,25 @@
  * limitations under the License.
  */
 
+import { Listener, QueryMethod } from "@gogovega/firebase-config-node/rtdb";
 import { NodeDef } from "node-red";
-import { ListenerMap, QueryMethodMap } from "@gogovega/firebase-config-node/rtdb";
 
-export type ListenerType = keyof typeof ListenerMap;
+export type UID = string;
+
+export type ListenerType = Listener;
+
+export type Path = string;
 export type PathType = "msg" | "str";
+
 export type OutputType = "auto" | "string";
-export type QueryType = "none" | keyof typeof QueryMethodMap;
 
-export type ValueFieldType = number | string | boolean | null;
-export type ChildFieldType = "bool" | "date" | "flow" | "global" | "msg" | "null" | "num" | "str";
+export type ChildField = "bool" | "date" | "flow" | "global" | "msg" | "null" | "num" | "str";
+export type ValueField = number | string | boolean | null;
 
-interface RangeQueryType {
+export interface RangeQuery {
 	key?: string;
-	value: ValueFieldType;
-	type: ChildFieldType;
+	value: ValueField;
+	type: ChildField;
 }
 
 export interface QueryConstraint {
@@ -38,37 +42,34 @@ export interface QueryConstraint {
 	limitToFirst?: number;
 	limitToLast?: number;
 	orderByChild?: string;
-	endAt?: RangeQueryType;
-	endBefore?: RangeQueryType;
-	equalTo?: RangeQueryType;
-	startAfter?: RangeQueryType;
-	startAt?: RangeQueryType;
+	endAt?: RangeQuery;
+	endBefore?: RangeQuery;
+	equalTo?: RangeQuery;
+	startAfter?: RangeQuery;
+	startAt?: RangeQuery;
 }
 
-type BaseConfig = NodeDef & {
-	database: string;
+export type BaseConfig = NodeDef & {
+	database: UID;
+	path?: Path;
+	pathType?: PathType;
 };
 
 export type FirebaseGetConfig = BaseConfig & {
 	constraint?: QueryConstraint;
 	outputType?: OutputType;
 	passThrough?: boolean;
-	path?: string;
-	pathType?: PathType;
 };
 
 export type FirebaseInConfig = BaseConfig & {
 	constraint?: QueryConstraint;
 	listenerType?: ListenerType;
 	outputType?: OutputType;
-	path?: string;
 };
 
 export type FirebaseOutConfig = BaseConfig & {
-	path?: string;
-	pathType?: PathType;
 	priority?: number;
-	queryType?: QueryType;
+	queryType?: QueryMethod | "none";
 };
 
 export type FirebaseConfig = FirebaseGetConfig | FirebaseInConfig | FirebaseOutConfig;

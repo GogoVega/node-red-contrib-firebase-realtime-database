@@ -14,17 +14,13 @@
  * limitations under the License.
  */
 
-import { OnDisconnectQueryMethodMap } from "@gogovega/firebase-config-node/rtdb";
-import { NodeDef } from "node-red";
+import { OnDisconnectQueryMethod } from "@gogovega/firebase-config-node/rtdb";
+import { BaseConfig } from "./firebase-config";
 
-type PathType = "msg" | "str";
-type QueryType = "msg" | "none" | keyof typeof OnDisconnectQueryMethodMap;
+type QueryType = OnDisconnectQueryMethod | "msg" | "none";
 type SendMsgEvent = "" | "onConnected" | "onDisconnect" | "onConnected,onDisconnect";
 
-export type OnDisconnectConfig = NodeDef & {
-	database: string;
-	path?: string;
-	pathType?: PathType;
+export type OnDisconnectConfig = BaseConfig & {
 	queryType?: QueryType;
 	sendMsgEvent?: SendMsgEvent;
 };
