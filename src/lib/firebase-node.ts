@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { NodeAPI, NodeMessage } from "node-red";
 import {
 	BothDataSnapshot,
 	Constraint,
@@ -26,7 +25,8 @@ import {
 	Unsubscribe,
 } from "@gogovega/firebase-config-node/rtdb";
 import { ConfigNode, ServiceType } from "@gogovega/firebase-config-node/types";
-import { deepCopy } from "@gogovega/firebase-config-node/utils";
+import { deepCopy, isFirebaseConfigNode } from "@gogovega/firebase-config-node/utils";
+import { NodeAPI, NodeMessage } from "node-red";
 import {
 	ChildFieldType,
 	FirebaseConfig,
@@ -39,6 +39,7 @@ import {
 	FirebaseOutNode,
 	IncomingMessage,
 	ListenerType,
+	NodeConfig,
 	OutgoingMessage,
 	PathType,
 	ValueFieldType,
@@ -64,13 +65,12 @@ import { checkPath, checkPriority, printEnumKeys } from "./utils";
  * @param node The node to associate with this class
  * @returns Firebase Class
  */
-export class Firebase {
+export class Firebase<Node extends FirebaseNode, Config extends FirebaseConfig = NodeConfig<Node>> {
 	/**
 	 * This property contains the identifier of the timer used to define the error status of the node and will be used
 	 * to clear the timeout.
 	 */
 	private errorTimeoutID?: ReturnType<typeof setTimeout>;
-	private readonly serviceType: ServiceType = "rtdb";
 
 	/**
 	 * This property is used to store the "Permission Denied" state of the node.
@@ -78,9 +78,11 @@ export class Firebase {
 	 */
 	protected permissionDeniedStatus = false;
 
+	private readonly serviceType: ServiceType = "rtdb";
+
 	constructor(
-		protected node: FirebaseNode,
-		config: FirebaseConfig,
+		protected node: Node,
+		config: Config,
 		protected RED: NodeAPI
 	) {
 		node.config = config;
@@ -90,6 +92,9 @@ export class Firebase {
 			node.error("Database not configured or disabled!");
 			node.status({ fill: "red", shape: "ring", text: "Database not ready!" });
 		}
+
+		if (!isFirebaseConfigNode(node.database))
+			throw new Error("The selected database is not compatible with this module, please check your config-node");
 	}
 
 	/**
@@ -137,13 +142,10 @@ export class Firebase {
 				if (payload === null) return payload;
 				if (Array.isArray(payload)) return payload.map((item) => this.evaluatePayloadForServerValue(item));
 
-				const newPayload = Object.entries(payload).reduce(
-					(acc, [key, value]) => {
-						acc[key] = this.evaluatePayloadForServerValue(value);
-						return acc;
-					},
-					{} as Record<string, unknown>
-				);
+				const newPayload = Object.entries(payload).reduce<Record<string, unknown>>((acc, [key, value]) => {
+					acc[key] = this.evaluatePayloadForServerValue(value);
+					return acc;
+				}, {});
 
 				return newPayload;
 			}
@@ -196,7 +198,7 @@ export class Firebase {
 	/**
 	 * A custom method on error to set node status as `Error` or `Permission Denied`.
 	 * @param error The error received
-	 * @param done If defined, a function to be called when all the work is complete and return the error message.
+	 * @param done If defined, a function to be called to return the error message.
 	 */
 	protected onError(error: unknown, done?: (error?: Error) => void) {
 		const msg = error instanceof Error ? error.message : "";
@@ -227,31 +229,27 @@ export class Firebase {
 	) {
 		if (this.isFirebaseOutNode(this.node)) return;
 
-		try {
-			// Clear Permission Denied Status
-			if (this.permissionDeniedStatus) {
-				this.permissionDeniedStatus = false;
-				this.setStatus();
-			}
-
-			const topic = snapshot.ref.key?.toString() || "";
-			const payload = this.node.config.outputType === "string" ? JSON.stringify(snapshot.val()) : snapshot.val();
-			const previousChildName = child !== undefined ? { previousChildName: child } : {};
-			const priority = isAdminDataSnapshot(snapshot) ? snapshot.getPriority() : snapshot.priority;
-			const msg2Send: OutgoingMessage = {
-				...(msg || {}),
-				payload: payload,
-				...previousChildName,
-				priority: priority,
-				topic: topic,
-			};
-
-			if (send) return send(msg2Send);
-
-			this.node.send(msg2Send);
-		} catch (error) {
-			this.onError(error);
+		// Clear Permission Denied Status
+		if (this.permissionDeniedStatus) {
+			this.permissionDeniedStatus = false;
+			this.setStatus();
 		}
+
+		const topic = snapshot.ref.key?.toString() || "";
+		const payload = this.node.config.outputType === "string" ? JSON.stringify(snapshot.val()) : snapshot.val();
+		const previousChildName = child !== undefined ? { previousChildName: child } : {};
+		const priority = isAdminDataSnapshot(snapshot) ? snapshot.getPriority() : snapshot.priority;
+		const msg2Send: OutgoingMessage = {
+			...(msg || {}),
+			payload: payload,
+			...previousChildName,
+			priority: priority,
+			topic: topic,
+		};
+
+		if (send) return send(msg2Send);
+
+		this.node.send(msg2Send);
 	}
 
 	/**
@@ -337,12 +335,8 @@ export class Firebase {
  * @param node The node to associate with this class
  * @returns FirebaseGet Class
  */
-export class FirebaseGet extends Firebase {
-	constructor(
-		protected node: FirebaseGetNode,
-		config: FirebaseGetConfig,
-		RED: NodeAPI
-	) {
+export class FirebaseGet extends Firebase<FirebaseGetNode> {
+	constructor(node: FirebaseGetNode, config: FirebaseGetConfig, RED: NodeAPI) {
 		super(node, config, RED);
 	}
 
@@ -423,18 +417,13 @@ export class FirebaseGet extends Firebase {
  * @param node The node to associate with this class
  * @returns A `FirebaseIn` Class
  */
-export class FirebaseIn extends Firebase {
+export class FirebaseIn extends Firebase<FirebaseInNode> {
 	/**
-	 * This property contains the **method to call** (`firebase`) or the **subscription callback** to give as an argument
-	 * (`firebase-admin`) for the unsubscribe request.
+	 * This property contains the **method to call** to unsubscribe the listener
 	 */
 	private unsubscribeCallback?: Unsubscribe;
 
-	constructor(
-		protected node: FirebaseInNode,
-		config: FirebaseInConfig,
-		RED: NodeAPI
-	) {
+	constructor(node: FirebaseInNode, config: FirebaseInConfig, RED: NodeAPI) {
 		super(node, config, RED);
 	}
 
@@ -497,12 +486,8 @@ export class FirebaseIn extends Firebase {
  * @param node The node to associate with this class
  * @returns A `FirebaseOut` Class
  */
-export class FirebaseOut extends Firebase {
-	constructor(
-		protected node: FirebaseOutNode,
-		config: FirebaseOutConfig,
-		RED: NodeAPI
-	) {
+export class FirebaseOut extends Firebase<FirebaseOutNode> {
+	constructor(node: FirebaseOutNode, config: FirebaseOutConfig, RED: NodeAPI) {
 		super(node, config, RED);
 	}
 

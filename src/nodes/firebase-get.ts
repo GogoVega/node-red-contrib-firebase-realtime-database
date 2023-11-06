@@ -16,7 +16,7 @@
 
 import { NodeAPI } from "node-red";
 import { FirebaseGet } from "../lib/firebase-node";
-import { FirebaseGetConfig, FirebaseGetNode, IncomingMessage } from "../lib/types";
+import { FirebaseGetConfig, FirebaseGetNode } from "../lib/types";
 
 module.exports = function (RED: NodeAPI) {
 	function FirebaseGetNode(this: FirebaseGetNode, config: FirebaseGetConfig) {
@@ -26,7 +26,7 @@ module.exports = function (RED: NodeAPI) {
 
 		firebase.attachStatusListener();
 
-		this.on("input", (msg: IncomingMessage, send, done) => firebase.get(msg, send, done));
+		this.on("input", (msg, send, done) => firebase.get(msg, send, done));
 
 		this.on("close", (removed: boolean, done: () => void) => firebase.detachStatusListener(removed, done));
 	}

@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
+import { OnDisconnectQueryMethod, OnDisconnectQueryMethodMap } from "@gogovega/firebase-config-node/rtdb";
 import { NodeAPI } from "node-red";
 import { Firebase } from "./firebase-node";
 import { IncomingMessage, OnDisconnectConfig, OnDisconnectMessage, OnDisconnectNode, SendMsgEvent } from "./types";
 import { checkPath, checkPriority, printEnumKeys } from "./utils";
-import { OnDisconnectQueryMethod, OnDisconnectQueryMethodMap } from "@gogovega/firebase-config-node/rtdb";
 
 /**
  * OnDisconnect Class
@@ -34,7 +34,7 @@ import { OnDisconnectQueryMethod, OnDisconnectQueryMethodMap } from "@gogovega/f
  * @extends Firebase
  * @class
  */
-export class OnDisconnect extends Firebase {
+export class OnDisconnect extends Firebase<OnDisconnectNode> {
 	/**
 	 * Callback called for the `connected` event.
 	 */
@@ -46,9 +46,9 @@ export class OnDisconnect extends Firebase {
 	private sendMsgOnDisconnect = () => this.sendMsgOnEvent("disconnect");
 
 	constructor(
-		protected node: OnDisconnectNode,
+		node: OnDisconnectNode,
 		config: OnDisconnectConfig,
-		protected RED: NodeAPI
+		RED: NodeAPI
 	) {
 		super(node, config, RED);
 	}
@@ -59,8 +59,8 @@ export class OnDisconnect extends Firebase {
 	 * @returns The query checked
 	 */
 	private checkQueryMethod(method: unknown): OnDisconnectQueryMethod {
-		if (method === undefined) throw new Error("msg.method do not exist!");
-		if (typeof method !== "string") throw new Error("msg.method must be a string!");
+		if (method === undefined) throw new TypeError("msg.method do not exist!");
+		if (typeof method !== "string") throw new TypeError("msg.method must be a string!");
 		if (method in OnDisconnectQueryMethodMap) return method as OnDisconnectQueryMethod;
 		throw new Error(`msg.method must be one of ${printEnumKeys(OnDisconnectQueryMethodMap)}.`);
 	}
@@ -109,7 +109,8 @@ export class OnDisconnect extends Firebase {
 			const msg2Send: OnDisconnectMessage = {
 				payload: Date.now(),
 				event: event,
-				topic: this.node.database.client?.app?.options.databaseURL || "UNKNOW",
+				// TODO: Use `databaseURL` or `configName`?
+				topic: this.node.database.client?.app?.options.databaseURL || "UNKNOWN",
 			};
 
 			const useSecondOutput = this.node.config.sendMsgEvent === "onConnected,onDisconnect" && event === "disconnect";
@@ -136,8 +137,7 @@ export class OnDisconnect extends Firebase {
 	 * Sets the node status to "Query Done!" for 500ms.
 	 */
 	private setNodeQueryDone(): void {
-		this.setStatus("Query Done");
-		setTimeout(() => this.setStatus(), 500);
+		this.setStatus("Query Done", 500);
 	}
 
 	/**
@@ -173,7 +173,7 @@ export class OnDisconnect extends Firebase {
 							break;
 						}
 
-						throw new Error("msg.payload must be an object with 'update' query.");
+						throw new TypeError("msg.payload must be an object with 'update' query.");
 					case "setWithPriority":
 						await this.rtdb.modifyOnDisconnect(query, path, payload, this.getPriority(msg));
 						break;

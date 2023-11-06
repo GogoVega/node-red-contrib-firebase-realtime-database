@@ -42,6 +42,7 @@ export interface IncomingMessage extends NodeMessageInFlow {
 }
 
 export interface OutgoingMessage extends NodeMessage {
+	payload: unknown;
 	previousChildName?: string | null;
 	priority: string | number | null;
 }
@@ -63,3 +64,5 @@ export interface FirebaseOutNode extends FirebaseBaseNode {
 }
 
 export type FirebaseNode = FirebaseInNode | FirebaseGetNode | FirebaseOutNode;
+
+export type NodeConfig<TNode extends FirebaseNode> = TNode["config"];
