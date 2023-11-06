@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { Constraint, QueryMethod } from "@gogovega/firebase-config-node/rtdb";
+import { Constraint, Listener, QueryMethod } from "@gogovega/firebase-config-node/rtdb";
 import { ConfigNode } from "@gogovega/firebase-config-node/types";
 import { Node, NodeMessage, NodeMessageInFlow } from "node-red";
 import { FirebaseGetConfig, FirebaseInConfig, FirebaseOutConfig } from "./firebase-config";
@@ -37,6 +37,7 @@ type Priority = number | string;
 
 export interface IncomingMessage extends NodeMessageInFlow {
 	constraints?: Constraint;
+	listener?: Listener;
 	method?: QueryMethod;
 	priority?: Priority;
 }

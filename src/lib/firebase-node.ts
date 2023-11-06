@@ -474,8 +474,13 @@ export class FirebaseIn extends Firebase<FirebaseInNode> {
 	 * Gets the listener from the node and throws an error if it's not valid.
 	 * @returns The listener checked
 	 */
-	private getListener(): ListenerType {
-		const listener = this.node.config.listenerType;
+	private getListener(msg?: IncomingMessage): ListenerType {
+		const { listenerType } = this.node.config;
+
+		// Dynamic Listener ? Skip the static subscription
+		if (listenerType === "none" && !msg) return listenerType;
+
+		const listener = listenerType === "none" ? msg?.listener : listenerType;
 
 		if (typeof listener === "string" && listener in ListenerMap) return listener;
 
@@ -486,24 +491,35 @@ export class FirebaseIn extends Firebase<FirebaseInNode> {
 	 * Subscribes to a listener and attaches a callback (`sendMsg`) to send a `payload` containing the changed data.
 	 * Calls `checkPath` to check the path.
 	 */
-	public subscribe(): void {
+	public subscribe(): void;
+	public subscribe(msg: IncomingMessage, send: (msg: NodeMessage) => void, done: (error?: Error) => void): void;
+	public subscribe(msg?: IncomingMessage, send?: (msg: NodeMessage) => void, done?: (error?: Error) => void): void {
 		(async () => {
 			try {
-				const listener = this.getListener();
-				const path = this.getPath();
+				const listener = this.getListener(msg);
+				const path = this.getPath(msg, true);
+				const constraints = await this.getQueryConstraints(msg);
+				const msg2PassThrough = this.node.config.passThrough ? msg : undefined;
 
 				if (!this.rtdb) return;
 
+				// Await the listener defined in the incoming message
+				if (listener === "none") return;
+
 				if (!(await this.node.database?.clientSignedIn())) return;
 
+				this.unsubscribe();
 				this.unsubscribeCallback = this.rtdb.subscribe(
 					listener,
 					(snapshot, child) => this.sendMsg(snapshot, child),
 					path,
-					this.node.config.constraint
+					constraints
 				);
+
+				send && msg2PassThrough && send(msg2PassThrough);
+				done && done();
 			} catch (error) {
-				this.onError(error);
+				this.onError(error, done);
 			}
 		})();
 	}

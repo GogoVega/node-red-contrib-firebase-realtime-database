@@ -19,7 +19,7 @@ import { NodeDef } from "node-red";
 
 export type UID = string;
 
-export type ListenerType = Listener;
+export type ListenerType = Listener | "none";
 
 export type Path = string;
 export type PathType = "msg" | "str";
@@ -65,6 +65,7 @@ export type FirebaseInConfig = BaseConfig & {
 	constraint?: QueryConstraint;
 	listenerType?: ListenerType;
 	outputType?: OutputType;
+	passThrough?: boolean;
 };
 
 export type FirebaseOutConfig = BaseConfig & {
