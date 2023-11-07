@@ -27,6 +27,8 @@ module.exports = function (RED: NodeAPI) {
 		firebase.attachStatusListener();
 		firebase.subscribe();
 
+		this.on("input", (msg, send, done) => firebase.subscribe(msg, send, done));
+
 		this.on("close", (removed: boolean, done: () => void) => {
 			firebase.unsubscribe();
 			firebase.detachStatusListener(removed, done);

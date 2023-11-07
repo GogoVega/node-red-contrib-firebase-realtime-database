@@ -9,6 +9,7 @@
       "name": "Name"
     },
     "listenerType": {
+      "none": "- use msg.listener -",
       "value": "Value",
       "child_added": "Child Added",
       "child_changed": "Child Changed",
@@ -38,6 +39,7 @@
       "child": "Child Key"
     },
     "useConstraint": "Use Query Constraint to sort and order your data.",
-    "addConstraint": "Add Query Constraint Set"
+    "addConstraint": "Add Query Constraint Set",
+    "passThrough": "If a message arrives, pass through the message?"
   }
 }

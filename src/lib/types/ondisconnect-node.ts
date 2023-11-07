@@ -26,6 +26,6 @@ export interface OnDisconnectMessage extends NodeMessage {
 	topic: string;
 }
 
-export type OnDisconnectNode = FirebaseBaseNode & {
+export interface OnDisconnectNode extends FirebaseBaseNode {
 	config: OnDisconnectConfig;
-};
+}

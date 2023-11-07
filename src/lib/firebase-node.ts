@@ -25,10 +25,10 @@ import {
 	Unsubscribe,
 } from "@gogovega/firebase-config-node/rtdb";
 import { ConfigNode, ServiceType } from "@gogovega/firebase-config-node/types";
-import { deepCopy, isFirebaseConfigNode } from "@gogovega/firebase-config-node/utils";
+import { deepCopy, Entry, isFirebaseConfigNode } from "@gogovega/firebase-config-node/utils";
 import { NodeAPI, NodeMessage } from "node-red";
 import {
-	ChildFieldType,
+	ChildField,
 	FirebaseConfig,
 	FirebaseGetConfig,
 	FirebaseGetNode,
@@ -42,7 +42,8 @@ import {
 	NodeConfig,
 	OutgoingMessage,
 	PathType,
-	ValueFieldType,
+	QueryConstraint,
+	ValueField,
 } from "./types";
 import { checkPath, checkPriority, printEnumKeys } from "./utils";
 
@@ -112,6 +113,30 @@ export class Firebase<Node extends FirebaseNode, Config extends FirebaseConfig =
 		this.node.database?.removeStatusListener(this.node.id, this.serviceType, removed, done);
 	}
 
+	protected evaluateContextExpression(
+		msg: IncomingMessage,
+		value: string,
+		context: "flow" | "global"
+	): Promise<unknown> {
+		return new Promise((resolve, reject) => {
+			if (typeof msg !== "object" || !msg) throw new TypeError("The incoming message must be an object");
+			if (typeof value !== "string" || !value) throw new TypeError("The message property to evaluate must be a string");
+
+			const contextKey = this.RED.util.parseContextStore(value);
+
+			if (/\[msg\./.test(contextKey.key)) {
+				// The key has a nest msg. reference to evaluate first
+				contextKey.key = this.RED.util.normalisePropertyExpression(contextKey.key, msg, true);
+			}
+
+			return this.node.context()[context].get(contextKey.key, contextKey.store, (error, response) => {
+				if (error) return reject(error);
+
+				resolve(response);
+			});
+		});
+	}
+
 	/**
 	 * Evaluates the payload message to replace reserved keywords (`TIMESTAMP` and `INCREMENT`) with the corresponding server value.
 	 * @param payload The payload to be evaluated
@@ -154,17 +179,110 @@ export class Firebase<Node extends FirebaseNode, Config extends FirebaseConfig =
 		}
 	}
 
-	protected getPathFromType(path?: string, type?: PathType, msg?: IncomingMessage) {
-		if (typeof path !== "string") throw new Error("The 'Path' field is undefined, please re-configure this node.");
+	protected getMessageProperty(msg: IncomingMessage, property: string): unknown {
+		if (typeof msg !== "object" || !msg) throw new TypeError("The incoming message must be an object");
+		if (typeof property !== "string" || !property)
+			throw new TypeError("The message property to evaluate must be a string");
+
+		return this.RED.util.getMessageProperty(msg, property);
+	}
+
+	protected getPath(msg: IncomingMessage | undefined, empty: true): string | undefined;
+	protected getPath(msg?: IncomingMessage | undefined, empty?: false): string;
+	protected getPath(msg?: IncomingMessage, empty?: boolean): string | undefined {
+		const path = this.getPathFromType(this.node.config.path, this.node.config.pathType, msg);
+
+		return checkPath(path, empty);
+	}
+
+	protected getPathFromType(value?: string, type?: PathType, msg?: IncomingMessage): unknown {
+		if (typeof value !== "string") throw new Error("The 'Path' field is undefined, please re-configure this node.");
+
+		// TODO: Remove Me
+		if (this.isFirebaseInNode(this.node) && type === undefined) type = "str";
+
+		if (!msg && type !== "str") throw new Error("Incoming message missing to evaluate the path");
 
 		switch (type) {
 			case "msg":
-				if (!msg) throw new Error("The incoming msg is undefined.");
-				return this.RED.util.getMessageProperty(msg, path);
+				return this.getMessageProperty(msg!, value);
 			case "str":
-				return path;
+				return value;
 			default:
-				throw new Error("pathType should be 'msg' or 'str', please re-configure this node.");
+				throw new Error(`The pathType (${type}) is invalid, please re-configure this node`);
+		}
+	}
+
+	/**
+	 * Gets the Query Constraints from the message received or from the node configuration.
+	 * Calls the `valueFromType` method to replace the value of the value field with its real value from the type.
+	 *
+	 * Example: user defined `msg.topic`, type is `msg`, saved value `topic` and real value is the content of `msg.topic`.
+	 *
+	 * @param msg The message received
+	 * @returns The Query Constraints
+	 */
+	protected async getQueryConstraints(msg?: IncomingMessage): Promise<Constraint> {
+		if (this.isFirebaseOutNode(this.node)) throw new Error("Constraints not available for modify method");
+
+		// @deprecated
+		if (msg?.method) return msg.method as unknown as object;
+		if (msg?.constraints) return msg.constraints;
+
+		// TODO: Change constraint to plural
+		const constraints = deepCopy(this.node.config.constraint ?? {});
+
+		if (typeof constraints !== "object") throw new Error("The 'Query Constraints' must be an object.");
+
+		// TODO: Use reduce to replace the loop
+		for (const value of Object.values(constraints) as Entry<QueryConstraint>) {
+			if (value && typeof value === "object") {
+				if (value.value === undefined) continue;
+				const newValue = await this.getValueFieldFromType(value.value, value.type, msg);
+
+				if (
+					typeof newValue !== "boolean" &&
+					typeof newValue !== "number" &&
+					typeof newValue !== "string" &&
+					newValue !== null
+				)
+					throw new TypeError("Values of Query Constraints must be a boolean, number, string or null!");
+
+				value.value = newValue;
+			}
+		}
+
+		return constraints;
+	}
+
+	/**
+	 * Find the value based on the received type. The `value` parameter received can either be the returned value or
+	 * be the key of a content in the message or in the context.
+	 *
+	 * Example: msg contains `msg.uid`, the value is `uid` and the type is `msg`. The returned value is the content of `msg.uid`.
+	 *
+	 * @param value The value of the Value Field
+	 * @param type The type of the Value Field
+	 * @param msg The message received
+	 * @returns The content of the value associated to the type
+	 */
+	protected async getValueFieldFromType(value: ValueField, type: ChildField, msg?: IncomingMessage): Promise<unknown> {
+		switch (type) {
+			case "bool":
+			case "date":
+			case "null":
+			case "num":
+			case "str":
+				return value;
+			case "msg":
+				if (!msg) throw new Error("Incoming message missing to evaluate the Query Constraints");
+				return this.getMessageProperty(msg, value as string);
+			case "flow":
+			case "global":
+				if (!msg) throw new Error("Incoming message missing to evaluate the Query Constraints");
+				return await this.evaluateContextExpression(msg, value as string, type);
+			default:
+				throw new Error(`The type of value field (${type}) is invalid, please re-configure this node.`);
 		}
 	}
 
@@ -258,8 +376,6 @@ export class Firebase<Node extends FirebaseNode, Config extends FirebaseConfig =
 	 * @param time If defined, the status will be cleared (to current status) after `time` ms.
 	 */
 	protected setStatus(status: string = "", time?: number) {
-		//if (!this.rtdb) return;
-
 		// Clear the status to the current after ms
 		if (status && time) {
 			clearTimeout(this.errorTimeoutID);
@@ -284,42 +400,6 @@ export class Firebase<Node extends FirebaseNode, Config extends FirebaseConfig =
 				this.node.status({ fill: "red", shape: "dot", text: status });
 				break;
 		}
-	}
-
-	/**
-	 * Find the value based on the received type. The `value` parameter received can either be the returned value or
-	 * be the key of a content in the message or in the context.
-	 *
-	 * Example: msg contains `msg.uid`, the value is `uid` and the type is `msg`. The returned value is the content of `msg.uid`.
-	 *
-	 * @param msg The message received
-	 * @param value The value of the Value Field
-	 * @param type The type of the Value Field
-	 * @returns The content of the value associated to the type
-	 */
-	protected valueFromType(msg: IncomingMessage, value: ValueFieldType, type: ChildFieldType): ValueFieldType {
-		if (type === "bool" || type === "date" || type === "null" || type === "num" || type === "str") return value;
-
-		if (type !== "flow" && type !== "global" && type !== "msg")
-			throw new Error("The type of value field should be 'flow', 'global' or 'msg', please re-configure this node.");
-
-		if (typeof value !== "string") throw new TypeError("The value field must be a string.");
-
-		if (type === "msg") return this.RED.util.getMessageProperty(msg, value);
-
-		const contextKey = this.RED.util.parseContextStore(value);
-
-		if (/\[msg\./.test(contextKey.key)) {
-			// The key has a nest msg. reference to evaluate first
-			contextKey.key = this.RED.util.normalisePropertyExpression(contextKey.key, msg, true);
-		}
-
-		const output = this.node.context()[type].get(contextKey.key, contextKey.store);
-
-		if (typeof output !== "boolean" && typeof output !== "number" && typeof output !== "string" && output !== null)
-			throw new TypeError("The context value used must be one of the types 'boolean', 'number', 'string' or 'null'");
-
-		return output;
 	}
 }
 
@@ -348,9 +428,9 @@ export class FirebaseGet extends Firebase<FirebaseGetNode> {
 	public get(msg: IncomingMessage, send: (msg: NodeMessage) => void, done: (error?: Error) => void): void {
 		(async () => {
 			try {
+				const path = this.getPath(msg, true);
+				const constraints = await this.getQueryConstraints(msg);
 				const msg2PassThrough = this.node.config.passThrough ? msg : undefined;
-				const constraints = this.getQueryConstraints(msg);
-				const path = this.getPath(msg);
 
 				if (!this.rtdb) return;
 
@@ -365,43 +445,6 @@ export class FirebaseGet extends Firebase<FirebaseGetNode> {
 				this.onError(error, done);
 			}
 		})();
-	}
-
-	private getPath(msg: IncomingMessage): string | undefined {
-		const { path, pathType } = this.node.config;
-		const pathGetted = this.getPathFromType(path, pathType, msg);
-
-		return checkPath(pathGetted, true);
-	}
-
-	/**
-	 * Gets the Query Constraints from the message received or from the node configuration.
-	 * Calls the `valueFromType` method to replace the value of the value field with its real value from the type.
-	 *
-	 * Example: user defined `msg.topic`, type is `msg`, saved value `topic` and real value is the content of `msg.topic`.
-	 *
-	 * @param msg The message received
-	 * @returns The Query Constraints
-	 */
-	private getQueryConstraints(msg: IncomingMessage): Constraint {
-		// @deprecated
-		if (msg.method) return msg.method as unknown as object;
-		if (msg.constraints) return msg.constraints;
-
-		// TODO: Change constraint to plural
-		const constraints = deepCopy(this.node.config.constraint ?? {});
-
-		if (typeof constraints !== "object") throw new Error("The 'Constraints' must be an object.");
-
-		// TODO: Add types
-		for (const value of Object.values(constraints)) {
-			if (value && typeof value === "object") {
-				if (value.value === undefined) continue;
-				value.value = this.valueFromType(msg, value.value, value.type);
-			}
-		}
-
-		return constraints;
 	}
 }
 
@@ -431,40 +474,52 @@ export class FirebaseIn extends Firebase<FirebaseInNode> {
 	 * Gets the listener from the node and throws an error if it's not valid.
 	 * @returns The listener checked
 	 */
-	private getListener(): ListenerType {
-		const listener = this.node.config.listenerType;
+	private getListener(msg?: IncomingMessage): ListenerType {
+		const { listenerType } = this.node.config;
+
+		// Dynamic Listener ? Skip the static subscription
+		if (listenerType === "none" && !msg) return listenerType;
+
+		const listener = listenerType === "none" ? msg?.listener : listenerType;
 
 		if (typeof listener === "string" && listener in ListenerMap) return listener;
 
 		throw new Error(`The Listener should be one of ${printEnumKeys(ListenerMap)}. Please re-configure this node.`);
 	}
 
-	private getPath(): string | undefined {
-		return checkPath(this.node.config.path, true);
-	}
-
 	/**
 	 * Subscribes to a listener and attaches a callback (`sendMsg`) to send a `payload` containing the changed data.
 	 * Calls `checkPath` to check the path.
 	 */
-	public subscribe(): void {
+	public subscribe(): void;
+	public subscribe(msg: IncomingMessage, send: (msg: NodeMessage) => void, done: (error?: Error) => void): void;
+	public subscribe(msg?: IncomingMessage, send?: (msg: NodeMessage) => void, done?: (error?: Error) => void): void {
 		(async () => {
 			try {
-				const listener = this.getListener();
-				const path = this.getPath();
+				const listener = this.getListener(msg);
+				const path = this.getPath(msg, true);
+				const constraints = await this.getQueryConstraints(msg);
+				const msg2PassThrough = this.node.config.passThrough ? msg : undefined;
 
 				if (!this.rtdb) return;
 
+				// Await the listener defined in the incoming message
+				if (listener === "none") return;
+
 				if (!(await this.node.database?.clientSignedIn())) return;
 
+				this.unsubscribe();
 				this.unsubscribeCallback = this.rtdb.subscribe(
 					listener,
 					(snapshot, child) => this.sendMsg(snapshot, child),
 					path,
-					this.node.config.constraint
+					constraints
 				);
+
+				send && msg2PassThrough && send(msg2PassThrough);
+				done && done();
 			} catch (error) {
-				this.onError(error);
+				this.onError(error, done);
 			}
 		})();
 	}
@@ -501,13 +556,6 @@ export class FirebaseOut extends Firebase<FirebaseOutNode> {
 		if (typeof method !== "string") throw new Error("msg.method must be a string!");
 		if (method in QueryMethodMap) return method as QueryMethod;
 		throw new Error(`msg.method must be one of ${printEnumKeys(QueryMethodMap)}.`);
-	}
-
-	private getPath(msg: IncomingMessage): string {
-		const { path, pathType } = this.node.config;
-		const pathGetted = this.getPathFromType(path, pathType, msg);
-
-		return checkPath(pathGetted, false);
 	}
 
 	/**

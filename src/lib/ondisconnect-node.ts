@@ -18,7 +18,7 @@ import { OnDisconnectQueryMethod, OnDisconnectQueryMethodMap } from "@gogovega/f
 import { NodeAPI } from "node-red";
 import { Firebase } from "./firebase-node";
 import { IncomingMessage, OnDisconnectConfig, OnDisconnectMessage, OnDisconnectNode, SendMsgEvent } from "./types";
-import { checkPath, checkPriority, printEnumKeys } from "./utils";
+import { checkPriority, printEnumKeys } from "./utils";
 
 /**
  * OnDisconnect Class
@@ -45,11 +45,7 @@ export class OnDisconnect extends Firebase<OnDisconnectNode> {
 	 */
 	private sendMsgOnDisconnect = () => this.sendMsgOnEvent("disconnect");
 
-	constructor(
-		node: OnDisconnectNode,
-		config: OnDisconnectConfig,
-		RED: NodeAPI
-	) {
+	constructor(node: OnDisconnectNode, config: OnDisconnectConfig, RED: NodeAPI) {
 		super(node, config, RED);
 	}
 
@@ -63,18 +59,6 @@ export class OnDisconnect extends Firebase<OnDisconnectNode> {
 		if (typeof method !== "string") throw new TypeError("msg.method must be a string!");
 		if (method in OnDisconnectQueryMethodMap) return method as OnDisconnectQueryMethod;
 		throw new Error(`msg.method must be one of ${printEnumKeys(OnDisconnectQueryMethodMap)}.`);
-	}
-
-	/**
-	 * Gets the path to the database from the node or message. Calls `checkPath` to check the path.
-	 * @param msg The message received
-	 * @returns The path checked to the database
-	 */
-	private getPath(msg: IncomingMessage): string {
-		const { path, pathType } = this.node.config;
-		const pathGetted = this.getPathFromType(path, pathType, msg);
-
-		return checkPath(pathGetted, false);
 	}
 
 	/**

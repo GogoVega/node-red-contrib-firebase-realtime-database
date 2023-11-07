@@ -27,9 +27,12 @@
 				name: { value: "" },
 				constraint: { value: {}, validate: isConstraintValid },
 				database: { value: "", type: "firebase-config" },
-				listenerType: { value: "value", validate: RED.validators.regex(/^(value|child_added|child_changed|child_moved|child_removed)$/) },
+				inputs: { value: 0 },
+				listenerType: { value: "value", validate: RED.validators.regex(/^(none|value|child_added|child_changed|child_moved|child_removed)$/) },
 				outputType: { value: "auto", validate: RED.validators.regex(/^(auto|string)$/) },
+				passThrough: { value: false },
 				path: { value: "test/stream", validate: (v) => !v.match(/^\s+|[.#$\[\]]$/g) },
+				pathType: { value: "msg", validate: RED.validators.regex(/^(msg|str)$/) },
 				useConstraint: { value: false },
 			},
 			inputs: 0,
@@ -54,6 +57,13 @@
 					));
 				}
 
+				$("#node-input-path").typedInput({
+					typeField: "#node-input-pathType",
+					types: ["msg", { value: "str", label: "string", icon: "red/images/typedInput/az.svg", validate: isPathValid }],
+				});
+
+				$("#node-input-listenerType").on("change", listenerTypeHandler);
+
 				constraintContainer.css({ "min-height": "150px", "min-width": "300px" }).editableList({
 					addButton: node._("firebase-in.addConstraint"),
 					addItem: addItem.bind(node),
@@ -63,7 +73,12 @@
 
 				useConstraint.on("change", useConstraintHandler.bind(node));
 			},
-			oneditsave: saveItems,
+			oneditsave: function () {
+				saveItems.call(this);
+				
+				const inputs = $("#node-input-listenerType").val() === "none" ? 1 : 0;
+				$("#node-input-inputs").val(inputs);
+			},
 		});
 
 		function addItem(container, index, data) {
@@ -163,6 +178,19 @@
 			}
 
 			return true;
+		}
+
+		function isPathValid(path) {
+			if (typeof path !== "string") return false;
+			if (path.match(/^\s|[.#$\[\]]/g)) return false;
+			return true;
+		}
+
+		function listenerTypeHandler() {
+			const defaultTypes = ["msg", { value: "str", label: "string", icon: "red/images/typedInput/az.svg", validate: isPathValid }]
+			const types = $("#node-input-listenerType").val() === "none" ? defaultTypes : [defaultTypes[1]];
+
+			$("#node-input-path").typedInput("types", types);
 		}
 
 		function saveItems() {
@@ -281,8 +309,10 @@
 	</div>
 
 	<div class="form-row">
+		<input type="hidden" id="node-input-inputs" />
 		<label for="node-input-listenerType"><i class="fa fa-bars"></i> <span data-i18n="firebase-in.label.listener"></span></label>
 		<select id="node-input-listenerType" style="width:70%;">
+			<option value="none" data-i18n="firebase-in.listenerType.none"></option>
 			<option value="value" data-i18n="firebase-in.listenerType.value"></option>
 			<option value="child_added" data-i18n="firebase-in.listenerType.child_added"></option>
 			<option value="child_changed" data-i18n="firebase-in.listenerType.child_changed"></option>
@@ -304,6 +334,7 @@
 	<div class="form-row">
 		<label for="node-input-path"><i class="fa fa-sitemap"></i> <span data-i18n="firebase-in.label.path"></span></label>
 		<input type="text" id="node-input-path" style="width:70%;" />
+		<input type="hidden" id="node-input-pathType" />
 	</div>
 
 	<div class="form-row">
@@ -312,6 +343,12 @@
 			<option value="auto" data-i18n="firebase-in.outputType.auto"></option>
 			<option value="string" data-i18n="firebase-in.outputType.string"></option>
 		</select>
+	</div>
+
+	<div class="form-row">
+		<label for="node-input-passThrough"></label>
+		<input type="checkbox" id="node-input-passThrough" style="display:inline-block; width:15px; vertical-align:baseline;" />
+		<span data-i18n="firebase-in.passThrough"></span>
 	</div>
 
 	<div class="form-row">

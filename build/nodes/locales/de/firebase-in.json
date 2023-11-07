@@ -9,6 +9,7 @@
       "name": "Name"
     },
     "listenerType": {
+      "none": "- verwende msg.listener -",
       "value": "Wert",
       "child_added": "Kind hinzugefügt",
       "child_changed": "Kind geändert",
@@ -38,6 +39,7 @@
       "child": "Kind Schlüssel"
     },
     "useConstraint": "Verwende Abfrageeinschränkungen um ihre Daten zu sortieren.",
-    "addConstraint": "Abfrageeinschränkungen hinzufügen"
+    "addConstraint": "Abfrageeinschränkungen hinzufügen",
+    "passThrough": "Die Nachricht durchreichen, wenn eine Nachricht ankommt?"
   }
 }

@@ -45,7 +45,6 @@
 		<li><code>Kind verschoben</code></li>
 		<li><code>Kind gelöscht</code></li>
 	</ul>
-	<p>Sie können Beschränkungen für die Abfrage definieren, um Ihre Daten zu sortieren und zu ordnen.</p>
 	<p>
 		Der <strong>Pfad</strong> bestimmt, von wo die Daten gelesen werden. Er kann leer sein, in diesem Fall kommen die
 		Daten von der Wurzel der Datenbank kommen.
@@ -54,6 +53,35 @@
 		<strong>Ausgabe</strong> kann auf <strong>Automatisch erkennen</strong> gesetzt werden, um ein Objekt zu senden, das
 		die Daten enthält, oder <strong>eine Zeichenkette</strong> um die Daten als Zeichenkette zu senden.
 	</p>
+	<p>
+		Sie können Einschränkungen für die Abfrage definieren, um Ihre Daten zu sortieren und zu ordnen. Sie können eine
+		oder mehrere der folgenden Einschränkungen in der Eigenschaft <code>msg.method</code> oder direkt im Node
+		definieren:
+	</p>
+	<ul>
+		<li><code>endAt</code><span class="property-type">Objekt</span></li>
+		<li><code>endBefore</code><span class="property-type">Objekt</span></li>
+		<li><code>equalTo</code><span class="property-type">Objekt</span></li>
+		<li><code>limitToFirst</code><span class="property-type">Zahl</span></li>
+		<li><code>limitToLast</code><span class="property-type">Zahl</span></li>
+		<li><code>orderByChild</code><span class="property-type">Zeichenkette</span></li>
+		<li><code>orderByKey</code><span class="property-type">Null</span></li>
+		<li><code>orderByPriority</code><span class="property-type">Null</span></li>
+		<li><code>orderByValue</code><span class="property-type">Null</span></li>
+		<li><code>startAfter</code><span class="property-type">Objekt</span></li>
+		<li><code>startAt</code><span class="property-type">Objekt</span></li>
+	</ul>
+	<p><code>msg.method</code> schaut folgendermaßen aus:</p>
+	<pre>
+{
+  "orderByChild": "name",
+  "limitToFirst": 5,
+  "startAt": {
+    "value": "Alex",
+    "key": "name"
+  }
+}</pre
+	>
 	<p>
 		Erfahren sie
 		<a href="https://github.com/GogoVega/node-red-contrib-firebase-realtime-database/wiki/firebase-in">hier</a> mehr
