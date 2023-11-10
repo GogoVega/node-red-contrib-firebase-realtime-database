@@ -139,7 +139,7 @@ export class OnDisconnect extends Firebase<OnDisconnectNode> {
 				if (!this.rtdb) return;
 				if (query === "none") return Promise.resolve();
 
-				const path = this.getPath(msg);
+				const path = await this.getPath(msg);
 
 				if (!(await this.node.database?.clientSignedIn())) return Promise.resolve();
 

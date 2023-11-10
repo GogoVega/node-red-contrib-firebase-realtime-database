@@ -22,7 +22,7 @@ export type UID = string;
 export type ListenerType = Listener | "none";
 
 export type Path = string;
-export type PathType = "msg" | "str";
+export type PathType = "flow" | "global" | "jsonata" | "msg" | "str";
 
 export type OutputType = "auto" | "json" | "string";
 
