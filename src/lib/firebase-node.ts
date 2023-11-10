@@ -360,7 +360,12 @@ export class Firebase<Node extends FirebaseNode, Config extends FirebaseConfig =
 		}
 
 		const topic = snapshot.ref.key?.toString() || "";
-		const payload = this.node.config.outputType === "string" ? JSON.stringify(snapshot.val()) : snapshot.val();
+		const payload =
+			this.node.config.outputType === "string"
+				? JSON.stringify(snapshot.val())
+				: this.node.config.outputType === "json"
+				? snapshot.toJSON()
+				: snapshot.val();
 		const previousChildName = child !== undefined ? { previousChildName: child } : {};
 		const priority = isAdminDataSnapshot(snapshot) ? snapshot.getPriority() : snapshot.priority;
 		const msg2Send: OutgoingMessage = {

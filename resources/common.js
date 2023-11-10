@@ -34,7 +34,7 @@ const FirebaseUI = (function () {
 		},
 		outputType: function () {
 			return function (value, opt) {
-				if (typeof value === "string" && /^(auto|string)$/.test(value)) return true;
+				if (typeof value === "string" && /^(auto|json|string)$/.test(value)) return true;
 				if (opt?.label) return i18n("errors.invalid-type-prop", { prop: opt.label });
 				return opt ? i18n("errors.invalid-type") : false;
 			}

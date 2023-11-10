@@ -20,6 +20,7 @@
     },
     "outputType": {
       "auto": "Automatisch erkennen",
+      "json": "ein JSON-Objekt",
       "string": "eine Zeichenkette"
     },
     "placeholder": {
