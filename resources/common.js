@@ -14,7 +14,7 @@ const FirebaseUI = (function () {
 			const regex = blankAllowed ? /[\s.#$\[\]]/ : /^$|[\s.#$\[\]]/;
 			return function (value, opt) {
 				if (typeof value === "string" && !regex.test(value)) return true;
-				if (!value) return opt ? i18n("errors.empty-child") : false;
+				if (!blankAllowed && !value) return opt ? i18n("errors.empty-child") : false;
 				return opt ? i18n("errors.invalid-child") : false;
 			}
 		},
@@ -43,7 +43,7 @@ const FirebaseUI = (function () {
 			const regex = blankAllowed ? /[\s.#$\[\]]/ : /^$|[\s.#$\[\]]/;
 			return function (value, opt) {
 				if (typeof value === "string" && !regex.test(value)) return true;
-				if (!blankAllowed && value === "") return opt ? i18n("errors.empty-path") : false;
+				if (!blankAllowed && !value) return opt ? i18n("errors.empty-path") : false;
 				return opt ? i18n("errors.invalid-path") : false;
 			}
 		},
@@ -57,9 +57,9 @@ const FirebaseUI = (function () {
 		priority: function () {
 			return function (value, opt) {
 				if (typeof value === "string" && /^[1-9][0-9]*$/.test(value)) return true;
-				if (typeof value === "string" && /^$|[^0-9-]/.test(value))
+				if (typeof value === "string" && /^$|[.]/.test(value))
 					return opt ? opt.label ? i18n("errors.no-integer-prop", { prop: opt.label }) : i18n("errors.no-integer") : false;
-				if (typeof value === "string" && /^-?[0]*/.test(value))
+				if (typeof value === "string" && /^-+|^0$/.test(value))
 					return opt ? opt.label ? i18n("errors.invalid-range-prop", { prop: opt.label }) : i18n("errors.invalid-range") : false;
 				return opt ? opt.label ? i18n("errors.invalid-num-prop", { prop: opt.label }) : i18n("errors.invalid-num") : false;
 			}
