@@ -196,6 +196,10 @@ const FirebaseQueryConstraintsContainer = (function () {
 
 	function isConstraintsValid() {
 		return function (constraints, opt) {
+			// Workaround for typedInput validation limitation
+			opt ||= {};
+			opt.label ||= FirebaseUI._("label.constraint", "firebase-in");
+
 			if (typeof constraints !== "object") return false;
 
 			for (const [k, v] of Object.entries(constraints)) {
@@ -205,7 +209,7 @@ const FirebaseQueryConstraintsContainer = (function () {
 					case "equalTo":
 					case "startAfter":
 					case "startAt": {
-						if (typeof v !== "object" || v === null) return false;
+						if (typeof v !== "object" || v === null) return FirebaseUI._("errors.no-object", "load-config", "validator");
 
 						const valueValidation = FirebaseUI.validators.typedInput("constraint-valueType")(v.value, opt);
 						if (valueValidation !== true) return valueValidation;
@@ -236,7 +240,7 @@ const FirebaseQueryConstraintsContainer = (function () {
 						if (v !== null) return false;
 						break;
 					default:
-						return false;
+						return FirebaseUI._("errors.invalid-type-prop", "load-config", "validator", { prop: k });
 				}
 			}
 
