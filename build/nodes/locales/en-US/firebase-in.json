@@ -4,7 +4,7 @@
       "database": "Database",
       "listener": "Listener",
       "sortData": "Sort Data?",
-      "constraint": "Constraint",
+      "constraints": "Constraint",
       "path": "Path",
       "output": "Output",
       "passThrough": "Pass Through",
@@ -25,7 +25,7 @@
     "placeholder": {
       "name": "Name"
     },
-    "useConstraint": "Use Query Constraint to sort and order your data.",
+    "useConstraints": "Use Query Constraints to sort and order your data.",
     "passThrough": "If a message arrives, pass through the message?"
   }
 }

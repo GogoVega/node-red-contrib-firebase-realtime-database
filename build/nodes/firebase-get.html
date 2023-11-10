@@ -29,13 +29,15 @@
 			color: "#e2a12b",
 			defaults: {
 				name: { value: "" },
-				constraint: { value: {}, label: i18n("label.constraint"), validate: isConstraintsValid() },
+				constraint: {},	// Legacy Config
+				constraints: { value: {}, label: i18n("label.constraints"), validate: isConstraintsValid() },
 				database: { value: "", type: "firebase-config" },
 				outputType: { value: "auto", label: i18n("label.output"), validate: validators.outputType() },
 				passThrough: { value: false, label: i18n("label.passThrough") },
 				path: { value: "topic", label: i18n("label.path"), validate: validators.typedInput("pathType", { blankAllowed: true }) },
 				pathType: { value: "msg", label: i18n("label.path"), validate: validators.pathType() },
-				useConstraint: { value: false, label: i18n("label.sortData") },
+				useConstraints: { value: false, label: i18n("label.sortData") },
+				useConstraint: {},	// Legacy Config
 			},
 			inputs: 1,
 			outputs: 1,
@@ -66,9 +68,9 @@
 	</div>
 
 	<div class="form-row">
-		<label for="node-input-useConstraint"><i class="fa fa-sort"></i> <span data-i18n="firebase-get.label.sortData"></span></label>
-		<input type="checkbox" id="node-input-useConstraint" style="display:inline-block; width:15px; vertical-align:baseline;" />
-		<span data-i18n="firebase-get.useConstraint"></span>
+		<label for="node-input-useConstraints"><i class="fa fa-sort"></i> <span data-i18n="firebase-get.label.sortData"></span></label>
+		<input type="checkbox" id="node-input-useConstraints" style="display:inline-block; width:15px; vertical-align:baseline;" />
+		<span data-i18n="firebase-get.useConstraints"></span>
 	</div>
 
 	<div class="form-row node-input-constraints-container-row">

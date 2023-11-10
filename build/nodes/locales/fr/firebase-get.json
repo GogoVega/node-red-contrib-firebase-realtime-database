@@ -3,7 +3,7 @@
     "label": {
       "database": "Database",
       "sortData": "Trier ?",
-      "constraint": "Contraintes",
+      "constraints": "Contraintes",
       "path": "Chemin",
       "output": "Sortie",
       "passThrough": "Transmettre ?",
@@ -21,7 +21,7 @@
       "tip0": "Vous pouvez utiliser des contraintes pour la requête en définissant la propriété <code>msg.method</code>.",
       "tip1": "Si <code>msg.method</code> est défini, les contraintes de la requête définies dans le noeuud seront remplacées par celles contenues dans le message."
     },
-    "useConstraint": "Souhaitez-vous trier et ordonner vos données ?",
+    "useConstraints": "Souhaitez-vous trier et ordonner vos données ?",
     "passThrough": "Si un message arrive, transmettre le message ?"
   }
 }

@@ -4,7 +4,7 @@
       "database": "Database",
       "listener": "Écouteur",
       "sortData": "Trier ?",
-      "constraint": "Contraintes",
+      "constraints": "Contraintes",
       "path": "Chemin",
       "output": "Sortie",
       "passThrough": "Transmettre ?",
@@ -25,7 +25,7 @@
     "placeholder": {
       "name": "Nom"
     },
-    "useConstraint": "Souhaitez-vous trier et ordonner vos données ?",
+    "useConstraints": "Souhaitez-vous trier et ordonner vos données ?",
     "passThrough": "Si un message arrive, transmettre le message ?"
   }
 }

@@ -56,13 +56,21 @@ export type BaseConfig = NodeDef & {
 };
 
 export type FirebaseGetConfig = BaseConfig & {
+	/**
+	 * @deprecated Replaced by `constraints`
+	 */
 	constraint?: QueryConstraint;
+	constraints?: QueryConstraint;
 	outputType?: OutputType;
 	passThrough?: boolean;
 };
 
 export type FirebaseInConfig = BaseConfig & {
+	/**
+	 * @deprecated Replaced by `constraints`
+	 */
 	constraint?: QueryConstraint;
+	constraints?: QueryConstraint;
 	listenerType?: ListenerType;
 	outputType?: OutputType;
 	passThrough?: boolean;

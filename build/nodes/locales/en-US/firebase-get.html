@@ -27,7 +27,7 @@
 	</p>
 	<h3>Inputs</h3>
 	<dl class="message-properties">
-		<dt class="optional">method<span class="property-type">object</span></dt>
+		<dt class="optional">constraints<span class="property-type">object</span></dt>
 		<dd>an object containing the constraint(s) to apply to the query.</dd>
 		<dt class="optional">topic<span class="property-type">string</span></dt>
 		<dd>the path of the data to fetch. By default 'topic'.</dd>
@@ -56,7 +56,7 @@
 	</p>
 	<p>
 		You can define constraints for the query to sort and order your data. You can define one or more of the following
-		constraints in the <code>msg.method</code> property or directly in the node:
+		constraints in the <code>msg.constraints</code> property or directly in the node:
 	</p>
 	<ul>
 		<li><code>endAt</code><span class="property-type">object</span></li>
@@ -71,7 +71,7 @@
 		<li><code>startAfter</code><span class="property-type">object</span></li>
 		<li><code>startAt</code><span class="property-type">object</span></li>
 	</ul>
-	<p>The <code>msg.method</code> will look like this:</p>
+	<p>The <code>msg.constraints</code> will look like this:</p>
 	<pre>
 {
   "orderByChild": "name",

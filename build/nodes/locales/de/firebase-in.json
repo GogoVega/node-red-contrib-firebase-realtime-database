@@ -4,7 +4,7 @@
       "database": "Datenbank",
       "listener": "Listener",
       "sortData": "Daten sortieren?",
-      "constraint": "Abfrageeinschränkungen",
+      "constraints": "Abfrageeinschränkungen",
       "path": "Pfad",
       "output": "Ausgabe",
       "passThrough": "Durchreichen",
@@ -25,7 +25,7 @@
     "placeholder": {
       "name": "Name"
     },
-    "useConstraint": "Verwende Abfrageeinschränkungen um ihre Daten zu sortieren.",
+    "useConstraints": "Verwende Abfrageeinschränkungen um ihre Daten zu sortieren.",
     "passThrough": "Die Nachricht durchreichen, wenn eine Nachricht ankommt?"
   }
 }
