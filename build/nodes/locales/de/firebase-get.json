@@ -3,7 +3,7 @@
     "label": {
       "database": "Datenbank",
       "sortData": "Daten sortieren?",
-      "constraint": "Abfrageeinschränkungen",
+      "constraints": "Abfrageeinschränkungen",
       "path": "Pfad",
       "output": "Ausgabe",
       "passThrough": "Durchreichen",
@@ -21,7 +21,7 @@
       "tip0": "Sie können Einschränkungen für die Abfrage verwenden in dem sie die <code>msg.method</code> Eigenschaft setzen.",
       "tip1": "Wenn <code>msg.method</code> gesetzt ist, werden die im Knoten definierten Abfrageeinschränkungen durch die Nachricht enthaltenen ersetzt."
     },
-    "useConstraint": "Verwende Abfrageeinschränkungen um ihre Daten zu sortieren.",
+    "useConstraints": "Verwende Abfrageeinschränkungen um ihre Daten zu sortieren.",
     "passThrough": "Die Nachricht durchreichen, wenn eine Nachricht ankommt?"
   }
 }

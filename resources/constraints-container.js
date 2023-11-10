@@ -7,11 +7,10 @@ const FirebaseQueryConstraintsContainer = (function () {
 	));
 
 	class EditableQueryConstraintsList {
-		// TODO: constraint to plural
 		constructor() {
 			this.containerId = "#node-input-constraints-container";
 			this.containerClass = ".node-input-constraints-container-row";
-			this.useConstraintsId = "#node-input-useConstraint";
+			this.useConstraintsId = "#node-input-useConstraints";
 			this.node = {};
 		}
 
@@ -27,8 +26,21 @@ const FirebaseQueryConstraintsContainer = (function () {
 		}
 
 		#constraintsHandler() {
+			// Legacy Config
+			if (this.node.useConstraint !== undefined) {
+				this.node.useConstraints = this.node.useConstraint;
+				this.useConstraints?.prop("checked", this.node.useConstraints);
+				delete this.node.useConstraint;
+			}
+
+			// Legacy Config
+			if (this.node.constraint !== undefined) {
+				this.node.constraints = this.node.constraint;
+				delete this.node.constraint;
+			}
+
 			if (this.useConstraints?.prop("checked") === true) {
-				const constraints = Object.entries(this.node.constraint || {});
+				const constraints = Object.entries(this.node.constraints || {});
 
 				if (!constraints.length) constraints.push(["limitToLast", 5]);
 
@@ -68,8 +80,7 @@ const FirebaseQueryConstraintsContainer = (function () {
 			const node = this.node;
 			this.container?.editableList("items").sort(compareItemsList);
 
-			// TODO: constraint to plural
-			this.node.constraint = {};
+			this.node.constraints = {};
 
 			this.container?.each(function () {
 				const constraintType = $(this).find("#node-input-constraint-type").typedInput("value");
@@ -96,7 +107,7 @@ const FirebaseQueryConstraintsContainer = (function () {
 							valueParsed = value;
 						}
 
-						node.constraint[constraintType] = { value: valueParsed, key: child, type: type };
+						node.constraints[constraintType] = { value: valueParsed, key: child, type: type };
 						break;
 					}
 					case "limitToFirst":
@@ -107,18 +118,18 @@ const FirebaseQueryConstraintsContainer = (function () {
 							valueParsed = value;
 						}
 
-						node.constraint[constraintType] = valueParsed;
+						node.constraints[constraintType] = valueParsed;
 						break;
 					}
 					case "orderByChild":
 						if (isChildValid(child, constraintType) !== true) RED.notify("Query Constraints: Setted value is not a valid child!", "error");
 						// TODO: check null or empty => invalid child
-						node.constraint[constraintType] = child;
+						node.constraints[constraintType] = child;
 						break;
 					case "orderByKey":
 					case "orderByPriority":
 					case "orderByValue":
-						node.constraint[constraintType] = null;
+						node.constraints[constraintType] = null;
 						break;
 				}
 			});

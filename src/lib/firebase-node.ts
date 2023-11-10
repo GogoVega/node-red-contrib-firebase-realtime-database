@@ -73,6 +73,8 @@ export class Firebase<Node extends FirebaseNode, Config extends FirebaseConfig =
 	 */
 	private errorTimeoutID?: ReturnType<typeof setTimeout>;
 
+	protected legacyWarningMessageEmitted: boolean = false;
+
 	/**
 	 * This property is used to store the "Permission Denied" state of the node.
 	 * Error received when database rules deny reading/writing data.
@@ -226,11 +228,15 @@ export class Firebase<Node extends FirebaseNode, Config extends FirebaseConfig =
 		if (this.isFirebaseOutNode(this.node)) throw new Error("Constraints not available for modify method");
 
 		// @deprecated
-		if (msg?.method) return msg.method as unknown as object;
+		if (typeof msg?.method === "object" && !this.legacyWarningMessageEmitted) {
+			this.node.warn("'msg.method' to define Constraints is deprecated, please use 'msg.constraints' instead");
+			this.legacyWarningMessageEmitted = true;
+			return msg.method as unknown as object;
+		}
+
 		if (msg?.constraints) return msg.constraints;
 
-		// TODO: Change constraint to plural
-		const constraints = deepCopy(this.node.config.constraint ?? {});
+		const constraints = deepCopy(this.node.config.constraint ?? this.node.config.constraints ?? {});
 
 		if (typeof constraints !== "object") throw new Error("The 'Query Constraints' must be an object.");
 

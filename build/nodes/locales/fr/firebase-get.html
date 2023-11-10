@@ -27,7 +27,7 @@
 	</p>
 	<h3>Entrées</h3>
 	<dl class="message-properties">
-		<dt class="optional">method<span class="property-type">objet</span></dt>
+		<dt class="optional">constraints<span class="property-type">objet</span></dt>
 		<dd>un objet contenant la ou les contraintes à appliquer à la requête.</dd>
 		<dt class="optional">topic<span class="property-type">chaîne de caractères</span></dt>
 		<dd>le chemin des données à lire. Par défaut 'topic'.</dd>
@@ -59,7 +59,7 @@
 	</p>
 	<p>
 		Vous pouvez définir des contraintes pour la requête afin de trier et d'ordonner vos données. Vous pouvez définir une
-		ou plusieurs des contraintes suivantes dans la propriété <code>msg.method</code> ou directement dans le noeud :
+		ou plusieurs des contraintes suivantes dans la propriété <code>msg.constraints</code> ou directement dans le noeud :
 	</p>
 	<ul>
 		<li><code>endAt</code><span class="property-type">objet</span></li>
@@ -74,7 +74,7 @@
 		<li><code>startAfter</code><span class="property-type">objet</span></li>
 		<li><code>startAt</code><span class="property-type">objet</span></li>
 	</ul>
-	<p>Le <code>msg.method</code> ressemblera à ceci :</p>
+	<p>Le <code>msg.constraints</code> ressemblera à ceci :</p>
 	<pre>
 {
   "orderByChild": "nom",

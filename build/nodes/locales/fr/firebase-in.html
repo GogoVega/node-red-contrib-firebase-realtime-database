@@ -19,6 +19,15 @@
 		Se connecte à une base de données en temps réel Firebase et s'abonne aux données du chemin spécifié. Vous pouvez
 		définir des contraintes pour la requête afin de trier et ordonner vos données.
 	</p>
+	<h3>Entrées</h3>
+	<dl class="message-properties">
+		<dt>listener<span class="property-type">chaîne de caractères</span></dt>
+		<dd>le type de changement que vous souhaitez écouter.</dd>
+		<dt class="optional">constraints<span class="property-type">objet</span></dt>
+		<dd>un objet contenant la ou les contraintes à appliquer à la requête.</dd>
+		<dt class="optional">topic<span class="property-type">chaîne de caractères</span></dt>
+		<dd>le chemin des données à lire. Par défaut 'topic'.</dd>
+	</dl>
 	<h3>Sorties</h3>
 	<dl class="message-properties">
 		<dt>payload<span class="property-type">chaîne | booléen | nombre | tableau | objet | nul</span></dt>
@@ -39,6 +48,7 @@
 	</p>
 	<p>L' <strong>Écouteur</strong> vous permet de choisir le type de changement que vous souhaitez écouter :</p>
 	<ul>
+		<li><code>- utiliser msg.listener -</code></li>
 		<li><code>Valeur</code></li>
 		<li><code>Enfant ajouté</code></li>
 		<li><code>Enfant modifié</code></li>
@@ -46,8 +56,9 @@
 		<li><code>Enfant supprimé</code></li>
 	</ul>
 	<p>
-		Le <strong>Chemin</strong> détermine où les données seront lues. Il peut être vide, dans ce cas les données envoyées
-		proviennent de la racine de la base de données.
+		Le <strong>Chemin</strong> détermine où les données seront lues. Il peut être défini dans le noeud ou dynamiquement
+		avec la propriété <code>msg.topic</code>. Il peut être vide, dans ce cas les données envoyées proviennent de la
+		racine de la base des données.
 	</p>
 	<p>
 		La <strong>Sortie</strong> peut être définie sur <strong>détection automatique</strong> pour envoyer un objet
@@ -56,7 +67,7 @@
 	</p>
 	<p>
 		Vous pouvez définir des contraintes pour la requête afin de trier et d'ordonner vos données. Vous pouvez définir une
-		ou plusieurs des contraintes suivantes dans la propriété <code>msg.method</code> ou directement dans le noeud :
+		ou plusieurs des contraintes suivantes dans la propriété <code>msg.constraints</code> ou directement dans le noeud :
 	</p>
 	<ul>
 		<li><code>endAt</code><span class="property-type">objet</span></li>
@@ -71,7 +82,7 @@
 		<li><code>startAfter</code><span class="property-type">objet</span></li>
 		<li><code>startAt</code><span class="property-type">objet</span></li>
 	</ul>
-	<p>Le <code>msg.method</code> ressemblera à ceci :</p>
+	<p>Le <code>msg.constraints</code> ressemblera à ceci :</p>
 	<pre>
 {
   "orderByChild": "nom",
