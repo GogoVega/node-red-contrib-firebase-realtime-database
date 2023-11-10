@@ -1,0 +1,23 @@
+{
+  "query-constraints": {
+    "constraint": {
+      "orderByChild": "Order by Child",
+      "orderByKey": "Order by Key",
+      "orderByPriority": "Order by Priority",
+      "orderByValue": "Order by Value",
+      "limitToFirst": "Limit to First",
+      "limitToLast": "Limit to Last",
+      "endAt": "End At",
+      "endBefore": "End Before",
+      "equalTo": "Equal To",
+      "startAfter": "Start After",
+      "startAt": "Start At"
+    },
+    "placeholder": {
+      "name": "Name",
+      "value": "Value",
+      "child": "Child Key"
+    },
+    "addConstraint": "Add Query Constraint Set"
+  }
+}

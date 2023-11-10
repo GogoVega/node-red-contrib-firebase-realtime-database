@@ -4,8 +4,10 @@
       "database": "Datenbank",
       "listener": "Listener",
       "sortData": "Daten sortieren?",
+      "constraint": "Abfrageeinschränkungen",
       "path": "Pfad",
       "output": "Ausgabe",
+      "passThrough": "Durchreichen",
       "name": "Name"
     },
     "listenerType": {
@@ -16,30 +18,14 @@
       "child_moved": "Kind verschoben",
       "child_removed": "Kind gelöscht"
     },
-    "constraint": {
-      "orderByChild": "Nach Kindern sortieren",
-      "orderByKey": "Nach Schlüssel sortieren",
-      "orderByPriority": "Nach Priorität sortieren",
-      "orderByValue": "Nach Wert sortieren",
-      "limitToFirst": "Zum Anfang begrenzen",
-      "limitToLast": "Zum Ende begrenzen",
-      "endAt": "Ende bei",
-      "endBefore": "Ende vor",
-      "equalTo": "gleich zu",
-      "startAfter": "Starte nach",
-      "startAt": "Starte bei"
-    },
     "outputType": {
       "auto": "Automatisch erkennen",
       "string": "eine Zeichenkette"
     },
     "placeholder": {
-      "name": "Name",
-      "value": "Wert",
-      "child": "Kind Schlüssel"
+      "name": "Name"
     },
     "useConstraint": "Verwende Abfrageeinschränkungen um ihre Daten zu sortieren.",
-    "addConstraint": "Abfrageeinschränkungen hinzufügen",
     "passThrough": "Die Nachricht durchreichen, wenn eine Nachricht ankommt?"
   }
 }

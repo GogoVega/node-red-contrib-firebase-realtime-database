@@ -4,8 +4,10 @@
       "database": "Database",
       "listener": "Écouteur",
       "sortData": "Trier ?",
+      "constraint": "Contraintes",
       "path": "Chemin",
       "output": "Sortie",
+      "passThrough": "Transmettre ?",
       "name": "Nom"
     },
     "listenerType": {
@@ -16,30 +18,14 @@
       "child_moved": "Enfant déplacé",
       "child_removed": "Enfant supprimé"
     },
-    "constraint": {
-      "orderByChild": "Trier par enfant",
-      "orderByKey": "Trier par clé",
-      "orderByPriority": "Trier par priorité",
-      "orderByValue": "Trier par valeur",
-      "limitToFirst": "Limiter aux premiers",
-      "limitToLast": "Limiter aux derniers",
-      "endAt": "Terminer à",
-      "endBefore": "Terminer avant",
-      "equalTo": "Égal à",
-      "startAfter": "Commencer après",
-      "startAt": "Commencer à"
-    },
     "outputType": {
       "auto": "détection automatique",
       "string": "une chaîne de caractères"
     },
     "placeholder": {
-      "name": "Nom",
-      "value": "Valeur",
-      "child": "Clé de l'enfant"
+      "name": "Nom"
     },
     "useConstraint": "Souhaitez-vous trier et ordonner vos données ?",
-    "addConstraint": "Ajouter une contrainte de requête",
     "passThrough": "Si un message arrive, transmettre le message ?"
   }
 }

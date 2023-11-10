@@ -15,62 +15,64 @@
 -->
 
 <script type="text/javascript">
-	RED.nodes.registerType("firebase-out", {
-		align: "right",
-		category: "Firebase",
-		color: "#e2a12b",
-		defaults: {
-			name: { value: "" },
-			database: { value: "", type: "firebase-config" },
-			path: { value: "topic" },
-			pathType: { value: "msg", validate: RED.validators.regex(/^(msg|str)$/) },
-			priority: { value: 1 },
-			queryType: { value: "none", validate: RED.validators.regex(/^(none|set|push|update|remove|setPriority|setWithPriority)$/) },
-		},
-		inputs: 1,
-		outputs: 0,
-		icon: "firebase.png",
-		paletteLabel: "Firebase out",
-		label: function () {
-			const query = this.queryType !== "none" ? this.queryType.toUpperCase() : "";
-			const path = this.pathType === "msg" ? "" : this.path;
-			const name = query.concat(query ? " " : "", path);
-			return this.name || name || "Firebase out";
-		},
-		labelStyle: function () {
-			return this.name ? "node_label_italic" : "";
-		},
-		oneditprepare: function () {
-			$("#node-input-path").typedInput({
-				typeField: $("#node-input-pathType"),
-				types: ["msg", { value: "str", label: "string", icon: "red/images/typedInput/az.svg", validate: isPathValid }],
-			});
+	"use strict";
 
-			$("#node-input-priority").typedInput({
-				typeField: $("#node-input-priorityType"),
-				types: ["num"],
-			});
+	(function () {
+		const { typedPathField, validators } = FirebaseUI;
+		const i18n = (key) => FirebaseUI._(key, "firebase-out");
 
-			const queryType = $("#node-input-queryType");
-			queryType.on("change", () => {
-				switch (queryType.val()) {
-					case "setPriority":
-					case "setWithPriority":
-						$(".form-row-priority").show();
-						break;
-					default:
-						$(".form-row-priority").hide();
-						break;
-				}
-			});
-		},
-	});
+		RED.nodes.registerType("firebase-out", {
+			align: "right",
+			category: "Firebase",
+			color: "#e2a12b",
+			defaults: {
+				name: { value: "" },
+				database: { value: "", type: "firebase-config" },
+				path: { value: "topic", label: i18n("label.path"), validate: validators.typedInput("pathType") },
+				pathType: { value: "msg", label: i18n("label.path"), validate: validators.pathType() },
+				priority: { value: "1", label: i18n("label.priority"), validate: validators.priority() },
+				queryType: { value: "none", label: i18n("label.query"), validate: validators.queryType() },
+			},
+			inputs: 1,
+			outputs: 0,
+			icon: "firebase.png",
+			paletteLabel: "Firebase out",
+			label: function () {
+				const query = this.queryType !== "none" ? this.queryType.toUpperCase() : "";
+				const path = this.pathType === "msg" ? "" : this.path;
+				const name = query.concat(query ? " " : "", path);
+				return this.name || name || "Firebase out";
+			},
+			labelStyle: function () {
+				return this.name ? "node_label_italic" : "";
+			},
+			oneditprepare: function () {
+				const pathField = typedPathField.create(false);
+				const priorityField = $("#node-input-priority");
+				const queryType = $("#node-input-queryType");
 
-	function isPathValid(x) {
-		if (!x || typeof x !== "string") return false;
-		if (x.match(/^\s|[.#$\[\]]/g)) return false;
-		return true;
-	}
+				priorityField.typedInput({
+					default: "num",
+					types: [{ value: "num", label: "number", icon: "red/images/typedInput/09.svg", validate: validators.priority() }],
+				});
+
+				// REMOVE ME
+				if (priorityField.val() === "") priorityField.typedInput("value", "1");
+
+				queryType.on("change", () => {
+					switch (queryType.val()) {
+						case "setPriority":
+						case "setWithPriority":
+							$(".form-row-priority").show();
+							break;
+						default:
+							$(".form-row-priority").hide();
+							break;
+					}
+				});
+			},
+		});
+	})();
 </script>
 
 <script type="text/html" data-template-name="firebase-out">
