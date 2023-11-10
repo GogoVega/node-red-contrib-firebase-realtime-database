@@ -19,5 +19,24 @@
       "child": "Clé de l'enfant"
     },
     "addConstraint": "Ajouter une contrainte de requête"
+  },
+  "validator": {
+    "errors": {
+      "empty-child": "La valeur de la propriété Clé de l'enfant ne peut pas être vide",
+      "empty-path": "La valeur de la propriété Chemin ne peut pas être vide",
+      "invalid-bool": "La valeur de la propriété définie n'est pas un booléen valide",
+      "invalid-bool-prop": "__prop__ : La valeur de la propriété __prop__ définie n'est pas un booléen valide",
+      "invalid-child": "La valeur de la propriété Clé de l'enfant ne peut pas contenir les caractère suivants : '.', '#', '$', '[', ']' ou ' '",
+      "invalid-num": "La valeur de la propriété définie n'est pas un nombre valide",
+      "invalid-num-prop": "__prop__ : La valeur de la propriété __prop__ définie n'est pas un nombre valide",
+      "invalid-path": "La valeur de la propriété Chemin ne pêut pas contenir les caractère suivants : '.', '#', '$', '[', ']' ou ' '",
+      "invalid-range": "La valeur de la propriété définie n'est pas dans une plage valide",
+      "invalid-range-prop": "__prop__ : La valeur de la propriété __prop__ définie n'est pas dans une plage valide",
+      "invalid-type": "Le type sélectionné n'est pas ou plus valide, veuillez sélectionner un type valide",
+      "invalid-type-prop": "__prop__ : Le type de la propriété __prop__ n'est pas ou plus valide, veuillez sélectionner un type valide",
+      "no-integer": "La valeur de la propriété définie doit être un entier",
+      "no-integer-prop": "__prop__ : La valeur de la propriété __prop__ définie doit être un entier",
+      "no-object": "La valeur de la propriété définie doit être un objet"
+    }
   }
 }

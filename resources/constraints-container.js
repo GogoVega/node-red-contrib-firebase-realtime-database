@@ -74,7 +74,7 @@ const FirebaseQueryConstraintsContainer = (function () {
 			this.container?.each(function () {
 				const constraintType = $(this).find("#node-input-constraint-type").typedInput("value");
 				const value = $(this).find("#node-input-constraint-value").val();
-				const child = $(this).find("#node-input-constraint-child").val() || undefined;
+				const child = $(this).find("#node-input-constraint-child").val() || "";
 				const type = $(this).find("#node-input-constraint-value").typedInput("type");
 
 				switch (constraintType) {
@@ -111,8 +111,8 @@ const FirebaseQueryConstraintsContainer = (function () {
 						break;
 					}
 					case "orderByChild":
-						if (!isChildValid(child, constraintType)) RED.notify("Query Constraints: Setted value is not a valid child!", "error");
-						// TODO: check null => invalid child
+						if (isChildValid(child, constraintType) !== true) RED.notify("Query Constraints: Setted value is not a valid child!", "error");
+						// TODO: check null or empty => invalid child
 						node.constraint[constraintType] = child;
 						break;
 					case "orderByKey":
@@ -144,7 +144,7 @@ const FirebaseQueryConstraintsContainer = (function () {
 
 		valueField.typedInput({ default: "num", typeField: "#node-input-constraint-valueType", types: ["num"] });
 		childField
-			.typedInput({ default: "str", types: [{ value: "str", label: "string", icon: "red/images/typedInput/az.svg", validate: (child) => isChildValid(child, constraintType.val()) }] })
+			.typedInput({ default: "str", types: [{ value: "str", label: "string", icon: "red/images/typedInput/az.svg", validate: (child, opt) => isChildValid(child, constraintType.val(), opt) }] })
 			.typedInput("hide");
 
 		constraintType
@@ -184,18 +184,21 @@ const FirebaseQueryConstraintsContainer = (function () {
 	}
 
 	function i18n(key) {
-		return FirebaseUI._(key, "load-config", "query-constraints");
+		return RED._(`@gogovega/node-red-contrib-firebase-realtime-database/load-config:query-constraints.${key}`);
 	}
 
-	function isChildValid(child, constraintType) {
+	function isChildValid(child, constraintType, opt) {
 		const empty = constraintType !== "orderByChild";
-		const regex = empty ? /[\s.#$\[\]]/ : /^$|[\s.#$\[\]]/;
-		if (typeof child === "string" && !regex.test(child)) return true;
-		return false;
+		const validateChild = FirebaseUI.validators.child(empty);
+		return validateChild(child, opt);
 	}
 
 	function isConstraintsValid() {
 		return function (constraints, opt) {
+			// Workaround for typedInput validation limitation
+			opt ||= {};
+			opt.label ||= FirebaseUI._("label.constraint", "firebase-in");
+
 			if (typeof constraints !== "object") return false;
 
 			for (const [k, v] of Object.entries(constraints)) {
@@ -205,7 +208,7 @@ const FirebaseQueryConstraintsContainer = (function () {
 					case "equalTo":
 					case "startAfter":
 					case "startAt": {
-						if (typeof v !== "object" || v === null) return false;
+						if (typeof v !== "object" || v === null) return FirebaseUI._("errors.no-object", "load-config", "validator");
 
 						const valueValidation = FirebaseUI.validators.typedInput("constraint-valueType")(v.value, opt);
 						if (valueValidation !== true) return valueValidation;
@@ -221,7 +224,8 @@ const FirebaseQueryConstraintsContainer = (function () {
 					}
 					case "limitToFirst":
 					case "limitToLast": {
-						const validation = FirebaseUI.validators.priority()(v, opt);
+						const value = !v ? v : Number(v).toString();
+						const validation = FirebaseUI.validators.priority()(value, opt);
 						if (validation !== true) return validation;
 						break;
 					}
@@ -236,7 +240,7 @@ const FirebaseQueryConstraintsContainer = (function () {
 						if (v !== null) return false;
 						break;
 					default:
-						return false;
+						return FirebaseUI._("errors.invalid-type-prop", "load-config", "validator", { prop: k });
 				}
 			}
 
@@ -263,7 +267,7 @@ const FirebaseQueryConstraintsContainer = (function () {
 				break;
 			case "limitToFirst":
 			case "limitToLast":
-				value.typedInput("types", ["num"]);
+				value.typedInput("types", [{ value: "num", label: "number", icon: "red/images/typedInput/09.svg", validate: FirebaseUI.validators.priority() }]);
 				break;
 			case "orderByChild":
 				value.typedInput("hide");
