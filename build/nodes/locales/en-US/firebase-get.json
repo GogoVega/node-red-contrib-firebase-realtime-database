@@ -11,6 +11,7 @@
     },
     "outputType": {
       "auto": "auto-detect",
+      "json": "a JSON object",
       "string": "a String"
     },
     "placeholder": {

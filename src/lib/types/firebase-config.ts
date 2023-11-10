@@ -24,7 +24,7 @@ export type ListenerType = Listener | "none";
 export type Path = string;
 export type PathType = "msg" | "str";
 
-export type OutputType = "auto" | "string";
+export type OutputType = "auto" | "json" | "string";
 
 export type ChildField = "bool" | "date" | "flow" | "global" | "msg" | "null" | "num" | "str";
 export type ValueField = number | string | boolean | null;

@@ -40,7 +40,6 @@
 	<p>This node reads data from a path and will send a message whenever the data, including children, changes.</p>
 	<p>The <strong>Listener</strong> allows you to choose what type of change you want to listen to:</p>
 	<ul>
-		<li><code>- use msg.listener -</code></li>
 		<li><code>Value</code></li>
 		<li><code>Child Added</code></li>
 		<li><code>Child Changed</code></li>
@@ -52,10 +51,7 @@
 		with the <code>msg.topic</code> property. It can be empty, in this case the data sent comes from the root of the
 		database.
 	</p>
-	<p>
-		<strong>Output</strong> can be set to <strong>auto-detect</strong> to send an object containing the data, or
-		<strong>a String</strong> to send the data as a string.
-	</p>
+	<p>The <strong>Output</strong> allows you to choose the data output format.</p>
 	<p>
 		You can define query constraint(s) to sort and order your data. You can define one or more of the following
 		constraints in the <code>msg.constraints</code> property or directly in the node:
