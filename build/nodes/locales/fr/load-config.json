@@ -1,0 +1,23 @@
+{
+  "query-constraints": {
+    "constraint": {
+      "orderByChild": "Trier par enfant",
+      "orderByKey": "Trier par clé",
+      "orderByPriority": "Trier par priorité",
+      "orderByValue": "Trier par valeur",
+      "limitToFirst": "Limiter aux premiers",
+      "limitToLast": "Limiter aux derniers",
+      "endAt": "Terminer à",
+      "endBefore": "Terminer avant",
+      "equalTo": "Égal à",
+      "startAfter": "Commencer après",
+      "startAt": "Commencer à"
+    },
+    "placeholder": {
+      "name": "Nom",
+      "value": "Valeur",
+      "child": "Clé de l'enfant"
+    },
+    "addConstraint": "Ajouter une contrainte de requête"
+  }
+}

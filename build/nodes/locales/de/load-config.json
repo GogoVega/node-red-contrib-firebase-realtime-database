@@ -1,0 +1,23 @@
+{
+  "query-constraints": {
+    "constraint": {
+      "orderByChild": "Nach Kindern sortieren",
+      "orderByKey": "Nach Schlüssel sortieren",
+      "orderByPriority": "Nach Priorität sortieren",
+      "orderByValue": "Nach Wert sortieren",
+      "limitToFirst": "Zum Anfang begrenzen",
+      "limitToLast": "Zum Ende begrenzen",
+      "endAt": "Ende bei",
+      "endBefore": "Ende vor",
+      "equalTo": "gleich zu",
+      "startAfter": "Starte nach",
+      "startAt": "Starte bei"
+    },
+    "placeholder": {
+      "name": "Name",
+      "value": "Wert",
+      "child": "Kind Schlüssel"
+    },
+    "addConstraint": "Abfrageeinschränkungen hinzufügen"
+  }
+}

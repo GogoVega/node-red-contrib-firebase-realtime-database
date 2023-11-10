@@ -15,9 +15,12 @@
 -->
 
 <script type="text/javascript">
+	"use strict";
+
 	(function () {
-		let sendMsgEventOption = ["onConnected", "onDisconnect"];
-		let translationInitialized = false;
+		const i18n = (key) => FirebaseUI._(key, "on-disconnect");
+		const sendMsgEventOption = ["onConnected", "onDisconnect"].map((fieldName) => ({ value: fieldName, label: i18n(`sendMsgEvent.${fieldName}`) }));
+		const { typedPathField, validators } = FirebaseUI;
 
 		RED.nodes.registerType("on-disconnect", {
 			align: "left",
@@ -28,10 +31,10 @@
 				database: { value: "", type: "firebase-config" },
 				inputs: { value: 1 },
 				outputs: { value: 0 },
-				path: { value: "topic" },
-				pathType: { value: "msg", validate: RED.validators.regex(/^(msg|str)$/) },
-				sendMsgEvent: { value: "" },
-				queryType: { value: "msg", validate: RED.validators.regex(/^(msg|none|cancel|set|update|remove|setWithPriority)$/) },
+				path: { value: "topic", label: i18n("label.path"), validate: validators.typedInput("pathType") },
+				pathType: { value: "msg", label: i18n("label.path"), validate: validators.pathType() },
+				sendMsgEvent: { value: "", label: i18n("label.sendMsgEvent"), validate: validators.sendMsgEvent() },
+				queryType: { value: "msg", label: i18n("label.query"), validate: validators.onDisconnectQueryType() },
 			},
 			inputs: 1,
 			outputs: 0,
@@ -51,20 +54,10 @@
 				return this.name ? "node_label_italic" : "";
 			},
 			oneditprepare: function () {
+				const pathField = typedPathField.create(false);
 				const queryType = $("#node-input-queryType");
-				const node = this;
 
-				$("#node-input-path").typedInput({
-					typeField: $("#node-input-pathType"),
-					types: ["msg", { value: "str", label: "string", icon: "red/images/typedInput/az.svg", validate: isPathValid }],
-				});
-
-				if (!translationInitialized) {
-					translationInitialized = true;
-					sendMsgEventOption = sendMsgEventOption.map((fieldName) => ({ value: fieldName, label: node._(`on-disconnect.sendMsgEvent.${fieldName}`) }));
-				}
-
-				$("#node-input-sendMsgEvent").typedInput({ type: "event", types: [{ value: "event", multiple: true, options: sendMsgEventOption, validate: RED.validators.regex(/^(onConnected,)?(|onConnected|onDisconnect)$/) }] });
+				$("#node-input-sendMsgEvent").typedInput({ type: "event", types: [{ value: "event", multiple: true, options: sendMsgEventOption, validate: validators.sendMsgEvent() }] });
 
 				queryType.on("change", () => queryType.val() === "none" ? $(".form-row-path").hide() : $(".form-row-path").show());
 			},
@@ -76,12 +69,6 @@
 				$("#node-input-outputs").val(array.length);
 			}
 		});
-
-		function isPathValid(x) {
-			if (!x || typeof x !== "string") return false;
-			if (x.match(/^\s|[.#$\[\]]/g)) return false;
-			return true;
-		}
 	})();
 </script>
 

@@ -4,8 +4,10 @@
       "database": "Database",
       "listener": "Listener",
       "sortData": "Sort Data?",
+      "constraint": "Constraint",
       "path": "Path",
       "output": "Output",
+      "passThrough": "Pass Through",
       "name": "Name"
     },
     "listenerType": {
@@ -16,30 +18,14 @@
       "child_moved": "Child Moved",
       "child_removed": "Child Removed"
     },
-    "constraint": {
-      "orderByChild": "Order by Child",
-      "orderByKey": "Order by Key",
-      "orderByPriority": "Order by Priority",
-      "orderByValue": "Order by Value",
-      "limitToFirst": "Limit to First",
-      "limitToLast": "Limit to Last",
-      "endAt": "End At",
-      "endBefore": "End Before",
-      "equalTo": "Equal To",
-      "startAfter": "Start After",
-      "startAt": "Start At"
-    },
     "outputType": {
       "auto": "auto-detect",
       "string": "a String"
     },
     "placeholder": {
-      "name": "Name",
-      "value": "Value",
-      "child": "Child Key"
+      "name": "Name"
     },
     "useConstraint": "Use Query Constraint to sort and order your data.",
-    "addConstraint": "Add Query Constraint Set",
     "passThrough": "If a message arrives, pass through the message?"
   }
 }
