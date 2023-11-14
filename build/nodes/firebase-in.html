@@ -54,8 +54,10 @@
 			oneditprepare: function () {
 				editableConstraintsList.build(this);
 
-				const pathField = typedPathField.create(true);
+				const pathField = typedPathField.create().blankAllowed(true).enableAutoComplete();
 				const listenerType = $("#node-input-listenerType");
+
+				pathField.build();
 
 				listenerType.on("change", () => pathField.updateTypesToStaticOrDynamic(listenerType.val() === "none"));
 			},

@@ -47,9 +47,11 @@
 				return this.name ? "node_label_italic" : "";
 			},
 			oneditprepare: function () {
-				const pathField = typedPathField.create(false);
+				const pathField = typedPathField.create().blankAllowed(false).enableAutoComplete();
 				const priorityField = $("#node-input-priority");
 				const queryType = $("#node-input-queryType");
+
+				pathField.build();
 
 				priorityField.typedInput({
 					default: "num",

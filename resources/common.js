@@ -102,21 +102,170 @@ const FirebaseUI = (function () {
 		},
 	};
 
-	class TypedPathInput {
-		constructor(blankAllowed) {
-			this.staticFieldOptions = [{ value: "str", label: "string", icon: "red/images/typedInput/az.svg", validate: validators.path(blankAllowed) }];
-			this.dynamicFieldOptions = [...this.staticFieldOptions, "msg", "flow", "global", "jsonata"];
-			this.pathField = $("#node-input-path");
-			this.#build();
+	const autoComplete = function () {
+		function getMatch(value, searchValue) {
+			const idx = value.toLowerCase().indexOf(searchValue.toLowerCase());
+			const len = idx > -1 ? searchValue.length : 0;
+			return {
+				index: idx,
+				found: idx > -1,
+				pre: value.substring(0, idx),
+				match: value.substring(idx, idx + len),
+				post: value.substring(idx + len),
+			};
 		}
 
-		#build() {
+		function generateSpans(match) {
+			const els = [];
+			if (match.pre) els.push($("<span/>").text(match.pre));
+			if (match.match) els.push($("<span/>", { style: "font-weight: bold; color: var(--red-ui-text-color-link);" }).text(match.match));
+			if (match.post) els.push($("<span/>").text(match.post));
+			return els;
+		}
+
+		/**
+		 * @type {{path: string, searchVal: string, options: any[]}}
+		 */
+		const currentCompletions = {
+			path: "",
+			searchVal: "",
+			options: [],
+		};
+
+		// Retrieve only the options for the depth of the given path - avoids loading the entire data from database
+		async function getCompletions(value, configNodeId) {
+			const paths = value.split("/");
+			const searchValue = paths.pop();
+
+			const path = paths.join("/");
+
+			const pathEnd = /^$|\/$/.test(value);
+			const pathEqual = currentCompletions.path === path;
+
+			if (pathEnd || !pathEqual) {
+				currentCompletions.path = path;
+				try {
+					currentCompletions.options = await get(`firebase/rtdb/autocomplete/${configNodeId}${value ? "?path=" + path : ""}`);
+				} catch (error) {
+					console.error("An error occurred while getting autocomplete options:\n", error);
+				}
+			}
+
+			currentCompletions.searchVal = searchValue;
+
+			return currentCompletions;
+		}
+
+		return async function (value, done) {
+			const configNodeId = $("#node-input-database").val();
+
+			if (!configNodeId || configNodeId === "_ADD_") return [];
+
+			const { path, searchVal, options } = await getCompletions(value, configNodeId);
+
+			const matches = options
+				.reduce((opts, optVal) => {
+					const valMatch = getMatch(optVal, searchVal);
+
+					if (valMatch.found) {
+						const element = $("<div>", { style: "display: flex" });
+
+						$("<div/>", { style: "font-family: var(--red-ui-monospace-font); white-space:nowrap; overflow: hidden; flex-grow:1" })
+							.append(generateSpans(valMatch))
+							.appendTo(element);
+
+						opts.push({
+							value: `${path}${path && "/"}${optVal}`,
+							label: element,
+							i: valMatch.index,
+						});
+					}
+
+					return opts;
+				}, [])
+				.sort(function (A, B) { return A.i - B.i });
+
+			if (done) return done(matches);
+
+			return matches;
+		};
+	}
+
+	function get(URL) {
+		return new Promise((resolve, reject) => {
+			$.ajax({
+				type: "GET",
+				url: URL,
+				beforeSend: function (jqXHR) {
+					const authTokens = RED.settings.get("auth-tokens");
+					if (authTokens) jqXHR.setRequestHeader("Authorization", `Bearer ${authTokens.access_token}`);
+				},
+				success: (data) => resolve(data),
+				error: (jqXHR, _textStatus, errorThrown) => reject(`${errorThrown}: ${jqXHR.responseText}`),
+				dataType: "json",
+			});
+		});
+	}
+
+	class TypedPathInput {
+		constructor() {
+			this._autoComplete = false;
+			this._blankAllowed = false;
+			this._modeByDefault = "dynamic";
+			this.pathField = $("#node-input-path");
+		}
+
+		/**
+		 * Allow blank path
+		 * @param {boolean} value True to allow blank path
+		 * @returns {TypedPathInput}
+		 */
+		blankAllowed(value) {
+			if (typeof value !== "boolean") throw new TypeError("blankAllowed must be a boolean");
+			this._blankAllowed = value;
+			return this;
+		}
+
+		/**
+		 * Build the typedPathField
+		 * @returns {void}
+		 */
+		build() {
+			const others = this._autoComplete ? { autoComplete: autoComplete() } : {};
+			this.staticFieldOptions = [{ value: "str", label: "string", icon: "red/images/typedInput/az.svg", validate: validators.path(this._blankAllowed), ...others }];
+			this.dynamicFieldOptions = [...this.staticFieldOptions, "msg", "flow", "global", "jsonata"];
 			this.pathField.typedInput({
 				typeField: "#node-input-pathType",
-				types: this.dynamicFieldOptions,
+				types: this._modeByDefault === "dynamic" ? this.dynamicFieldOptions : this.staticFieldOptions,
 			});
 		}
 
+		/**
+		 * Enable the autocomplete option to the path field
+		 * @returns {TypedPathInput}
+		 */
+		enableAutoComplete() {
+			this._autoComplete = true;
+			return this;
+		}
+
+		/**
+		 * The path may be defined dynamically or statically. By default, dynamic types are displayed.
+		 * @param {"static"|"dynamic"} mode The mode to set (`static` or `dynamic`)
+		 * @returns {TypedPathInput}
+		 */
+		modeByDefault(mode) {
+			if (mode === "static") this._modeByDefault = "static";
+			else if (mode === "dynamic") this._modeByDefault = "dynamic";
+			else throw new Error("mode must be 'static' or 'dynamic'");
+			return this;
+		}
+
+		/**
+		 * Update the types of the typedPathField to static or dynamic
+		 * @param {boolean} dynamic True to set the types to dynamic
+		 * @returns {void}
+		 */
 		updateTypesToStaticOrDynamic(dynamic) {
 			const types = dynamic ? this.dynamicFieldOptions : this.staticFieldOptions;
 			this.pathField.typedInput("types", types);
@@ -138,7 +287,7 @@ const FirebaseUI = (function () {
 
 	return {
 		_: i18nFullOptions,
-		typedPathField: { create: (blankAllowed) => new TypedPathInput(blankAllowed) },
+		typedPathField: { create: () => new TypedPathInput() },
 		validators: validators,
 	};
 })();
