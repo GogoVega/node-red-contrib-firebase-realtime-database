@@ -49,7 +49,7 @@ const FirebaseUI = (function () {
 		},
 		pathType: function () {
 			return function (value, opt) {
-				if (typeof value === "string" && /^(msg|str)$/.test(value)) return true;
+				if (typeof value === "string" && /^(msg|str|flow|global|jsonata)$/.test(value)) return true;
 				if (opt?.label) return i18n("errors.invalid-type-prop", { prop: opt.label });
 				return opt ? i18n("errors.invalid-type") : false;
 			}
@@ -97,7 +97,7 @@ const FirebaseUI = (function () {
 	class TypedPathInput {
 		constructor(blankAllowed) {
 			this.staticFieldOptions = [{ value: "str", label: "string", icon: "red/images/typedInput/az.svg", validate: validators.path(blankAllowed) }];
-			this.dynamicFieldOptions = [...this.staticFieldOptions, "msg"];
+			this.dynamicFieldOptions = [...this.staticFieldOptions, "msg", "flow", "global", "jsonata"];
 			this.pathField = $("#node-input-path");
 			this.#build();
 		}

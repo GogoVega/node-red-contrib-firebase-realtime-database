@@ -140,6 +140,28 @@ export class Firebase<Node extends FirebaseNode, Config extends FirebaseConfig =
 	}
 
 	/**
+	 * Evaluates a JSONata expression.
+	 * @param msg the message object to evaluate
+	 * @param value the JSONata expression
+	 * @returns Promise with the result of the expression
+	 */
+	protected evaluateJSONataExpression(msg: IncomingMessage, value: string): Promise<unknown> {
+		return new Promise((resolve, reject) => {
+			if (typeof msg !== "object" || !msg) throw new TypeError("The incoming message must be an object");
+			if (typeof value !== "string" || !value)
+				throw new TypeError("The JSONata expression to evaluate must be a string");
+
+			const expression = this.RED.util.prepareJSONataExpression(value, this.node);
+
+			this.RED.util.evaluateJSONataExpression(expression, msg, (error, response) => {
+				if (error) return reject(error);
+
+				resolve(response);
+			});
+		});
+	}
+
+	/**
 	 * Evaluates the payload message to replace reserved keywords (`TIMESTAMP` and `INCREMENT`) with the corresponding server value.
 	 * @param payload The payload to be evaluated
 	 * @returns The payload evaluated
@@ -189,15 +211,15 @@ export class Firebase<Node extends FirebaseNode, Config extends FirebaseConfig =
 		return this.RED.util.getMessageProperty(msg, property);
 	}
 
-	protected getPath(msg: IncomingMessage | undefined, empty: true): string | undefined;
-	protected getPath(msg?: IncomingMessage | undefined, empty?: false): string;
-	protected getPath(msg?: IncomingMessage, empty?: boolean): string | undefined {
-		const path = this.getPathFromType(this.node.config.path, this.node.config.pathType, msg);
+	protected getPath(msg: IncomingMessage | undefined, empty: true): Promise<string | undefined>;
+	protected getPath(msg?: IncomingMessage | undefined, empty?: false): Promise<string>;
+	protected async getPath(msg?: IncomingMessage, empty?: boolean): Promise<string | undefined> {
+		const path = await this.getPathFromType(this.node.config.path, this.node.config.pathType, msg);
 
 		return checkPath(path, empty);
 	}
 
-	protected getPathFromType(value?: string, type?: PathType, msg?: IncomingMessage): unknown {
+	protected async getPathFromType(value?: string, type?: PathType, msg?: IncomingMessage): Promise<unknown> {
 		if (typeof value !== "string") throw new Error("The 'Path' field is undefined, please re-configure this node.");
 
 		// TODO: Remove Me
@@ -206,6 +228,11 @@ export class Firebase<Node extends FirebaseNode, Config extends FirebaseConfig =
 		if (!msg && type !== "str") throw new Error("Incoming message missing to evaluate the path");
 
 		switch (type) {
+			case "flow":
+			case "global":
+				return await this.evaluateContextExpression(msg!, value, type);
+			case "jsonata":
+				return await this.evaluateJSONataExpression(msg!, value);
 			case "msg":
 				return this.getMessageProperty(msg!, value);
 			case "str":
@@ -439,7 +466,7 @@ export class FirebaseGet extends Firebase<FirebaseGetNode> {
 	public get(msg: IncomingMessage, send: (msg: NodeMessage) => void, done: (error?: Error) => void): void {
 		(async () => {
 			try {
-				const path = this.getPath(msg, true);
+				const path = await this.getPath(msg, true);
 				const constraints = await this.getQueryConstraints(msg);
 				const msg2PassThrough = this.node.config.passThrough ? msg : undefined;
 
@@ -508,7 +535,7 @@ export class FirebaseIn extends Firebase<FirebaseInNode> {
 		(async () => {
 			try {
 				const listener = this.getListener(msg);
-				const path = this.getPath(msg, true);
+				const path = await this.getPath(msg, true);
 				const constraints = await this.getQueryConstraints(msg);
 				const msg2PassThrough = this.node.config.passThrough ? msg : undefined;
 
@@ -597,7 +624,7 @@ export class FirebaseOut extends Firebase<FirebaseOutNode> {
 	public modify(msg: IncomingMessage, done: (error?: Error) => void): void {
 		(async () => {
 			try {
-				const path = this.getPath(msg);
+				const path = await this.getPath(msg);
 				const query = this.getQueryMethod(msg);
 				const payload = this.evaluatePayloadForServerValue(msg.payload);
 
