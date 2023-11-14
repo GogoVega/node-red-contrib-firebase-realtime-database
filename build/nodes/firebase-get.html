@@ -33,10 +33,10 @@
 				constraints: { value: {}, label: i18n("label.constraints"), validate: isConstraintsValid() },
 				database: { value: "", type: "firebase-config" },
 				outputType: { value: "auto", label: i18n("label.output"), validate: validators.outputType() },
-				passThrough: { value: false, label: i18n("label.passThrough") },
+				passThrough: { value: false, label: i18n("label.passThrough"), validate: validators.boolean() },
 				path: { value: "topic", label: i18n("label.path"), validate: validators.typedInput("pathType", { blankAllowed: true }) },
 				pathType: { value: "msg", label: i18n("label.path"), validate: validators.pathType() },
-				useConstraints: { value: false, label: i18n("label.sortData") },
+				useConstraints: { value: false, label: i18n("label.sortData"), validate: validators.boolean() },
 				useConstraint: {},	// Legacy Config
 			},
 			inputs: 1,

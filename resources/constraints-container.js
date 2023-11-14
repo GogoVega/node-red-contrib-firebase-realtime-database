@@ -221,9 +221,17 @@ const FirebaseQueryConstraintsContainer = (function () {
 					case "startAt": {
 						if (typeof v !== "object" || v === null) return FirebaseUI._("errors.no-object", "load-config", "validator");
 
+						const constraintName = FirebaseUI._(`constraint.${k}`, "load-config", "query-constraints");
+						const valueFieldName = FirebaseUI._("placeholder.value", "load-config", "query-constraints");
+						opt.label = `${constraintName} (${valueFieldName})`;
+
+						const valueTypeValidation = FirebaseUI.validators.valueType()(v.type, opt);
+						if (valueTypeValidation !== true) return valueTypeValidation;
+
 						const valueValidation = FirebaseUI.validators.typedInput("constraint-valueType")(v.value, opt);
 						if (valueValidation !== true) return valueValidation;
 
+						// TODO: Add childType validation
 						const keyValidation = FirebaseUI.validators.child(true)(v.key, opt);
 						if (keyValidation !== true) return keyValidation;
 

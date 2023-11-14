@@ -4,55 +4,56 @@ const FirebaseUI = (function () {
 	const validators = {
 		boolean: function () {
 			return function (value, opt) {
-				// TODO: checkbox returns "on"
-				if (typeof value === "boolean" || value === "true" || value === "false") return true;
+				// TODO: checkbox returns "on" Bug or limitation?
+				// oneditsave returns boolean so, skip "on" value
+				if (typeof value === "boolean" || value === "on") return true;
 				if (opt?.label) return i18n("errors.invalid-bool-prop", { prop: opt.label });
 				return opt ? i18n("errors.invalid-bool") : false;
-			}
+			};
 		},
 		child: function (blankAllowed = false) {
-			const regex = blankAllowed ? /[\s.#$\[\]]/ : /^$|[\s.#$\[\]]/;
+			const regex = blankAllowed ? /[\s.#$\[\]]|\/{2,}/ : /^$|[\s.#$\[\]]|\/{2,}/;
 			return function (value, opt) {
 				if (typeof value === "string" && !regex.test(value)) return true;
 				if (!blankAllowed && !value) return opt ? i18n("errors.empty-child") : false;
 				return opt ? i18n("errors.invalid-child") : false;
-			}
+			};
 		},
 		listenerType: function () {
 			return function (value, opt) {
 				if (typeof value === "string" && /^(none|value|child_added|child_changed|child_moved|child_removed)$/.test(value)) return true;
 				if (opt?.label) return i18n("errors.invalid-type-prop", { prop: opt.label });
 				return opt ? i18n("errors.invalid-type") : false;
-			}
+			};
 		},
 		onDisconnectQueryType: function () {
 			return function (value, opt) {
 				if (typeof value === "string" && /^(msg|none|cancel|set|update|remove|setWithPriority)$/.test(value)) return true;
 				if (opt?.label) return i18n("errors.invalid-type-prop", { prop: opt.label });
 				return opt ? i18n("errors.invalid-type") : false;
-			}
+			};
 		},
 		outputType: function () {
 			return function (value, opt) {
 				if (typeof value === "string" && /^(auto|json|string)$/.test(value)) return true;
 				if (opt?.label) return i18n("errors.invalid-type-prop", { prop: opt.label });
 				return opt ? i18n("errors.invalid-type") : false;
-			}
+			};
 		},
 		path: function (blankAllowed = false) {
-			const regex = blankAllowed ? /[\s.#$\[\]]/ : /^$|[\s.#$\[\]]/;
+			const regex = blankAllowed ? /[\s.#$\[\]]|\/{2,}/ : /^$|[\s.#$\[\]]|\/{2,}/;
 			return function (value, opt) {
 				if (typeof value === "string" && !regex.test(value)) return true;
 				if (!blankAllowed && !value) return opt ? i18n("errors.empty-path") : false;
 				return opt ? i18n("errors.invalid-path") : false;
-			}
+			};
 		},
 		pathType: function () {
 			return function (value, opt) {
 				if (typeof value === "string" && /^(msg|str|flow|global|jsonata)$/.test(value)) return true;
 				if (opt?.label) return i18n("errors.invalid-type-prop", { prop: opt.label });
 				return opt ? i18n("errors.invalid-type") : false;
-			}
+			};
 		},
 		priority: function () {
 			return function (value, opt) {
@@ -62,21 +63,21 @@ const FirebaseUI = (function () {
 				if (typeof value === "string" && /^-+|^0$/.test(value))
 					return opt ? opt.label ? i18n("errors.invalid-range-prop", { prop: opt.label }) : i18n("errors.invalid-range") : false;
 				return opt ? opt.label ? i18n("errors.invalid-num-prop", { prop: opt.label }) : i18n("errors.invalid-num") : false;
-			}
+			};
 		},
 		queryType: function () {
 			return function (value, opt) {
 				if (typeof value === "string" && /^(none|set|push|update|remove|setPriority|setWithPriority)$/.test(value)) return true;
 				if (opt?.label) return i18n("errors.invalid-type-prop", { prop: opt.label });
 				return opt ? i18n("errors.invalid-type") : false;
-			}
+			};
 		},
 		sendMsgEvent: function () {
 			return function (value, opt) {
 				if (typeof value === "string" && /^(onConnected,)?(|onConnected|onDisconnect)$/.test(value)) return true;
 				if (opt?.label) return i18n("errors.invalid-type-prop", { prop: opt.label });
 				return opt ? i18n("errors.invalid-type") : false;
-			}
+			};
 		},
 		typedInput: function (typeName, opts = {}) {
 			return (value, opt) => {
@@ -90,7 +91,14 @@ const FirebaseUI = (function () {
 
 				const validateTypedProperty = RED.validators.typedInput(typeName);
 				return validateTypedProperty(value, opt);
-			}
+			};
+		},
+		valueType: function () {
+			return (value, opt) => {
+				if (/^(bool|date|flow|global|msg|null|num|str)$/.test(value)) return true;
+				if (opt?.label) return i18n("errors.invalid-type-prop", { prop: opt.label });
+				return opt ? i18n("errors.invalid-type") : false;
+			};
 		},
 	};
 
