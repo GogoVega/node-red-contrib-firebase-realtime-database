@@ -59,7 +59,7 @@
 
 				pathField.build();
 
-				listenerType.on("change", () => pathField.updateTypesToStaticOrDynamic(listenerType.val() === "none"));
+				listenerType.on("change", () => pathField.switchModeToStaticOrDynamic(listenerType.val() !== "none"));
 			},
 			oneditsave: function () {
 				editableConstraintsList.saveItems();

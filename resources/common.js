@@ -262,12 +262,12 @@ const FirebaseUI = (function () {
 		}
 
 		/**
-		 * Update the types of the typedPathField to static or dynamic
-		 * @param {boolean} dynamic True to set the types to dynamic
+		 * Switch the types of the typedPathField to static or dynamic
+		 * @param {boolean} toStatic True to set the types to static
 		 * @returns {void}
 		 */
-		updateTypesToStaticOrDynamic(dynamic) {
-			const types = dynamic ? this.dynamicFieldOptions : this.staticFieldOptions;
+		switchModeToStaticOrDynamic(toStatic) {
+			const types = toStatic ? this.staticFieldOptions : this.dynamicFieldOptions;
 			this.pathField.typedInput("types", types);
 		}
 	}
