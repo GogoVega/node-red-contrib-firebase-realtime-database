@@ -54,10 +54,12 @@
 			oneditprepare: function () {
 				editableConstraintsList.build(this);
 
-				const pathField = typedPathField.create(true);
+				const pathField = typedPathField.create().blankAllowed(true).enableAutoComplete();
 				const listenerType = $("#node-input-listenerType");
 
-				listenerType.on("change", () => pathField.updateTypesToStaticOrDynamic(listenerType.val() === "none"));
+				pathField.build();
+
+				listenerType.on("change", () => pathField.switchModeToStaticOrDynamic(listenerType.val() !== "none"));
 			},
 			oneditsave: function () {
 				editableConstraintsList.saveItems();

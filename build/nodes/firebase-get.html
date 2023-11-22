@@ -53,7 +53,9 @@
 			oneditprepare: function () {
 				editableConstraintsList.build(this);
 
-				const pathField = typedPathField.create(true);
+				const pathField = typedPathField.create().blankAllowed(true).enableAutoComplete();
+
+				pathField.build();
 			},
 			oneditsave: () => editableConstraintsList.saveItems(),
 			oneditresize: (size) => editableConstraintsList.reSize(size),
