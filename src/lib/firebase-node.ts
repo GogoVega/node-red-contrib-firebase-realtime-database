@@ -111,8 +111,9 @@ export class Firebase<Node extends FirebaseNode, Config extends FirebaseConfig =
 		this.node.database?.addStatusListener(this.node.id, this.serviceType);
 	}
 
-	public detachStatusListener(removed: boolean, done: () => void) {
-		this.node.database?.removeStatusListener(this.node.id, this.serviceType, removed, done);
+	public detachStatusListener(done: () => void) {
+		this.node.database?.removeStatusListener(this.node.id, this.serviceType, done);
+		if (!this.node.database) done();
 	}
 
 	protected evaluateContextExpression(

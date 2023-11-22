@@ -29,9 +29,9 @@ module.exports = function (RED: NodeAPI) {
 
 		this.on("input", (msg, send, done) => firebase.subscribe(msg, send, done));
 
-		this.on("close", (removed: boolean, done: () => void) => {
+		this.on("close", (done: () => void) => {
 			firebase.unsubscribe();
-			firebase.detachStatusListener(removed, done);
+			firebase.detachStatusListener(done);
 		});
 	}
 

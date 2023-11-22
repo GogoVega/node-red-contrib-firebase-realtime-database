@@ -29,7 +29,7 @@ module.exports = function (RED: NodeAPI) {
 
 		this.on("input", (msg: IncomingMessage, _send, done) => firebase.mofifyOnDisconnect(msg, done));
 
-		this.on("close", (removed: boolean, done: () => void) => firebase.detachStatusListener(removed, done));
+		this.on("close", (done: () => void) => firebase.detachStatusListener(done));
 	}
 
 	RED.nodes.registerType("on-disconnect", OnDisconnectNode);
