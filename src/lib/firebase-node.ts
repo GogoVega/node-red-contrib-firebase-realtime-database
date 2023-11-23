@@ -28,7 +28,6 @@ import { ConfigNode, ServiceType } from "@gogovega/firebase-config-node/types";
 import { deepCopy, Entry, isFirebaseConfigNode } from "@gogovega/firebase-config-node/utils";
 import { NodeAPI, NodeMessage } from "node-red";
 import {
-	ChildField,
 	FirebaseConfig,
 	FirebaseGetConfig,
 	FirebaseGetNode,
@@ -43,7 +42,7 @@ import {
 	OutgoingMessage,
 	PathType,
 	QueryConstraint,
-	ValueField,
+	QueryConstraintPropertySignature,
 } from "./types";
 import { checkPath, checkPriority, printEnumKeys } from "./utils";
 
@@ -67,6 +66,10 @@ import { checkPath, checkPriority, printEnumKeys } from "./utils";
  * @returns Firebase Class
  */
 export class Firebase<Node extends FirebaseNode, Config extends FirebaseConfig = NodeConfig<Node>> {
+	/**
+	 * Incoming msg is needed for this types
+	 */
+	protected dynamicFieldTypes = ["flow", "global", "jsonata", "msg"];
 	/**
 	 * This property contains the identifier of the timer used to define the error status of the node and will be used
 	 * to clear the timeout.
@@ -116,50 +119,102 @@ export class Firebase<Node extends FirebaseNode, Config extends FirebaseConfig =
 		if (!this.node.database) done();
 	}
 
-	protected evaluateContextExpression(
-		msg: IncomingMessage,
-		value: string,
-		context: "flow" | "global"
-	): Promise<unknown> {
-		return new Promise((resolve, reject) => {
-			if (typeof msg !== "object" || !msg) throw new TypeError("The incoming message must be an object");
-			if (typeof value !== "string" || !value) throw new TypeError("The message property to evaluate must be a string");
+	/**
+	 * Evaluates a Query Constraints property value according to its type
+	 *
+	 * Example: msg contains `msg.uid`, the field value is `uid` and the field type is `msg`. The returned value is the content of `msg.uid`.
+	 *
+	 * @param value The value of the Field
+	 * @param type The type of the Field
+	 * @param msg The message received
+	 * @returns A promise with the evaluted property
+	 */
+	private async evaluateConstraintProperty<Field extends keyof QueryConstraintPropertySignature>(
+		field: Field,
+		...args: QueryConstraintPropertySignature[Field]["args"]
+	): Promise<QueryConstraintPropertySignature[Field]["promise"]> {
+		const [value, type, msg] = args;
+		const typesAllowed =
+			field === "child"
+				? ["flow", "global", "jsonata", "msg", "str"]
+				: field === "value"
+				? ["bool", "date", "flow", "global", "jsonata", "msg", "null", "num", "str"]
+				: ["flow", "global", "jsonata", "msg", "num"];
 
-			const contextKey = this.RED.util.parseContextStore(value);
+		if (!typesAllowed.includes(type))
+			throw new Error(`Invalid type (${type}) for the ${field} field. Please reconfigure this node.`);
 
-			if (/\[msg\./.test(contextKey.key)) {
-				// The key has a nest msg. reference to evaluate first
-				contextKey.key = this.RED.util.normalisePropertyExpression(contextKey.key, msg, true);
-			}
+		let valueFound;
+		switch (type) {
+			case "date":
+				valueFound = Date.now();
+				break;
+			case "null":
+				valueFound = null;
+				break;
+			default:
+				if (!msg && this.dynamicFieldTypes.includes(type))
+					throw new Error("Incoming message missing to evaluate the Query Constraints");
+				valueFound = await this.evaluateNodeProperty(value, type, this.node, msg!);
+		}
 
-			return this.node.context()[context].get(contextKey.key, contextKey.store, (error, response) => {
-				if (error) return reject(error);
+		if (field === "child" && typeof valueFound !== "string")
+			throw new TypeError("The Child value of Query Constraints must be a string!");
+		if (field === "limit" && typeof valueFound !== "number" && typeof valueFound !== "string")
+			throw new TypeError("The LimitTo... value of Query Constraints must be a number or string!");
+		if (
+			typeof valueFound !== "boolean" &&
+			typeof valueFound !== "number" &&
+			typeof valueFound !== "string" &&
+			valueFound !== null
+		)
+			throw new TypeError("Values of Query Constraints must be a boolean, number, string or null!");
 
-				resolve(response);
-			});
-		});
+		return valueFound;
 	}
 
 	/**
-	 * Evaluates a JSONata expression.
-	 * @param msg the message object to evaluate
-	 * @param value the JSONata expression
-	 * @returns Promise with the result of the expression
+	 * Evaluates a node property value according to its type.
+	 *
+	 * @param value the raw value
+	 * @param type the type of the value
+	 * @param node the node evaluating the property
+	 * @param msg the message object to evaluate against
+	 * @return A promise with the evaluted property
 	 */
-	protected evaluateJSONataExpression(msg: IncomingMessage, value: string): Promise<unknown> {
-		return new Promise((resolve, reject) => {
-			if (typeof msg !== "object" || !msg) throw new TypeError("The incoming message must be an object");
-			if (typeof value !== "string" || !value)
-				throw new TypeError("The JSONata expression to evaluate must be a string");
-
-			const expression = this.RED.util.prepareJSONataExpression(value, this.node);
-
-			this.RED.util.evaluateJSONataExpression(expression, msg, (error, response) => {
+	protected evaluateNodeProperty(value: string, type: string, node: Node, msg: IncomingMessage) {
+		return new Promise((resolve, reject) =>
+			this.RED.util.evaluateNodeProperty(value, type, node, msg, (error, result) => {
 				if (error) return reject(error);
 
-				resolve(response);
-			});
-		});
+				resolve(result);
+			})
+		);
+	}
+
+	/**
+	 * Evaluates a Path property value according to its type
+	 *
+	 * Example: msg contains `msg.path`, the field value is `path` and the field type is `msg`. The returned value is the content of `msg.path`.
+	 *
+	 * @param value The value of the Field
+	 * @param type The type of the Field
+	 * @param msg The message received
+	 * @returns A promise with the evaluted property
+	 */
+	protected evaluatePathProperty(value?: string, type?: PathType, msg?: IncomingMessage): Promise<unknown> {
+		if (typeof value !== "string") throw new Error("The 'Path' field is undefined, please re-configure this node.");
+
+		// TODO: Remove Me
+		if (this.isFirebaseInNode(this.node) && type === undefined) type = "str";
+
+		if (!["flow", "global", "jsonata", "msg", "str"].includes(type!))
+			throw new Error(`Invalid type (${type}) for the Path field. Please reconfigure this node.`);
+
+		if (!msg && this.dynamicFieldTypes.includes(type!))
+			throw new Error("Incoming message missing to evaluate the path");
+
+		return this.evaluateNodeProperty(value, type!, this.node, msg!);
 	}
 
 	/**
@@ -215,32 +270,9 @@ export class Firebase<Node extends FirebaseNode, Config extends FirebaseConfig =
 	protected getPath(msg: IncomingMessage | undefined, empty: true): Promise<string | undefined>;
 	protected getPath(msg?: IncomingMessage | undefined, empty?: false): Promise<string>;
 	protected async getPath(msg?: IncomingMessage, empty?: boolean): Promise<string | undefined> {
-		const path = await this.getPathFromType(this.node.config.path, this.node.config.pathType, msg);
+		const path = await this.evaluatePathProperty(this.node.config.path, this.node.config.pathType, msg);
 
 		return checkPath(path, empty);
-	}
-
-	protected async getPathFromType(value?: string, type?: PathType, msg?: IncomingMessage): Promise<unknown> {
-		if (typeof value !== "string") throw new Error("The 'Path' field is undefined, please re-configure this node.");
-
-		// TODO: Remove Me
-		if (this.isFirebaseInNode(this.node) && type === undefined) type = "str";
-
-		if (!msg && type !== "str") throw new Error("Incoming message missing to evaluate the path");
-
-		switch (type) {
-			case "flow":
-			case "global":
-				return await this.evaluateContextExpression(msg!, value, type);
-			case "jsonata":
-				return await this.evaluateJSONataExpression(msg!, value);
-			case "msg":
-				return this.getMessageProperty(msg!, value);
-			case "str":
-				return value;
-			default:
-				throw new Error(`The pathType (${type}) is invalid, please re-configure this node`);
-		}
 	}
 
 	/**
@@ -250,7 +282,7 @@ export class Firebase<Node extends FirebaseNode, Config extends FirebaseConfig =
 	 * Example: user defined `msg.topic`, type is `msg`, saved value `topic` and real value is the content of `msg.topic`.
 	 *
 	 * @param msg The message received
-	 * @returns The Query Constraints
+	 * @returns A promise with the Query Constraints
 	 */
 	protected async getQueryConstraints(msg?: IncomingMessage): Promise<Constraint> {
 		if (this.isFirebaseOutNode(this.node)) throw new Error("Constraints not available for modify method");
@@ -266,58 +298,56 @@ export class Firebase<Node extends FirebaseNode, Config extends FirebaseConfig =
 
 		const constraints = deepCopy(this.node.config.constraint ?? this.node.config.constraints ?? {});
 
-		if (typeof constraints !== "object") throw new Error("The 'Query Constraints' must be an object.");
+		if (typeof constraints !== "object" || !constraints)
+			throw new TypeError("The 'Query Constraints' must be an object.");
 
-		// TODO: Use reduce to replace the loop
-		for (const value of Object.values(constraints) as Entry<QueryConstraint>) {
-			if (value && typeof value === "object") {
-				if (value.value === undefined) continue;
-				const newValue = await this.getValueFieldFromType(value.value, value.type, msg);
+		// TODO: Remove deprecated type and value
+		return (Object.entries(constraints) as Entry<QueryConstraint>[]).reduce<Promise<Constraint>>(
+			async (accP, [key, value]) => {
+				const acc = await accP;
+				switch (key) {
+					case "endAt":
+					case "endBefore":
+					case "equalTo":
+					case "startAfter":
+					case "startAt": {
+						acc[key] = {
+							value: await this.evaluateConstraintProperty(
+								"value",
+								String(value.value),
+								value.type ?? value.types?.value,
+								msg
+							),
+							key:
+								(await this.evaluateConstraintProperty("child", value.key ?? "", value.types?.child || "str", msg)) ||
+								undefined,
+						};
+						break;
+					}
+					case "orderByChild": {
+						const val = typeof value === "object" ? value.value : value;
+						const type = typeof value === "object" ? value.type : "str";
+						acc[key] = await this.evaluateConstraintProperty("child", val, type, msg);
+						break;
+					}
+					case "limitToFirst":
+					case "limitToLast": {
+						const val = typeof value === "object" ? value.value : value;
+						const type = typeof value === "object" ? value.type : "num";
+						acc[key] = await this.evaluateConstraintProperty("limit", String(val), type, msg);
+						break;
+					}
+					case "orderByKey":
+					case "orderByPriority":
+					case "orderByValue":
+						acc[key] = null;
+						break;
+				}
 
-				if (
-					typeof newValue !== "boolean" &&
-					typeof newValue !== "number" &&
-					typeof newValue !== "string" &&
-					newValue !== null
-				)
-					throw new TypeError("Values of Query Constraints must be a boolean, number, string or null!");
-
-				value.value = newValue;
-			}
-		}
-
-		return constraints;
-	}
-
-	/**
-	 * Find the value based on the received type. The `value` parameter received can either be the returned value or
-	 * be the key of a content in the message or in the context.
-	 *
-	 * Example: msg contains `msg.uid`, the value is `uid` and the type is `msg`. The returned value is the content of `msg.uid`.
-	 *
-	 * @param value The value of the Value Field
-	 * @param type The type of the Value Field
-	 * @param msg The message received
-	 * @returns The content of the value associated to the type
-	 */
-	protected async getValueFieldFromType(value: ValueField, type: ChildField, msg?: IncomingMessage): Promise<unknown> {
-		switch (type) {
-			case "bool":
-			case "date":
-			case "null":
-			case "num":
-			case "str":
-				return value;
-			case "msg":
-				if (!msg) throw new Error("Incoming message missing to evaluate the Query Constraints");
-				return this.getMessageProperty(msg, value as string);
-			case "flow":
-			case "global":
-				if (!msg) throw new Error("Incoming message missing to evaluate the Query Constraints");
-				return await this.evaluateContextExpression(msg, value as string, type);
-			default:
-				throw new Error(`The type of value field (${type}) is invalid, please re-configure this node.`);
-		}
+				return acc;
+			},
+			Promise.resolve({})
+		);
 	}
 
 	/**

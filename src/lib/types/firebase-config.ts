@@ -16,32 +16,68 @@
 
 import { Listener, QueryMethod } from "@gogovega/firebase-config-node/rtdb";
 import { NodeDef } from "node-red";
+import { IncomingMessage } from "./firebase-node";
 
 export type UID = string;
 
 export type ListenerType = Listener | "none";
 
+export type OutputType = "auto" | "json" | "string";
+
 export type Path = string;
 export type PathType = "flow" | "global" | "jsonata" | "msg" | "str";
 
-export type OutputType = "auto" | "json" | "string";
+export type ChildField = string;
+export type ChildFieldType = "flow" | "global" | "jsonata" | "msg" | "str";
 
-export type ChildField = "bool" | "date" | "flow" | "global" | "msg" | "null" | "num" | "str";
-export type ValueField = number | string | boolean | null;
+export type ValueField = string;
+export type ValueFieldType = "bool" | "date" | "flow" | "global" | "jsonata" | "msg" | "null" | "num" | "str";
 
-export interface RangeQuery {
-	key?: string;
-	value: ValueField;
-	type: ChildField;
+export type LimitField = string;
+export type LimitFieldType = "flow" | "global" | "jsonata" | "msg" | "num";
+
+export interface QueryConstraintPropertySignature {
+	child: { args: [child: ChildField, type: ChildFieldType, msg?: IncomingMessage]; promise: string };
+	value: {
+		args: [value: ValueField, type: ValueFieldType, msg?: IncomingMessage];
+		promise: boolean | null | number | string;
+	};
+	limit: { args: [limit: LimitField, type: LimitFieldType, msg?: IncomingMessage]; promise: number };
 }
 
+export interface Limit {
+	value: LimitField;
+	type: LimitFieldType;
+}
+
+export interface OrderByChild {
+	value: ChildField;
+	type: ChildFieldType;
+}
+
+export interface RangeQuery {
+	key: ChildField;
+	value: ValueField;
+	/**
+	 * @deprecated Replaced by {@link types}
+	 */
+	type: ValueFieldType;
+	types: RangeQueryTypes;
+}
+
+export interface RangeQueryTypes {
+	value: ValueFieldType;
+	child: ChildFieldType;
+}
+
+// TODO: Remove extra types
 export interface QueryConstraint {
 	orderByKey?: null;
 	orderByPriority?: null;
 	orderByValue?: null;
-	limitToFirst?: number;
-	limitToLast?: number;
-	orderByChild?: string;
+	limitToFirst?: Limit | number;
+	limitToLast?: Limit | number;
+	orderByChild?: OrderByChild | string;
 	endAt?: RangeQuery;
 	endBefore?: RangeQuery;
 	equalTo?: RangeQuery;
@@ -63,6 +99,7 @@ export type FirebaseGetConfig = BaseConfig & {
 	constraints?: QueryConstraint;
 	outputType?: OutputType;
 	passThrough?: boolean;
+	useConstraints?: boolean;
 };
 
 export type FirebaseInConfig = BaseConfig & {
@@ -74,6 +111,7 @@ export type FirebaseInConfig = BaseConfig & {
 	listenerType?: ListenerType;
 	outputType?: OutputType;
 	passThrough?: boolean;
+	useConstraints?: boolean;
 };
 
 export type FirebaseOutConfig = BaseConfig & {
