@@ -168,7 +168,8 @@ const FirebaseUI = (function () {
 
 			const path = paths.join("/");
 
-			const pathEnd = /^$|\/$/.test(value);
+			// empty is not triggered, so check the first character
+			const pathEnd = /^.?$|\/$/.test(value);
 			const pathEqual = currentCompletions.path === path;
 
 			if (pathEnd || !pathEqual) {
