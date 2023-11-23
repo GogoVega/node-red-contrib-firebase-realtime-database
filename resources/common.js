@@ -124,7 +124,7 @@ const FirebaseUI = (function () {
 		},
 		valueType: function () {
 			return (value, opt) => {
-				if (/^(bool|date|flow|global|msg|null|num|str)$/.test(value)) return true;
+				if (/^(bool|date|flow|global|jsonata|msg|null|num|str)$/.test(value)) return true;
 				if (opt?.label) return i18n("errors.invalid-type-prop", { prop: opt.label });
 				return opt ? i18n("errors.invalid-type") : false;
 			};
