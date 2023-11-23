@@ -1,6 +1,22 @@
-"use strict";
+/**
+ * Copyright 2022-2023 Gauthier Dandele
+ *
+ * Licensed under the MIT License,
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * https://opensource.org/licenses/MIT.
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 const FirebaseUI = (function () {
+	"use strict";
+
 	const validators = {
 		boolean: function () {
 			return function (value, opt) {
@@ -17,6 +33,13 @@ const FirebaseUI = (function () {
 				if (typeof value === "string" && !regex.test(value)) return true;
 				if (!blankAllowed && !value) return opt ? i18n("errors.empty-child") : false;
 				return opt ? i18n("errors.invalid-child") : false;
+			};
+		},
+		childType: function () {
+			return function (value, opt) {
+				if (typeof value === "string" && /^(msg|str|flow|global|jsonata)$/.test(value)) return true;
+				if (opt?.label) return i18n("errors.invalid-type-prop", { prop: opt.label });
+				return opt ? i18n("errors.invalid-type") : false;
 			};
 		},
 		listenerType: function () {
@@ -81,16 +104,22 @@ const FirebaseUI = (function () {
 		},
 		typedInput: function (typeName, opts = {}) {
 			return (value, opt) => {
+				// TODO: Replace context by type (node-red#4440)
+				const { blankAllowed, context } = opts;
 				const type = $(`#node-input-${typeName}`).val();
-				const { blankAllowed } = opts;
 
 				if (type === "str" && typeName === "pathType") {
 					const validatePath = this.path(blankAllowed);
 					return validatePath(value, opt);
 				}
 
+				if (type === "str" && typeName === "constraint-childType") {
+					const validateChild = this.child(blankAllowed);
+					return validateChild(value, opt);
+				}
+
 				const validateTypedProperty = RED.validators.typedInput(typeName);
-				return validateTypedProperty(value, opt);
+				return validateTypedProperty.call(context ?? null, value, opt);
 			};
 		},
 		valueType: function () {

@@ -14,26 +14,10 @@
  * limitations under the License.
  */
 
-import { Constraint, Listener, QueryMethod } from "@gogovega/firebase-config-node/rtdb";
+import { Constraint, Listener, Priority, QueryMethod } from "@gogovega/firebase-config-node/rtdb";
 import { ConfigNode } from "@gogovega/firebase-config-node/types";
 import { Node, NodeMessage, NodeMessageInFlow } from "node-red";
 import { FirebaseGetConfig, FirebaseInConfig, FirebaseOutConfig } from "./firebase-config";
-
-export enum QueryConstraintMap {
-	"endAt",
-	"endBefore",
-	"equalTo",
-	"limitToFirst",
-	"limitToLast",
-	"orderByChild",
-	"orderByKey",
-	"orderByPriority",
-	"orderByValue",
-	"startAfter",
-	"startAt",
-}
-
-type Priority = number | string;
 
 export interface IncomingMessage extends NodeMessageInFlow {
 	constraints?: Constraint;

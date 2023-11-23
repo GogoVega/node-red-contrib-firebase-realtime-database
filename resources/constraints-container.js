@@ -1,10 +1,30 @@
-"use strict";
+/**
+ * Copyright 2022-2023 Gauthier Dandele
+ *
+ * Licensed under the MIT License,
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * https://opensource.org/licenses/MIT.
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 const FirebaseQueryConstraintsContainer = (function () {
+	"use strict";
+
 	const queryConstraintTypes = new Array("endAt", "endBefore", "equalTo", "limitToFirst", "limitToLast", "orderByChild", "orderByKey", "orderByPriority", "orderByValue", "startAfter", "startAt");
 	const queryConstraintFieldOptions = queryConstraintTypes.map((fieldName) => (
 		{ value: fieldName, label: i18n(`constraint.${fieldName}`) }
 	));
+
+	const dynamicFieldTypes = ["msg", "flow", "global"];
+	const limitFieldTypes = [{ value: "num", label: "number", icon: "red/images/typedInput/09.svg", validate: FirebaseUI.validators.priority() }, ...dynamicFieldTypes];
+	const rangeFieldTypes = ["bool", "num", "str", "date", { value: "null", label: "null", hasValue: false }, ...dynamicFieldTypes];
 
 	class EditableQueryConstraintsList {
 		constructor() {
@@ -35,14 +55,14 @@ const FirebaseQueryConstraintsContainer = (function () {
 
 			// Legacy Config
 			if (this.node.constraint !== undefined) {
-				this.node.constraints = this.node.constraint;
+				this.node.constraints = migrateQueryConstraints(this.node.constraint);
 				delete this.node.constraint;
 			}
 
 			if (this.useConstraints?.prop("checked") === true) {
 				const constraints = Object.entries(this.node.constraints || {});
 
-				if (!constraints.length) constraints.push(["limitToLast", 5]);
+				if (!constraints.length) constraints.push(["limitToLast", { value: "5", type: "num" }]);
 
 				constraints.forEach((item) => this.container?.editableList("addItem", item));
 				this.containerRow?.show();
@@ -77,54 +97,40 @@ const FirebaseQueryConstraintsContainer = (function () {
 		}
 
 		saveItems() {
+			const container = this.container?.editableList("items").sort(compareItemsList);
 			const node = this.node;
-			this.container?.editableList("items").sort(compareItemsList);
 
 			this.node.constraints = {};
 
-			this.container?.each(function () {
+			container?.each(function () {
 				const constraintType = $(this).find("#node-input-constraint-type").typedInput("value");
 				const value = $(this).find("#node-input-constraint-value").val();
-				const child = $(this).find("#node-input-constraint-child").val() || "";
-				const type = $(this).find("#node-input-constraint-value").typedInput("type");
+				const child = $(this).find("#node-input-constraint-child").val();
+				const childType = $(this).find("#node-input-constraint-child").typedInput("type");
+				const valueType = $(this).find("#node-input-constraint-value").typedInput("type");
 
 				switch (constraintType) {
 					case "endAt":
 					case "endBefore":
 					case "equalTo":
 					case "startAfter":
-					case "startAt": {
-						let valueParsed =
-							// TODO: Use server timestamp
-							type === "date" ? Date.now() :
-								type === "null" ? null :
-									type === "num" ? Number(value) :
-										type === "bool" ? (value === "true" ? true : false) :
-											value;
+					case "startAt":
+						if (valueType === "num" && Number.isNaN(Number(value || NaN))) RED.notify("Query Constraints: Setted value is not a number!", "error");
 
-						if (type === "num" && Number.isNaN(valueParsed)) {
-							RED.notify("Query Constraints: Setted value is not a number!", "error");
-							valueParsed = value;
-						}
-
-						node.constraints[constraintType] = { value: valueParsed, key: child, type: type };
+						node.constraints[constraintType] = { value: value, key: child, types: { value: valueType, child: childType } };
 						break;
-					}
 					case "limitToFirst":
 					case "limitToLast": {
-						let valueParsed = Number(value || NaN);
-						if (!Number.isInteger(valueParsed) || valueParsed <= 0) {
-							RED.notify("Query Constraints: Setted value is not an integrer > 0!", "error");
-							valueParsed = value;
-						}
+						const valueParsed = Number(value || NaN);
+						if (valueType === "num" && (!Number.isInteger(valueParsed) || valueParsed <= 0)) RED.notify("Query Constraints: Setted value is not an integrer > 0!", "error");
 
-						node.constraints[constraintType] = valueParsed;
+						node.constraints[constraintType] = { value: value, type: valueType };
 						break;
 					}
 					case "orderByChild":
-						if (isChildValid(child, constraintType) !== true) RED.notify("Query Constraints: Setted value is not a valid child!", "error");
-						// TODO: check null or empty => invalid child
-						node.constraints[constraintType] = child;
+						if (valueType === "str" && isChildValid(child, constraintType) !== true) RED.notify("Query Constraints: Setted value is not a valid child!", "error");
+
+						node.constraints[constraintType] = { value: child, type: childType };
 						break;
 					case "orderByKey":
 					case "orderByPriority":
@@ -144,7 +150,6 @@ const FirebaseQueryConstraintsContainer = (function () {
 		const constraintType = $("<input/>", { type: "text", id: "node-input-constraint-type", style: "width: 100%; text-align: center;" }).appendTo(row);
 		const valueField = $("<input/>", { type: "text", id: "node-input-constraint-value", style: "width: 100%;", placeholder: i18n("placeholder.value") }).appendTo(row3);
 		const childField = $("<input/>", { type: "text", id: "node-input-constraint-child", style: "width: 100%;", placeholder: i18n("placeholder.child") }).appendTo(row2);
-		$("<input/>", { type: "hidden", id: "node-input-constraint-valueType" }).appendTo(row3);
 
 		container.css({
 			overflow: "auto",
@@ -155,33 +160,33 @@ const FirebaseQueryConstraintsContainer = (function () {
 
 		valueField.typedInput({ default: "num", typeField: "#node-input-constraint-valueType", types: ["num"] });
 		childField
-			.typedInput({ default: "str", types: [{ value: "str", label: "string", icon: "red/images/typedInput/az.svg", validate: (child, opt) => isChildValid(child, constraintType.val(), opt) }] })
+			.typedInput({
+				default: "str",
+				typeField: "#node-input-constraint-childType",
+				types: [{ value: "str", label: "string", icon: "red/images/typedInput/az.svg", validate: (child, opt) => isChildValid(child, constraintType.val(), opt) }, ...dynamicFieldTypes]
+			})
 			.typedInput("hide");
 
 		constraintType
-			.on("change", (_event, _type, value) => updateTypeOfTypedInput(valueField, row3, childField, value))
 			.typedInput({ types: [{ options: queryConstraintFieldOptions }] })
+			.on("change", (_event, _type, value) => updateTypeOfTypedInput(valueField, row3, childField, value))
 			.typedInput("value", "orderByValue");
 
 		// if known value (previously defined)
 		if (Array.isArray(data)) {
 			const [key, value] = data;
 
+			const child = (key === "orderByChild" ? value?.value : value?.key) ?? "";
+			const val = value?.value ?? "";
+			const childType = (key === "orderByChild" ? value?.type : value?.types?.child) ?? "str";
+			const valType = value?.types?.value ?? value?.type ?? "num";
+
 			constraintType.typedInput("value", key);
 
-			if (value && typeof value === "object") {
-				valueField.typedInput("value", value.value?.toString() ?? "");
-				valueField.typedInput("type", value.type ?? "str");
-				childField.typedInput("value", value.key ?? "");
-			} else {
-				if (key === "orderByChild") {
-					valueField.typedInput("value", "");
-					childField.typedInput("value", value ?? "");
-				} else {
-					valueField.typedInput("value", value ?? "");
-					childField.typedInput("value", "");
-				}
-			}
+			valueField.typedInput("value", val);
+			valueField.typedInput("type", valType);
+			childField.typedInput("value", child);
+			childField.typedInput("type", childType);
 
 			data = {};
 			$(container).data("data", data);
@@ -213,6 +218,8 @@ const FirebaseQueryConstraintsContainer = (function () {
 			if (typeof constraints !== "object") return false;
 
 			for (const [k, v] of Object.entries(constraints)) {
+				opt.label = FirebaseUI._(`constraint.${k}`, "load-config", "query-constraints");
+
 				switch (k) {
 					case "endAt":
 					case "endBefore":
@@ -221,35 +228,46 @@ const FirebaseQueryConstraintsContainer = (function () {
 					case "startAt": {
 						if (typeof v !== "object" || v === null) return FirebaseUI._("errors.no-object", "load-config", "validator");
 
-						const constraintName = FirebaseUI._(`constraint.${k}`, "load-config", "query-constraints");
 						const valueFieldName = FirebaseUI._("placeholder.value", "load-config", "query-constraints");
-						opt.label = `${constraintName} (${valueFieldName})`;
+						opt.label += ` (${valueFieldName})`;
 
-						const valueTypeValidation = FirebaseUI.validators.valueType()(v.type, opt);
+						const valueTypeValidation = FirebaseUI.validators.valueType()(v.types?.value, opt);
 						if (valueTypeValidation !== true) return valueTypeValidation;
 
-						const valueValidation = FirebaseUI.validators.typedInput("constraint-valueType")(v.value, opt);
+						// Need to pass context to validate typedInput in container
+						// TODO: Replace context by type (node-red#4440)
+						const valueValidation = FirebaseUI.validators.typedInput("constraint-valueType", { context: { "constraint-valueType": v.types?.value } })(v.value, opt);
 						if (valueValidation !== true) return valueValidation;
 
-						// TODO: Add childType validation
-						const keyValidation = FirebaseUI.validators.child(true)(v.key, opt);
-						if (keyValidation !== true) return keyValidation;
+						const childFieldName = FirebaseUI._("placeholder.child", "load-config", "query-constraints");
+						opt.label = opt.label.replace(/\(.*\)/, `(${childFieldName})`);
 
-						if ((v.type === "date" || v.type === "num") && (typeof v.value !== "number" || Number.isNaN(v.value))) return false;
-						if (v.type === "bool" && typeof v.value !== "boolean") return false;
-						if (v.type === "null" && v.value !== null) return false;
-						if (v.type === "str" && typeof v.value !== "string") return false;
+						const childTypeValidation = FirebaseUI.validators.childType()(v.types?.child, opt);
+						if (childTypeValidation !== true) return childTypeValidation;
+
+						const childValidation = FirebaseUI.validators.typedInput("constraint-childType", { blankAllowed: true, context: { "constraint-childType": v.types?.child } })(v.key, opt);
+						if (childValidation !== true) return childValidation;
 						break;
 					}
 					case "limitToFirst":
 					case "limitToLast": {
-						const value = !v ? v : Number(v).toString();
-						const validation = FirebaseUI.validators.priority()(value, opt);
+						// TODO: Remove me
+						if (typeof v !== "object") return false;
+
+						const validation = v.type === "num"
+							? FirebaseUI.validators.priority()(v.value, opt)
+							: FirebaseUI.validators.typedInput("constraint-valueType", { context: { "constraint-valueType": v.type } })(v.value, opt);
 						if (validation !== true) return validation;
 						break;
 					}
 					case "orderByChild": {
-						const validation = FirebaseUI.validators.child()(v, opt);
+						// TODO: Remove me
+						if (typeof v !== "object") return false;
+
+						const childTypeValidation = FirebaseUI.validators.childType()(v.type, opt);
+						if (childTypeValidation !== true) return childTypeValidation;
+
+						const validation = FirebaseUI.validators.typedInput("constraint-childType", { context: { "constraint-childType": v.type } })(v.value, opt);
 						if (validation !== true) return validation;
 						break;
 					}
@@ -267,6 +285,39 @@ const FirebaseQueryConstraintsContainer = (function () {
 		}
 	}
 
+	function migrateQueryConstraints(constraints) {
+		return Object.entries(constraints).reduce((constraints, [constraintName, value]) => {
+			switch (constraintName) {
+				case "endAt":
+				case "endBefore":
+				case "equalTo":
+				case "startAfter":
+				case "startAt":
+					if (value.type === "date" || value.type === "null") value.value = "";
+					constraints[constraintName] = {
+						value: String(value.value ?? ""),
+						key: String(value.key || ""),
+						types: { value: value.type, child: "str" },
+					};
+					break;
+				case "limitToFirst":
+				case "limitToLast":
+					constraints[constraintName] = { value: String(value), type: "num" };
+					break;
+				case "orderByChild":
+					constraints[constraintName] = { value: value, type: "str" };
+					break;
+				case "orderByKey":
+				case "orderByPriority":
+				case "orderByValue":
+					constraints[constraintName] = null;
+					break;
+			}
+
+			return constraints;
+		}, {});
+	}
+
 	function updateTypeOfTypedInput(value, valueContainer, child, key) {
 		// Initial state
 		value.typedInput("show");
@@ -280,13 +331,13 @@ const FirebaseQueryConstraintsContainer = (function () {
 			case "equalTo":
 			case "startAfter":
 			case "startAt":
-				value.typedInput("types", ["bool", "num", "str", "date", { value: "null", label: "null", hasValue: false }]);
+				value.typedInput("types", rangeFieldTypes);
 				valueContainer.css("padding-bottom", "5px");
 				child.typedInput("show");
 				break;
 			case "limitToFirst":
 			case "limitToLast":
-				value.typedInput("types", [{ value: "num", label: "number", icon: "red/images/typedInput/09.svg", validate: FirebaseUI.validators.priority() }]);
+				value.typedInput("types", limitFieldTypes);
 				break;
 			case "orderByChild":
 				value.typedInput("hide");
