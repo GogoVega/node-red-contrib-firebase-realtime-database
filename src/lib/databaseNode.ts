@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { deleteApp, FirebaseApp, FirebaseError, initializeApp, onLog } from "firebase/app";
+import { deleteApp, FirebaseApp, FirebaseError, initializeApp, onLog } from "@firebase/app";
 import {
 	Auth,
 	createUserWithEmailAndPassword,
@@ -24,8 +24,8 @@ import {
 	signInWithCustomToken,
 	signInWithEmailAndPassword,
 	signOut,
-} from "firebase/auth";
-import { Database, getDatabase, onValue, ref, Unsubscribe } from "firebase/database";
+} from "@firebase/auth";
+import { Database, getDatabase, onValue, ref, Unsubscribe } from "@firebase/database";
 import admin, { ServiceAccount } from "firebase-admin";
 import { claimsNotAllowed } from "./const/database";
 import { firebaseError } from "./const/FirebaseError";

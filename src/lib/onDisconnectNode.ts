@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { onDisconnect, ref } from "firebase/database";
+import { onDisconnect, ref } from "@firebase/database";
 import { Firebase } from "./firebaseNode";
 import { InputMessageType } from "./types/FirebaseNodeType";
 import { Query } from "./types/OnDisconnectConfigType";

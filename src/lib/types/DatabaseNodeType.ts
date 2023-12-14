@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-import { FirebaseApp } from "firebase/app";
-import { Auth } from "firebase/auth";
-import { Database } from "firebase/database";
+import { FirebaseApp } from "@firebase/app";
+import { Auth } from "@firebase/auth";
+import { Database } from "@firebase/database";
 import admin, { ServiceAccount } from "firebase-admin";
 import { Node, NodeAPI } from "node-red";
 import DatabaseConfigType from "./DatabaseConfigType";

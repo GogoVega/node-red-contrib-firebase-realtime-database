@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-import { Database, get, ref, query, Unsubscribe } from "firebase/database";
-import * as firebase from "firebase/database";
+import { Database, get, ref, query, Unsubscribe } from "@firebase/database";
+import * as firebase from "@firebase/database";
 import * as admin from "firebase-admin";
 import { ServerValue } from "firebase-admin/database";
 import { ConnectionStatus } from "./types/DatabaseNodeType";

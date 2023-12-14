@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import * as database from "firebase/database";
+import * as database from "@firebase/database";
 import * as adminDatabase from "firebase-admin/database";
 import { Node, NodeAPI, NodeMessage, NodeMessageInFlow } from "node-red";
 import { DatabaseNodeType } from "./DatabaseNodeType";
