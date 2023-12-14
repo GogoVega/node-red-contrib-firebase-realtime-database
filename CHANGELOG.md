@@ -1,5 +1,13 @@
 # Change log
 
+## 0.5.4
+
+### Changes
+
+- Reduce `firebase` dependencies size by only used sub-dependencies
+- Bump new dependencies to latest
+- Bump `firebase-admin` from 11.11.0 to 12.0.0
+
 ## 0.5.3
 
 ### Changes
