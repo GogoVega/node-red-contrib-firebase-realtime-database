@@ -36,7 +36,7 @@
 				listenerType: { value: "value", label: i18n("label.listener"), validate: validators.listenerType() },
 				outputType: { value: "auto", label: i18n("label.output"), validate: validators.outputType() },
 				passThrough: { value: false, label: i18n("label.passThrough"), validate: validators.boolean() },
-				path: { value: "test/stream", label: i18n("label.path"), validate: validators.typedInput("pathType", { blankAllowed: true }) },
+				path: { value: "test/stream", label: i18n("label.path"), validate: validators.typedInput("pathType", { allowBlank: true }) },
 				pathType: { value: "str", label: i18n("label.path"), validate: validators.pathType() },
 				useConstraints: { value: false, label: i18n("label.sortData"), validate: validators.boolean() },
 				useConstraint: {},	// Legacy Config
@@ -54,7 +54,7 @@
 			oneditprepare: function () {
 				editableConstraintsList.build(this);
 
-				const pathField = typedPathField.create().blankAllowed(true).enableAutoComplete();
+				const pathField = typedPathField.create().allowBlank(true).enableAutoComplete();
 				const listenerType = $("#node-input-listenerType");
 
 				pathField.build();

@@ -27,11 +27,11 @@ const FirebaseUI = (function () {
 				return opt ? i18n("errors.invalid-bool") : false;
 			};
 		},
-		child: function (blankAllowed = false) {
-			const regex = blankAllowed ? /[\s.#$\[\]]|\/{2,}/ : /^$|[\s.#$\[\]]|\/{2,}/;
+		child: function (allowBlank = false) {
+			const regex = allowBlank ? /[\s.#$\[\]]|\/{2,}/ : /^$|[\s.#$\[\]]|\/{2,}/;
 			return function (value, opt) {
 				if (typeof value === "string" && !regex.test(value)) return true;
-				if (!blankAllowed && !value) return opt ? i18n("errors.empty-child") : false;
+				if (!allowBlank && !value) return opt ? i18n("errors.empty-child") : false;
 				return opt ? i18n("errors.invalid-child") : false;
 			};
 		},
@@ -63,11 +63,11 @@ const FirebaseUI = (function () {
 				return opt ? i18n("errors.invalid-type") : false;
 			};
 		},
-		path: function (blankAllowed = false) {
-			const regex = blankAllowed ? /[\s.#$\[\]]|\/{2,}/ : /^$|[\s.#$\[\]]|\/{2,}/;
+		path: function (allowBlank = false) {
+			const regex = allowBlank ? /[\s.#$\[\]]|\/{2,}/ : /^$|[\s.#$\[\]]|\/{2,}/;
 			return function (value, opt) {
 				if (typeof value === "string" && !regex.test(value)) return true;
-				if (!blankAllowed && !value) return opt ? i18n("errors.empty-path") : false;
+				if (!allowBlank && !value) return opt ? i18n("errors.empty-path") : false;
 				return opt ? i18n("errors.invalid-path") : false;
 			};
 		},
@@ -103,23 +103,39 @@ const FirebaseUI = (function () {
 			};
 		},
 		typedInput: function (typeName, opts = {}) {
-			return (value, opt) => {
-				// TODO: Replace context by type (node-red#4440)
-				const { blankAllowed, context } = opts;
-				const type = $(`#node-input-${typeName}`).val();
+			let options = typeName;
 
-				if (type === "str" && typeName === "pathType") {
-					const validatePath = this.path(blankAllowed);
+			if (typeof typeName === "string") {
+				options = {
+					allowBlank: false,
+					isConfig: false,
+					typeField: typeName,
+					...opts,
+				};
+			}
+
+			return (value, opt) => {
+				const type = options.type || $(`#node-input-${options.typeField}`).val();
+
+				if (type === "str" && options.typeField === "pathType") {
+					const validatePath = this.path(options.allowBlank);
 					return validatePath(value, opt);
 				}
 
-				if (type === "str" && typeName === "constraint-childType") {
-					const validateChild = this.child(blankAllowed);
+				if (type === "str" && options.typeField === "childType") {
+					const validateChild = this.child(options.allowBlank);
 					return validateChild(value, opt);
 				}
 
-				const validateTypedProperty = RED.validators.typedInput(typeName);
-				return validateTypedProperty.call(context ?? null, value, opt);
+				// If NR version >= 3.1.3 use the new validators
+				const redVersion = (RED.settings.version || "0.0.0").split(".").map((s) => Number(s));
+				if (redVersion[0] > 3 || (redVersion[0] === 3 && (redVersion[1] > 1 || (redVersion[1] === 1 && redVersion[2] >= 3))))
+					return RED.validators.typedInput(options)(value, opt);
+
+				// Workaround for node-red#4440 to pass type
+				const validateTypedProperty = RED.validators.typedInput(options.typeField || "fake-typeName");
+				const context = options.type ? { "fake-typeName": options.type } : null;
+				return validateTypedProperty.call(context, value, opt);
 			};
 		},
 		valueType: function () {
@@ -237,10 +253,27 @@ const FirebaseUI = (function () {
 		});
 	}
 
+	function post(URL, data) {
+		return new Promise((resolve, reject) => {
+			$.ajax({
+				type: "POST",
+				url: URL,
+				data: data,
+				dataType: "json",
+				beforeSend: function (jqXHR) {
+					const authTokens = RED.settings.get("auth-tokens");
+					if (authTokens) jqXHR.setRequestHeader("Authorization", `Bearer ${authTokens.access_token}`);
+				},
+				success: (data) => resolve(data),
+				error: (jqXHR, _textStatus, errorThrown) => reject(`${errorThrown}: ${jqXHR.responseText}`),
+			});
+		});
+	}
+
 	class TypedPathInput {
 		constructor() {
 			this._autoComplete = false;
-			this._blankAllowed = false;
+			this._allowBlank = false;
 			this._modeByDefault = "dynamic";
 			this.pathField = $("#node-input-path");
 		}
@@ -250,9 +283,9 @@ const FirebaseUI = (function () {
 		 * @param {boolean} value True to allow blank path
 		 * @returns {TypedPathInput}
 		 */
-		blankAllowed(value) {
-			if (typeof value !== "boolean") throw new TypeError("blankAllowed must be a boolean");
-			this._blankAllowed = value;
+		allowBlank(value) {
+			if (typeof value !== "boolean") throw new TypeError("allowBlank must be a boolean");
+			this._allowBlank = value;
 			return this;
 		}
 
@@ -262,7 +295,7 @@ const FirebaseUI = (function () {
 		 */
 		build() {
 			const others = this._autoComplete ? { autoComplete: autoComplete() } : {};
-			this.staticFieldOptions = [{ value: "str", label: "string", icon: "red/images/typedInput/az.svg", validate: validators.path(this._blankAllowed), ...others }];
+			this.staticFieldOptions = [{ value: "str", label: "string", icon: "red/images/typedInput/az.svg", validate: validators.path(this._allowBlank), ...others }];
 			this.dynamicFieldOptions = [...this.staticFieldOptions, "msg", "flow", "global", "jsonata"];
 			this.pathField.typedInput({
 				typeField: "#node-input-pathType",
@@ -317,6 +350,7 @@ const FirebaseUI = (function () {
 
 	return {
 		_: i18nFullOptions,
+		express: { get: get, post: post },
 		typedPathField: { create: () => new TypedPathInput() },
 		validators: validators,
 	};

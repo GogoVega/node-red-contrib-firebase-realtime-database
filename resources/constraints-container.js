@@ -211,9 +211,10 @@ const FirebaseQueryConstraintsContainer = (function () {
 
 	function isConstraintsValid() {
 		return function (constraints, opt) {
-			// Workaround for typedInput validation limitation
+			// Ensure label is setted
+			// Workaround to pass label to typedInput validation
 			opt ||= {};
-			opt.label ||= FirebaseUI._("label.constraint", "firebase-in");
+			opt.label ||= FirebaseUI._("label.constraints", "firebase-in");
 
 			if (typeof constraints !== "object") return false;
 
@@ -234,9 +235,7 @@ const FirebaseQueryConstraintsContainer = (function () {
 						const valueTypeValidation = FirebaseUI.validators.valueType()(v.types?.value, opt);
 						if (valueTypeValidation !== true) return valueTypeValidation;
 
-						// Need to pass context to validate typedInput in container
-						// TODO: Replace context by type (node-red#4440)
-						const valueValidation = FirebaseUI.validators.typedInput("constraint-valueType", { context: { "constraint-valueType": v.types?.value } })(v.value, opt);
+						const valueValidation = FirebaseUI.validators.typedInput({ type: v.types?.value })(v.value, opt);
 						if (valueValidation !== true) return valueValidation;
 
 						const childFieldName = FirebaseUI._("placeholder.child", "load-config", "query-constraints");
@@ -245,7 +244,7 @@ const FirebaseQueryConstraintsContainer = (function () {
 						const childTypeValidation = FirebaseUI.validators.childType()(v.types?.child, opt);
 						if (childTypeValidation !== true) return childTypeValidation;
 
-						const childValidation = FirebaseUI.validators.typedInput("constraint-childType", { blankAllowed: true, context: { "constraint-childType": v.types?.child } })(v.key, opt);
+						const childValidation = FirebaseUI.validators.typedInput({ allowBlank: true, type: v.types?.child, typeField: "childType" })(v.key, opt);
 						if (childValidation !== true) return childValidation;
 						break;
 					}
@@ -256,7 +255,7 @@ const FirebaseQueryConstraintsContainer = (function () {
 
 						const validation = v.type === "num"
 							? FirebaseUI.validators.priority()(v.value, opt)
-							: FirebaseUI.validators.typedInput("constraint-valueType", { context: { "constraint-valueType": v.type } })(v.value, opt);
+							: FirebaseUI.validators.typedInput({ type: v.type })(v.value, opt);
 						if (validation !== true) return validation;
 						break;
 					}
@@ -267,7 +266,7 @@ const FirebaseQueryConstraintsContainer = (function () {
 						const childTypeValidation = FirebaseUI.validators.childType()(v.type, opt);
 						if (childTypeValidation !== true) return childTypeValidation;
 
-						const validation = FirebaseUI.validators.typedInput("constraint-childType", { context: { "constraint-childType": v.type } })(v.value, opt);
+						const validation = FirebaseUI.validators.typedInput({ type: v.type, typeField: "childType" })(v.value, opt);
 						if (validation !== true) return validation;
 						break;
 					}
