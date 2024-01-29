@@ -95,11 +95,11 @@ export class Firebase<Node extends FirebaseNode, Config extends FirebaseConfig =
 		node.database = RED.nodes.getNode(config.database) as ConfigNode | null;
 
 		if (!node.database) {
-			node.error("Database not configured or disabled!");
+			node.error("Database not selected or disabled!");
 			node.status({ fill: "red", shape: "ring", text: "Database not ready!" });
 		}
 
-		if (!isFirebaseConfigNode(node.database))
+		if (!isFirebaseConfigNode(node.database) && node.database)
 			throw new Error("The selected database is not compatible with this module, please check your config-node");
 	}
 
@@ -581,6 +581,7 @@ export class FirebaseIn extends Firebase<FirebaseInNode> {
 				this.unsubscribeCallback = this.rtdb.subscribe(
 					listener,
 					(snapshot, child) => this.sendMsg(snapshot, child),
+					(error) => this.onError(error, done),
 					path,
 					constraints
 				);

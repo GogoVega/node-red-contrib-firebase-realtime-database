@@ -27,9 +27,6 @@ function printEnumKeys(obj: object) {
  * @param empty Can the path be empty? Default: `false`
  * @returns The path checked to the database
  */
-function checkPath(path: unknown, empty?: false): string;
-function checkPath(path: unknown, empty: true): string | undefined;
-function checkPath(path: unknown, empty?: boolean): string | undefined;
 function checkPath(path: unknown, empty?: boolean): string | undefined {
 	if (empty && path === "") return;
 	if (empty && path === undefined) return;

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-const database = require("@gogovega/firebase-config-node").default;
+const database = require("@gogovega/firebase-config-node");
 const helper = require("node-red-node-test-helper");
 const flow = [
 	{ id: "database", type: "firebase-config", name: "My Database", authType: "anonymous", wires: [["h1"]] },
@@ -33,8 +33,8 @@ describe("Firebase GET Node", function () {
 		helper.stopServer(done);
 	});
 
-	afterEach(function () {
-		return helper.unload();
+	afterEach(async function () {
+		await helper.unload();
 	});
 
 	context("When NODE is loaded", () => {
@@ -45,12 +45,15 @@ describe("Firebase GET Node", function () {
 				try {
 					const n1 = helper.getNode("firebase");
 					const n2 = helper.getNode("database");
+
 					n1.should.have.property("name", "test/stream");
 					n1.should.have.property("type", "firebase-get");
-					n1.database.should.be.Object();
-					//n1.database.registeredNodes.rtdb.should.have.length(1);
+
 					n2.should.have.property("name", "My Database");
 					n2.should.have.property("type", "firebase-config");
+
+					n1.database.should.be.Object();
+					n2.addStatusListener.should.have.been.called;
 					done();
 				} catch (error) {
 					done(error);
@@ -66,8 +69,7 @@ describe("Firebase GET Node", function () {
 					const logEvents = helper.log().args.filter(function (evt) {
 						return evt[0].type == "firebase-get";
 					});
-					logEvents.should.have.length(1);
-					logEvents[0][0].should.have.property("msg", "Database not configured or disabled!");
+					logEvents[0][0].should.have.property("msg", "Database not selected or disabled!");
 					done();
 				} catch (error) {
 					done(error);
@@ -94,7 +96,7 @@ describe("Firebase GET Node", function () {
 							return evt[0].type == "firebase-get";
 						});
 						logEvents.should.have.length(1);
-						logEvents[0][0].should.have.property("msg", new Error("PATH must be a string!"));
+						logEvents[0][0].should.have.property("msg", new Error("The 'Path' field is undefined, please re-configure this node."));
 						done();
 					} catch (error) {
 						done(error);
@@ -268,7 +270,7 @@ describe("Firebase GET Node", function () {
 
 				n1.close(true)
 					.then(() => {
-						//n1.database.registeredNodes.rtdb.should.have.length(0);
+						n1.database.removeStatusListener.should.have.been.called;
 						done();
 					})
 					.catch((error) => done(error));

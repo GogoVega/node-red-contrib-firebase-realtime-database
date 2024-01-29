@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-const database = require("@gogovega/firebase-config-node").default;
+const database = require("@gogovega/firebase-config-node");
 const helper = require("node-red-node-test-helper");
 const flow = [
 	{ id: "database", type: "firebase-config", name: "My Database", authType: "anonymous" },
@@ -45,12 +45,15 @@ describe("Firebase OUT Node", function () {
 				try {
 					const n1 = helper.getNode("firebase");
 					const n2 = helper.getNode("database");
+
 					n1.should.have.property("name", "test/stream");
 					n1.should.have.property("type", "firebase-out");
-					n1.database.should.be.Object();
-					//n1.database.registeredNodes.rtdb.should.have.length(1);
+
 					n2.should.have.property("name", "My Database");
 					n2.should.have.property("type", "firebase-config");
+
+					n1.database.should.be.Object();
+					n2.addStatusListener.should.have.been.called;
 					done();
 				} catch (error) {
 					done(error);
@@ -59,7 +62,7 @@ describe("Firebase OUT Node", function () {
 		});
 
 		it("should throw an error without database configured", function (done) {
-			const newFlow = [{ id: "firebase", type: "firebase-out", database: null }, ...flow];
+			const newFlow = [{ id: "firebase", type: "firebase-out", database: null, path: "" }, ...flow];
 
 			helper.load([firebase, database], newFlow, function () {
 				try {
@@ -67,7 +70,7 @@ describe("Firebase OUT Node", function () {
 						return evt[0].type == "firebase-out";
 					});
 					logEvents.should.have.length(1);
-					logEvents[0][0].should.have.property("msg", "Database not configured or disabled!");
+					logEvents[0][0].should.have.property("msg", "Database not selected or disabled!");
 					done();
 				} catch (error) {
 					done(error);
@@ -94,7 +97,7 @@ describe("Firebase OUT Node", function () {
 							return evt[0].type == "firebase-out";
 						});
 						logEvents.should.have.length(1);
-						logEvents[0][0].should.have.property("msg", new Error("PATH must be a string!"));
+						logEvents[0][0].should.have.property("msg", new Error("The 'Path' field is undefined, please re-configure this node."));
 						done();
 					} catch (error) {
 						done(error);
@@ -341,7 +344,7 @@ describe("Firebase OUT Node", function () {
 
 				n1.close(true)
 					.then(() => {
-						//n1.database.registeredNodes.rtdb.should.have.length(0);
+						n1.database.removeStatusListener.should.have.been.called;
 						done();
 					})
 					.catch((error) => done(error));

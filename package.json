@@ -8,7 +8,6 @@
     "clean": "rm -rf build/lib build/**/*.js",
     "lint": "eslint . --ext .ts",
     "migrate": "bash scripts/migrate-script.sh",
-    "postinstall": "node scripts/post-install-notice.js",
     "prettier": "prettier --write \"**/*.{md,ts}\"",
     "test": "mocha './test/**/*_spec.js' --exit"
   },
@@ -42,7 +41,6 @@
   "node-red": {
     "nodes": {
       "load-config": "build/nodes/load-config.js",
-      "firebase-config": "../firebase-config-node/build/nodes/firebase-config.js",
       "firebase-in": "build/nodes/firebase-in.js",
       "firebase-get": "build/nodes/firebase-get.js",
       "firebase-out": "build/nodes/firebase-out.js",
