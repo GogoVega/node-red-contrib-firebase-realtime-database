@@ -175,7 +175,7 @@
 
 				// Resolve the non-breaking changes
 				if (node.type === "firebase-in" || node.type === "firebase-get") {
-					if ("constraint" in node) {
+					if (node.constraint) {
 						if (typeof node.constraint === "object" && node.constraint) {
 							changes.constraint = node.constraint;
 							changes.constraints = undefined;
@@ -184,7 +184,7 @@
 						}
 					}
 
-					if ("useConstraint" in node) {
+					if (node.useConstraint) {
 						changes.useConstraint = node.useConstraint;
 						changes.useConstraints = undefined;
 						node.useConstraints = node.useConstraint ?? false;

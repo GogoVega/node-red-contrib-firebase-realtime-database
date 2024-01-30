@@ -27,7 +27,7 @@
 			color: "#e2a12b",
 			defaults: {
 				name: { value: "" },
-				database: { value: "", type: "firebase-config" },
+				database: { value: "", type: "firebase-config", required: true },
 				path: { value: "topic", label: i18n("label.path"), validate: validators.typedInput("pathType") },
 				pathType: { value: "msg", label: i18n("label.path"), validate: validators.pathType() },
 				priority: { value: "1", label: i18n("label.priority"), validate: validators.priority() },
@@ -60,6 +60,7 @@
 
 				// REMOVE ME
 				if (priorityField.val() === "") priorityField.typedInput("value", "1");
+				if (typeof this.priority === "number") this.priority = Number(this.priority).toString();
 
 				queryType.on("change", () => {
 					switch (queryType.val()) {

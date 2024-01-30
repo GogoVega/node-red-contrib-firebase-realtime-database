@@ -31,7 +31,7 @@
 				name: { value: "" },
 				constraint: {},	// Legacy Config
 				constraints: { value: {}, label: i18n("label.constraints"), validate: isConstraintsValid() },
-				database: { value: "", type: "firebase-config" },
+				database: { value: "", type: "firebase-config", required: true },
 				inputs: { value: 0 },
 				listenerType: { value: "value", label: i18n("label.listener"), validate: validators.listenerType() },
 				outputType: { value: "auto", label: i18n("label.output"), validate: validators.outputType() },

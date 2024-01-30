@@ -146,7 +146,7 @@ module.exports = function (RED: NodeAPI) {
 
 				if (script === "migrate") {
 					configNodeStatus.migrationCalled = true;
-					res.send(200);
+					res.sendStatus(200);
 					return;
 				}
 

@@ -1,5 +1,31 @@
 # Change log
 
+## 0.6.0-alpha.1
+
+### Breaking Changes
+
+- The type of config-node (`database-config`) is changed to `firebase-config`
+
+> [!CAUTION]
+> This type change breaks the runtime - it must be resolved to start the flows
+
+### New Features
+
+- QueryConstraints: `msg`, `flow`, `global` and `jsonata` as new types for the `Value` field and the `Child` field
+- `flow`, `global` and `jsonata` options has been added to the `Path` field for all nodes.
+- A new option has been added to the `Output` field so that the data is in JSON format.
+- Support to dynamically set `Firebase-in` node properties
+
+### Enhancements
+
+- Add autocomplete to all Path fields
+- Validation error message
+
+### Changes/Refactors
+
+- Use resources for editor to remove duplicates
+- Config Node Externalization (see #50)
+
 ## 0.5.3
 
 ### Changes

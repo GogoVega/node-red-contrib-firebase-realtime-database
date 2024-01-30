@@ -28,7 +28,7 @@
 			color: "#e2a12b",
 			defaults: {
 				name: { value: "" },
-				database: { value: "", type: "firebase-config" },
+				database: { value: "", type: "firebase-config", required: true },
 				inputs: { value: 1 },
 				outputs: { value: 0 },
 				path: { value: "topic", label: i18n("label.path"), validate: validators.typedInput("pathType") },

@@ -20,7 +20,7 @@ const FirebaseUI = (function () {
 	const validators = {
 		boolean: function () {
 			return function (value, opt) {
-				// TODO: checkbox returns "on" Bug or limitation?
+				// TODO: checkbox returns "on" - bug which will probably be fixed for v4
 				// oneditsave returns boolean so, skip "on" value
 				if (typeof value === "boolean" || value === "on") return true;
 				if (opt?.label) return i18n("errors.invalid-bool-prop", { prop: opt.label });

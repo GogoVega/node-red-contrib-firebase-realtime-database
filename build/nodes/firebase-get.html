@@ -31,7 +31,7 @@
 				name: { value: "" },
 				constraint: {},	// Legacy Config
 				constraints: { value: {}, label: i18n("label.constraints"), validate: isConstraintsValid() },
-				database: { value: "", type: "firebase-config" },
+				database: { value: "", type: "firebase-config", required: true },
 				outputType: { value: "auto", label: i18n("label.output"), validate: validators.outputType() },
 				passThrough: { value: false, label: i18n("label.passThrough"), validate: validators.boolean() },
 				path: { value: "topic", label: i18n("label.path"), validate: validators.typedInput("pathType", { allowBlank: true }) },

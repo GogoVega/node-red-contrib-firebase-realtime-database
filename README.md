@@ -28,6 +28,9 @@
 This package is used to communicate with Firebase Realtime Databases.
 It allows to add, modify and fetch data from your databases aswell as subscribing to data at the paths you specify which yields a `payload` whenever a value changes.
 
+> [!CAUTION]
+> BREAKING CHANGES: If you are updating to 0.6, please read the [migration procedure](https://github.com/GogoVega/node-red-contrib-firebase-realtime-database/wiki/migration-wizard).
+
 ## The Nodes
 
 ![nodes screenshot](./assets/images/nodes-screenshot.png)
@@ -70,6 +73,7 @@ Read more about the different ways to authenticate [here](https://github.com/Gog
 ## Getting Started Link
 
 - [Installing](https://github.com/GogoVega/node-red-contrib-firebase-realtime-database/wiki/getting-started): System requirements and install instructions
+- [Migrate to v0.6](https://github.com/GogoVega/node-red-contrib-firebase-realtime-database/wiki/migration-wizard): The migration procedure to update to v0.6
 - [Build Database](https://github.com/GogoVega/node-red-contrib-firebase-realtime-database/wiki/create-database): How to build a Firebase database?
 - [Authentication Methods](https://github.com/GogoVega/node-red-contrib-firebase-realtime-database/wiki/Authentication#authentication-methods): Which method used to connect?
 - [Wiki](https://github.com/GogoVega/node-red-contrib-firebase-realtime-database/wiki): Just about everything

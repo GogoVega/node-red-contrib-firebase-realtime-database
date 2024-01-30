@@ -138,8 +138,8 @@ export class Firebase<Node extends FirebaseNode, Config extends FirebaseConfig =
 			field === "child"
 				? ["flow", "global", "jsonata", "msg", "str"]
 				: field === "value"
-				? ["bool", "date", "flow", "global", "jsonata", "msg", "null", "num", "str"]
-				: ["flow", "global", "jsonata", "msg", "num"];
+					? ["bool", "date", "flow", "global", "jsonata", "msg", "null", "num", "str"]
+					: ["flow", "global", "jsonata", "msg", "num"];
 
 		if (!typesAllowed.includes(type))
 			throw new Error(`Invalid type (${type}) for the ${field} field. Please reconfigure this node.`);
@@ -422,8 +422,8 @@ export class Firebase<Node extends FirebaseNode, Config extends FirebaseConfig =
 			this.node.config.outputType === "string"
 				? JSON.stringify(snapshot.val())
 				: this.node.config.outputType === "json"
-				? snapshot.toJSON()
-				: snapshot.val();
+					? snapshot.toJSON()
+					: snapshot.val();
 		const previousChildName = child !== undefined ? { previousChildName: child } : {};
 		const priority = isAdminDataSnapshot(snapshot) ? snapshot.getPriority() : snapshot.priority;
 		const msg2Send: OutgoingMessage = {
