@@ -1,5 +1,11 @@
 # Change log
 
+## 0.6.0-alpha.2
+
+### Fixes
+
+- Migration script and Installation script call
+
 ## 0.6.0-alpha.1
 
 ### Breaking Changes
