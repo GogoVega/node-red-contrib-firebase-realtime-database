@@ -25,8 +25,11 @@ import { join } from "node:path";
  *
  * See https://github.com/node-red/node-red/issues/569
  *
- * The hack consists of giving to the module loader a link relative to the config-node.
- * If the config node is not found the user must manually install it or resolve path issues.
+ * If this module is installed from the palette manager, the runtime will not load the config-node,
+ * a Node-RED restart is needed to load it.
+ *
+ * This function handles the case where the config-node is installed under a second `node_modules` directory
+ * because it will not be loaded without adding it to the `package.json` in the `.node-red` folder.
  *
  * Default path is: `~/.node-red/node_modules/@gogovega/firebase-config-node/build/nodes/firebase-config.js`
  *
@@ -104,6 +107,7 @@ function researchConfigNodeExistence(RED: NodeAPI) {
 				dir: userDir,
 				install: installLink,
 				valide: relativePath.valide,
+				userDirValid: userDir !== defaultUserDir,
 			};
 		}
 
@@ -111,30 +115,6 @@ function researchConfigNodeExistence(RED: NodeAPI) {
 	} catch (error) {
 		console.error("\nFirebase ERR! An error occurred while searching for the config-node.\n");
 	}
-}
-
-/**
- * Checks if the old config-node is still in use
- * @param RED NodeAPI
- * @returns True if still used, false if not and undefined if the check failed
- */
-function isOldConfigNodeStillInUse(RED: NodeAPI) {
-	const userDir = (RED.settings.available() ? RED.settings.userDir : "") || "~/.node-red";
-	const flowFileName = (RED.settings.available() ? RED.settings.flowFile : "") || "flows.json";
-	const flowFilePath = join(userDir, flowFileName);
-
-	if (!existsSync(flowFilePath)) return;
-
-	// eslint-disable-next-line @typescript-eslint/no-var-requires
-	const flowFile = require(flowFilePath);
-
-	if (!Array.isArray(flowFile)) return;
-
-	const [oldConfigUsed] = flowFile.filter(
-		(flow) => typeof flow === "object" && flow?.type === "database-config" && "authType" in flow
-	);
-
-	return !!oldConfigUsed;
 }
 
 function runInstallScript(userDir: string, install: string): Promise<void> {
@@ -148,4 +128,4 @@ function runInstallScript(userDir: string, install: string): Promise<void> {
 	});
 }
 
-export { isOldConfigNodeStillInUse, researchConfigNodeExistence, runInstallScript };
+export { researchConfigNodeExistence, runInstallScript };

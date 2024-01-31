@@ -18,7 +18,9 @@
 	"use strict";
 
 	const notify = function (notifications) {
-		if (!Array.isArray(notifications)) return;
+		if (!Array.isArray(notifications)) {
+			notifications = [notifications];
+		}
 
 		notifications.forEach((notification) => {
 			const { buttons, fixed, modal, msg, type } = notification;
@@ -76,8 +78,6 @@
 
 									try {
 										migrate();
-										// TODO: Not robust because it does not guarantee that the user will deploy
-										FirebaseUI.express.post("firebase/rtdb/config-node/scripts", { script: "migrate" });
 
 										notify([{
 											msg: `
@@ -129,6 +129,7 @@
 		});
 	};
 
+	// Hosted services such as FlowFuse do not use a file system - so must migrate from the editor
 	function migrate() {
 		const firebaseType = ["firebase-in", "firebase-get", "firebase-out", "on-disconnect"];
 		const oldConfigName = "database-config";
@@ -175,7 +176,7 @@
 
 				// Resolve the non-breaking changes
 				if (node.type === "firebase-in" || node.type === "firebase-get") {
-					if (node.constraint) {
+					if (node.constraint !== undefined) {
 						if (typeof node.constraint === "object" && node.constraint) {
 							changes.constraint = node.constraint;
 							changes.constraints = undefined;
@@ -184,7 +185,7 @@
 						}
 					}
 
-					if (node.useConstraint) {
+					if (node.useConstraint !== undefined) {
 						changes.useConstraint = node.useConstraint;
 						changes.useConstraints = undefined;
 						node.useConstraints = node.useConstraint ?? false;
@@ -206,8 +207,11 @@
 						}
 					}
 				} else if (node.type === "firebase-out") {
-					changes.priority = node.priority;
-					node.priority = String(node.priority) || "1";
+					const priority = String(node.priority || "") || "1";
+					if (node.priority !== priority) {
+						changes.priority = node.priority;
+						node.priority = priority;
+					}
 				}
 
 				if (Object.keys(changes).length) {
@@ -224,6 +228,8 @@
 						changed: wasChanged,
 					});
 				}
+
+				RED.nodes.updateConfigNodeUsers(node);
 			}
 		});
 
@@ -232,6 +238,7 @@
 		RED.nodes.dirty(true);
 		// TODO: vérifier si utile
 		RED.view.redraw(true);
+		RED.workspaces.refresh();
 		RED.history.push(historyEvent);
 	}
 
@@ -268,10 +275,60 @@
 		}, {});
 	}
 
+	function isOldConfigNodeStillInUse() {
+		let inUse = false;
+
+		RED.nodes.eachConfig((node) => {
+			if (node.type === "unknown" && node.name === node._orig.type && node._orig.type === "database-config" && "authType" in node._orig) inUse = true;
+		});
+
+		return inUse;
+	}
+
+	function installFromPaletteManager() {
+		return !RED.nodes.getType("firebase-config");
+	}
+
+	function generateNotification(script) {
+		const msg = `
+			<html>
+				<p>Welcome to Migration Wizard</p>
+				<p>To use the new config-node introduced by v0.6 without losing the existing configuration, please run the Migration script.</p>
+				<p>Read more about this migration <a href="https://github.com/GogoVega/node-red-contrib-firebase-realtime-database/discussions/50">here</a>.</p>
+			</html>`;
+		const msg2 = `
+			<html>
+				<p>Welcome to Migration Wizard</p>
+				<p>To use the new config-node introduced by v0.6, please restart Node-RED. If you are using FlowFuse, suspend then start the instance.</p>
+				<p>If you have installed from the Manage Palette you need to restart because Node-RED did not load all nodes correctly.</p>
+				<p>Read more about this migration <a href="https://github.com/GogoVega/node-red-contrib-firebase-realtime-database/discussions/50">here</a>.</p>
+			</html>`;
+
+		notify([{
+			msg: script === "migrate" ? msg : msg2,
+			type: "warning",
+			fixed: true,
+			modal: true,
+			buttons: script === "migrate" ? ["Run Migrate", "Close"] : ["Close"],
+		}]);
+	}
+
 	async function init() {
 		try {
 			console.log("Firebase Migration Wizard Started");
+
+			// Add the script to actions in order to run manually
+			RED.actions.add("firebase:run-firebase-migration", () => generateNotification("migrate"));
+
+			// Triggers the Migrate script if old config-node still in use
+			if (isOldConfigNodeStillInUse()) generateNotification("migrate");
+
+			// Triggers the Install script if the new config-nod was not found
 			const status = await FirebaseUI.express.get("firebase/rtdb/config-node/status");
+
+			// If the config-node was found, check if it was loaded
+			if (!status.notifications.length && installFromPaletteManager()) generateNotification("install");
+
 			notify(status.notifications);
 		} catch (error) {
 			console.error("An error occurred while checking the status of the config-node", error);

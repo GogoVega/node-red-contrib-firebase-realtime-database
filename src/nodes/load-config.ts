@@ -16,43 +16,26 @@
 
 import { ConfigNode } from "@gogovega/firebase-config-node/types";
 import { NodeAPI } from "node-red";
-import { isOldConfigNodeStillInUse, researchConfigNodeExistence, runInstallScript } from "../migration/config-node";
+import { researchConfigNodeExistence, runInstallScript } from "../migration/config-node";
 
 /**
  * This fake node is used:
  * 1. To check the existence of the config-node See {@link researchConfigNodeExistence}
  * 2. An endpoint for nodes to request services from
  *   - returns options to autocomplete the path field
- *   - Informs the user (notification) about the config-node status (has it been found, is the old one still in use)
+ *   - Informs the user (notification) about the config-node status (has it been found)
+ *
+ * Hosted services such as FlowFuse do not use a file system - so it's not possible to run the Migrate script
+ * from the runtime.
  */
 module.exports = function (RED: NodeAPI) {
 	const configNodeStatus = {
 		configNode: researchConfigNodeExistence(RED),
-		oldConfigNodeStillInUse: isOldConfigNodeStillInUse(RED),
 		installCalled: false,
-		migrationCalled: false,
 	};
 
 	RED.httpAdmin.get("/firebase/rtdb/config-node/status", RED.auth.needsPermission("load-config.write"), (_req, res) => {
 		const notifications = [];
-
-		// Migration Script
-		if (configNodeStatus.oldConfigNodeStillInUse !== false && !configNodeStatus.migrationCalled) {
-			const msg = `
-				<html>
-					<p>Welcome to Migration Wizard</p>
-					<p>In order to use the new config-node introduced by v0.6 without losing the existing configuration, please run the Migration script.</p>
-					<p>Read more about this migration <a href="https://github.com/GogoVega/node-red-contrib-firebase-realtime-database/discussions/50">here</a>.</p>
-				</html>`;
-
-			notifications.push({
-				msg: msg,
-				type: "warning",
-				fixed: true,
-				modal: true,
-				buttons: ["Run Migrate", "Close"],
-			});
-		}
 
 		// Install Script
 		if (!configNodeStatus.configNode?.found && !configNodeStatus.installCalled) {
@@ -81,7 +64,7 @@ module.exports = function (RED: NodeAPI) {
 						<p>Read more about this migration <a href="https://github.com/GogoVega/node-red-contrib-firebase-realtime-database/discussions/50">here</a>.</p>
 					</html>`;
 
-			const scriptRunnable = configNodeStatus.oldConfigNodeStillInUse !== undefined;
+			const scriptRunnable = configNodeStatus.configNode?.userDirValid;
 			const msg = scriptRunnable
 				? configNodeStatus.configNode?.valide
 					? msgInstallFromFile
@@ -89,6 +72,7 @@ module.exports = function (RED: NodeAPI) {
 				: msgIfScriptNotRunnable;
 			const buttons = scriptRunnable ? ["Run Install", "Close"] : ["Close"];
 
+			// Avoid spamming the user because this case should not happen
 			if (!scriptRunnable) configNodeStatus.installCalled = true;
 
 			notifications.push({
@@ -139,14 +123,13 @@ module.exports = function (RED: NodeAPI) {
 
 				if (script === "install") {
 					configNodeStatus.installCalled = true;
+
 					if (!configNodeStatus.configNode?.dir || !configNodeStatus.configNode?.install)
 						throw new Error("Node-RED Settings not available");
-					await runInstallScript(configNodeStatus.configNode.dir, configNodeStatus.configNode.install);
-				}
 
-				if (script === "migrate") {
-					configNodeStatus.migrationCalled = true;
-					res.sendStatus(200);
+					await runInstallScript(configNodeStatus.configNode.dir, configNodeStatus.configNode.install);
+				} else {
+					res.sendStatus(403);
 					return;
 				}
 
