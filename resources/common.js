@@ -169,9 +169,10 @@ const FirebaseUI = (function () {
 		}
 
 		/**
-		 * @type {{path: string, searchVal: string, options: any[]}}
+		 * @type {{cache: object, path: string, searchVal: string, options: any[]}}
 		 */
 		const currentCompletions = {
+			cache: {},
 			path: "",
 			searchVal: "",
 			options: [],
@@ -190,10 +191,17 @@ const FirebaseUI = (function () {
 
 			if (pathEnd || !pathEqual) {
 				currentCompletions.path = path;
-				try {
-					currentCompletions.options = await get(`firebase/rtdb/autocomplete/${configNodeId}${value ? "?path=" + path : ""}`);
-				} catch (error) {
-					console.error("An error occurred while getting autocomplete options:\n", error);
+
+				if (currentCompletions.cache[path]) {
+					currentCompletions.options = currentCompletions.cache[path];
+				} else {
+					try {
+						currentCompletions.options = await get(`firebase/rtdb/autocomplete/${configNodeId}${value ? "?path=" + path : ""}`);
+	
+						currentCompletions.cache[path] = currentCompletions.options;
+					} catch (error) {
+						console.error("An error occurred while getting autocomplete options:\n", error);
+					}
 				}
 			}
 
