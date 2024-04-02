@@ -1,5 +1,12 @@
 # Change log
 
+## 0.5.5
+
+### Changes
+
+- Bump dependencies to latest
+- Restrict all `firebase` versioning to patch
+
 ## 0.5.4
 
 ### Changes
