@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
+    "lib": ["ES2021"],
     "target": "es2021",
     "module": "commonjs",
     "moduleDetection": "auto",
@@ -13,6 +14,7 @@
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "outDir": "build",
+    "removeComments": true,
     "resolveJsonModule": true,
     "rootDir": "src",
     "skipLibCheck": true,

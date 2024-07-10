@@ -4,11 +4,12 @@
   "description": "Node-RED nodes to communicate with Google Firebase Realtime Databases",
   "main": "build/nodes/load-config.js",
   "scripts": {
+    "prebuild": "npm run clean",
     "build": "tsc",
-    "clean": "rm -rf build/lib build/**/*.js",
+    "clean": "rimraf build/lib build/**/*.js",
     "lint": "eslint . --ext .ts",
     "migrate": "bash scripts/migrate-script.sh",
-    "prettier": "prettier --write \"**/*.{md,ts}\"",
+    "format": "prettier --write \"**/*.{md,ts}\"",
     "test": "mocha './test/**/*_spec.js' --exit"
   },
   "repository": {
