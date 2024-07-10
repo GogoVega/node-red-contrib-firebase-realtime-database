@@ -217,7 +217,8 @@ export class Firebase<Node extends FirebaseNode, Config extends FirebaseConfig =
 	}
 
 	/**
-	 * Evaluates the payload message to replace reserved keywords (`TIMESTAMP` and `INCREMENT`) with the corresponding server value.
+	 * Evaluates the payload message to replace reserved keywords (`TIMESTAMP`, `INCREMENT` and `DECREMENT`) with
+	 * the corresponding server value.
 	 * @param payload The payload to be evaluated
 	 * @returns The payload evaluated
 	 */
@@ -230,14 +231,15 @@ export class Firebase<Node extends FirebaseNode, Config extends FirebaseConfig =
 			case "string": {
 				if (/^\s*TIMESTAMP\s*$/.test(payload)) return ServerValue.TIMESTAMP;
 
-				if (/^\s*INCREMENT\s*-?\d+\.?\d*\s*$/.test(payload)) {
+				if (/^\s*(?:INCREMENT|DECREMENT)\s*-?\d+\.?\d*\s*$/.test(payload)) {
 					const deltaString = payload.match(/-?\d+\.?\d*/)?.[0] || "";
 					const delta = Number(deltaString);
 
-					if (Number.isNaN(delta) || !Number.isInteger(delta))
-						throw new Error("The delta of increment function must be an integer.");
+					if (Number.isNaN(delta))
+						throw new Error("The delta of increment function must be a valid number.");
 
-					return ServerValue.increment(delta);
+					const toOppose = /DECREMENT/.test(payload)
+					return ServerValue.increment(toOppose ? (- delta) : delta);
 				}
 
 				return payload;
