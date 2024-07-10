@@ -15,9 +15,8 @@
  */
 
 import {
-	BothDataSnapshot,
 	Constraint,
-	isAdminDataSnapshot,
+	DataSnapshotType,
 	ListenerMap,
 	QueryMethod,
 	QueryMethodMap,
@@ -404,7 +403,7 @@ export class Firebase<Node extends FirebaseNode, Config extends FirebaseConfig =
 	 * @param msg The message to pass through.
 	 */
 	protected sendMsg(
-		snapshot: BothDataSnapshot,
+		snapshot: DataSnapshotType,
 		child?: string | null,
 		msg?: IncomingMessage,
 		send?: (msg: NodeMessage) => void
@@ -417,7 +416,7 @@ export class Firebase<Node extends FirebaseNode, Config extends FirebaseConfig =
 			this.setStatus();
 		}
 
-		const topic = snapshot.ref.key?.toString() || "";
+		const topic = snapshot.key;
 		const payload =
 			this.node.config.outputType === "string"
 				? JSON.stringify(snapshot.val())
@@ -425,7 +424,7 @@ export class Firebase<Node extends FirebaseNode, Config extends FirebaseConfig =
 					? snapshot.toJSON()
 					: snapshot.val();
 		const previousChildName = child !== undefined ? { previousChildName: child } : {};
-		const priority = isAdminDataSnapshot(snapshot) ? snapshot.getPriority() : snapshot.priority;
+		const priority = snapshot.priority;
 		const msg2Send: OutgoingMessage = {
 			...(msg || {}),
 			payload: payload,
@@ -434,9 +433,9 @@ export class Firebase<Node extends FirebaseNode, Config extends FirebaseConfig =
 			topic: topic,
 		};
 
-		if (send) return send(msg2Send);
+		if (send) return send(msg2Send as NodeMessage);
 
-		this.node.send(msg2Send);
+		this.node.send(msg2Send as NodeMessage);
 	}
 
 	/**

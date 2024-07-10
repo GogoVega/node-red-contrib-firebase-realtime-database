@@ -16,7 +16,7 @@
 
 import { Constraint, Listener, Priority, QueryMethod } from "@gogovega/firebase-config-node/rtdb";
 import { ConfigNode } from "@gogovega/firebase-config-node/types";
-import { Node, NodeMessage, NodeMessageInFlow } from "node-red";
+import { Node, NodeMessageInFlow } from "node-red";
 import { FirebaseGetConfig, FirebaseInConfig, FirebaseOutConfig } from "./firebase-config";
 
 export interface IncomingMessage extends NodeMessageInFlow {
@@ -26,10 +26,12 @@ export interface IncomingMessage extends NodeMessageInFlow {
 	priority?: Priority;
 }
 
-export interface OutgoingMessage extends NodeMessage {
+export interface OutgoingMessage {
 	payload: unknown;
 	previousChildName?: string | null;
 	priority: string | number | null;
+	topic: string | null;
+	_msgid?: string | undefined;
 }
 
 export interface FirebaseBaseNode extends Node {
