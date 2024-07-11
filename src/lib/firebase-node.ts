@@ -135,10 +135,10 @@ export class Firebase<Node extends FirebaseNode, Config extends FirebaseConfig =
 		const [value, type, msg] = args;
 		const typesAllowed =
 			field === "child"
-				? ["flow", "global", "jsonata", "msg", "str"]
+				? ["flow", "global", "jsonata", "env", "msg", "str"]
 				: field === "value"
-					? ["bool", "date", "flow", "global", "jsonata", "msg", "null", "num", "str"]
-					: ["flow", "global", "jsonata", "msg", "num"];
+					? ["bool", "date", "flow", "global", "jsonata", "env", "msg", "null", "num", "str"]
+					: ["flow", "global", "jsonata", "env", "msg", "num"];
 
 		if (!typesAllowed.includes(type))
 			throw new Error(`Invalid type (${type}) for the ${field} field. Please reconfigure this node.`);
@@ -207,7 +207,7 @@ export class Firebase<Node extends FirebaseNode, Config extends FirebaseConfig =
 		// TODO: Remove Me
 		if (this.isFirebaseInNode(this.node) && type === undefined) type = "str";
 
-		if (!["flow", "global", "jsonata", "msg", "str"].includes(type!))
+		if (!["flow", "global", "jsonata", "env", "msg", "str"].includes(type!))
 			throw new Error(`Invalid type (${type}) for the Path field. Please reconfigure this node.`);
 
 		if (!msg && this.dynamicFieldTypes.includes(type!))

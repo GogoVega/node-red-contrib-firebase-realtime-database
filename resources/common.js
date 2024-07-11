@@ -37,7 +37,7 @@ const FirebaseUI = (function () {
 		},
 		childType: function () {
 			return function (value, opt) {
-				if (typeof value === "string" && /^(msg|str|flow|global|jsonata)$/.test(value)) return true;
+				if (typeof value === "string" && /^(msg|str|flow|global|jsonata|env)$/.test(value)) return true;
 				if (opt?.label) return i18n("errors.invalid-type-prop", { prop: opt.label });
 				return opt ? i18n("errors.invalid-type") : false;
 			};
@@ -73,7 +73,7 @@ const FirebaseUI = (function () {
 		},
 		pathType: function () {
 			return function (value, opt) {
-				if (typeof value === "string" && /^(msg|str|flow|global|jsonata)$/.test(value)) return true;
+				if (typeof value === "string" && /^(msg|str|flow|global|jsonata|env)$/.test(value)) return true;
 				if (opt?.label) return i18n("errors.invalid-type-prop", { prop: opt.label });
 				return opt ? i18n("errors.invalid-type") : false;
 			};
@@ -140,7 +140,7 @@ const FirebaseUI = (function () {
 		},
 		valueType: function () {
 			return (value, opt) => {
-				if (/^(bool|date|flow|global|jsonata|msg|null|num|str)$/.test(value)) return true;
+				if (/^(bool|date|flow|global|jsonata|env|msg|null|num|str)$/.test(value)) return true;
 				if (opt?.label) return i18n("errors.invalid-type-prop", { prop: opt.label });
 				return opt ? i18n("errors.invalid-type") : false;
 			};
@@ -304,7 +304,7 @@ const FirebaseUI = (function () {
 		build() {
 			const others = this._autoComplete ? { autoComplete: autoComplete() } : {};
 			this.staticFieldOptions = [{ value: "str", label: "string", icon: "red/images/typedInput/az.svg", validate: validators.path(this._allowBlank), ...others }];
-			this.dynamicFieldOptions = [...this.staticFieldOptions, "msg", "flow", "global", "jsonata"];
+			this.dynamicFieldOptions = [...this.staticFieldOptions, "msg", "flow", "global", "jsonata", "env"];
 			this.pathField.typedInput({
 				typeField: "#node-input-pathType",
 				types: this._modeByDefault === "dynamic" ? this.dynamicFieldOptions : this.staticFieldOptions,
