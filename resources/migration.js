@@ -94,7 +94,7 @@
 											msg: `
 												<html>
 													<p>Migration Failed!</p>
-													<p>Please raise an issue <a href="https://github.com/GogoVega/node-red-contrib-firebase-realtime-database/issues/new/choose">here</a> with log details</p>
+													<p>Please raise an issue <a href="https://github.com/GogoVega/node-red-contrib-firebase-realtime-database/issues/new/choose">here</a> with browser log details</p>
 												</html>`,
 											type: "error",
 											fixed: true,
@@ -130,49 +130,55 @@
 	};
 
 	// Hosted services such as FlowFuse do not use a file system - so must migrate from the editor
+	// More practical for the user (diff) and safest
 	function migrate() {
 		const firebaseType = ["firebase-in", "firebase-get", "firebase-out", "on-disconnect"];
 		const oldConfigName = "database-config";
 		const newConfigName = "firebase-config";
 
-		const historyEvent = { t: "multi", events: [] };
-		const wasDirty =  RED.nodes.dirty();
+		// Used for the undo/redo changes
+		const historyEvent = { t: "multi", events: [], dirty: RED.nodes.dirty() };
 
+		const importMap = {};
+		const newConfigNodes = [];
 		// Search for old config-node
-		const oldConfigNodes = { nodes: [], importMap: {} };
 		RED.nodes.eachConfig((node) => {
 			if (node.type === "unknown" && node.name === node._orig.type && node._orig.type === oldConfigName && "authType" in node._orig) {
 
 				// Replace the type by the new one
 				node._orig.type = newConfigName;
 
-				oldConfigNodes.nodes.push(RED.nodes.convertNode(node));
-				oldConfigNodes.importMap[node.id] = "replace";
+				// Need to convert the node because it's an unknown type
+				// So properties are defined in `node._orig` instead of root of the node
+				newConfigNodes.push(RED.nodes.convertNode(node));
+				importMap[node.id] = "replace";
 			}
 		});
 
-		if (oldConfigNodes.nodes.length) {
+		if (newConfigNodes.length) {
 			// Import and replace by the new config-nodes
-			const result = RED.nodes.import(oldConfigNodes.nodes, { importMap: oldConfigNodes.importMap, reimport: true });
+			const result = RED.nodes.import(newConfigNodes, { importMap: importMap });
 
 			// Used for the undo event, so replace the type by the older
-			const removedConfigNodes = result.removedNodes.map((node) => {
+			const oldConfigNodes = result.removedNodes.map((node) => {
 				node.type = oldConfigName;
 				return node;
 			});
 
+			// TODO: Config Nodes do not have `changed` property in the `replace` history
+			// and `dirty` property is not used for that config nodes.
 			// @ts-ignore
 			historyEvent.events.push({
 				t: "replace",
-				config: removedConfigNodes,
-				dirty: wasDirty,
+				config: oldConfigNodes
 			});
 		}
 
 		RED.nodes.eachNode((node) => {
 			if (firebaseType.includes(node.type) && "database" in node && "path" in node) {
-				const changes = {};
 				const wasChanged = node.changed;
+				const wasDirty = node.dirty;
+				const changes = {};
 
 				// Resolve the non-breaking changes
 				if (node.type === "firebase-in" || node.type === "firebase-get") {
@@ -215,8 +221,11 @@
 				}
 
 				if (Object.keys(changes).length) {
+					// Marks the node has changed
 					node.changed = true;
+					node.dirty = true;
 
+					RED.events.emit("nodes:change", node);
 					RED.editor.validateNode(node);
 
 					// @ts-ignore
@@ -224,11 +233,13 @@
 						t: "edit",
 						node: node,
 						changes: changes,
-						dirty: wasDirty,
 						changed: wasChanged,
+						dirty: wasDirty
 					});
 				}
 
+				// Bug in NR Core, see #4807
+				// Not works for after undo changes
 				RED.nodes.updateConfigNodeUsers(node);
 			}
 		});
@@ -236,7 +247,6 @@
 		if (!historyEvent.events.length) return;
 
 		RED.nodes.dirty(true);
-		// TODO: vérifier si utile
 		RED.view.redraw(true);
 		RED.workspaces.refresh();
 		RED.history.push(historyEvent);
