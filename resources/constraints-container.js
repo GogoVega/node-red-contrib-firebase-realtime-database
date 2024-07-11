@@ -22,7 +22,7 @@ const FirebaseQueryConstraintsContainer = (function () {
 		{ value: fieldName, label: i18n(`constraint.${fieldName}`) }
 	));
 
-	const dynamicFieldTypes = ["msg", "flow", "global", "jsonata"];
+	const dynamicFieldTypes = ["msg", "flow", "global", "jsonata", "env"];
 	const limitFieldTypes = [{ value: "num", label: "number", icon: "red/images/typedInput/09.svg", validate: FirebaseUI.validators.priority() }, ...dynamicFieldTypes];
 	const rangeFieldTypes = ["bool", "num", "str", "date", { value: "null", label: "null", hasValue: false }, ...dynamicFieldTypes];
 
