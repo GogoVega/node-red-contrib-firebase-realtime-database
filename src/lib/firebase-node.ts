@@ -235,11 +235,10 @@ export class Firebase<Node extends FirebaseNode, Config extends FirebaseConfig =
 					const deltaString = payload.match(/-?\d+\.?\d*/)?.[0] || "";
 					const delta = Number(deltaString);
 
-					if (Number.isNaN(delta))
-						throw new Error("The delta of increment function must be a valid number.");
+					if (Number.isNaN(delta)) throw new Error("The delta of increment function must be a valid number.");
 
-					const toOppose = /DECREMENT/.test(payload)
-					return ServerValue.increment(toOppose ? (- delta) : delta);
+					const toOppose = /DECREMENT/.test(payload);
+					return ServerValue.increment(toOppose ? -delta : delta);
 				}
 
 				return payload;
