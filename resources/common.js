@@ -147,6 +147,16 @@ var FirebaseUI = FirebaseUI || (function () {
 		},
 	};
 
+	// Autocomplete Cache System
+	let contextKnownKeys = new Set();
+	let contextCache = {};
+	if (RED.events) {
+		RED.events.on("editor:close", function () {
+			contextCache = {};
+			contextKnownKeys = new Set();
+		});
+	}
+
 	const autoComplete = function () {
 		function getMatch(value, searchValue) {
 			const idx = value.toLowerCase().indexOf(searchValue.toLowerCase());
