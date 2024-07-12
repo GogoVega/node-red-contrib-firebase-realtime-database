@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-const FirebaseUI = (function () {
+var FirebaseUI = FirebaseUI || (function () {
 	"use strict";
 
 	const validators = {

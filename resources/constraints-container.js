@@ -14,8 +14,12 @@
  * limitations under the License.
  */
 
-const FirebaseQueryConstraintsContainer = (function () {
+var FirebaseQueryConstraintsContainer = FirebaseQueryConstraintsContainer || (function () {
 	"use strict";
+
+	if (!window.FirebaseUI) {
+		return;
+	}
 
 	const queryConstraintTypes = new Array("endAt", "endBefore", "equalTo", "limitToFirst", "limitToLast", "orderByChild", "orderByKey", "orderByPriority", "orderByValue", "startAfter", "startAt");
 	const queryConstraintFieldOptions = queryConstraintTypes.map((fieldName) => (
