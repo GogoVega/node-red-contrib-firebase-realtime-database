@@ -23,13 +23,13 @@
 
 ![demo nodes](./assets/images/demo-nodes.gif)
 
+> [!CAUTION]
+> **BREAKING CHANGES**: If you are updating to 0.6, please read the [migration procedure](https://github.com/GogoVega/node-red-contrib-firebase-realtime-database/wiki/migration-wizard).
+
 ## What is it?
 
 This package is used to communicate with Firebase Realtime Databases.
 It allows to add, modify and fetch data from your databases aswell as subscribing to data at the paths you specify which yields a `payload` whenever a value changes.
-
-> [!CAUTION]
-> BREAKING CHANGES: If you are updating to 0.6, please read the [migration procedure](https://github.com/GogoVega/node-red-contrib-firebase-realtime-database/wiki/migration-wizard).
 
 ## The Nodes
 

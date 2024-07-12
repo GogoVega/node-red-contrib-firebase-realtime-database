@@ -1,5 +1,24 @@
 # Change log
 
+## 0.6.0-beta.1
+
+### Changes
+
+- Use the new unified `DataSnapshot` structure
+- Allow the path to have spaces in the name
+- Bump devDependencies and dependencies to latest
+
+### New Features
+
+- (ServerValue) Relax Integer rule to Number and add `DECREMENT` keyword (#63)
+- Feature: Add `env` field type to `Path`, `Child` and `Value` inputs (#66)
+
+### Enhancements
+
+- Clean up nodes history during migration
+- Improve the autocomplete of `Path` field (#67)
+- Ensure scripts have been loaded (#68)
+
 ## 0.6.0-alpha.2
 
 ### Fixes
