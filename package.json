@@ -70,6 +70,7 @@
     "build/",
     "examples/",
     "resources/",
+    "scripts/",
     "CHANGELOG.md",
     "LICENSE",
     "README.md",
