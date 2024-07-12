@@ -28,7 +28,7 @@ const FirebaseUI = (function () {
 			};
 		},
 		child: function (allowBlank = false) {
-			const regex = allowBlank ? /[\s.#$\[\]]|\/{2,}/ : /^$|[\s.#$\[\]]|\/{2,}/;
+			const regex = allowBlank ? /^\s|\s$|[.#$\[\]]|\/{2,}/ : /^$|^\s|\s$|[.#$\[\]]|\/{2,}/;
 			return function (value, opt) {
 				if (typeof value === "string" && !regex.test(value)) return true;
 				if (!allowBlank && !value) return opt ? i18n("errors.empty-child") : false;
@@ -64,7 +64,7 @@ const FirebaseUI = (function () {
 			};
 		},
 		path: function (allowBlank = false) {
-			const regex = allowBlank ? /[\s.#$\[\]]|\/{2,}/ : /^$|[\s.#$\[\]]|\/{2,}/;
+			const regex = allowBlank ? /^\s|\s$|[.#$\[\]]|\/{2,}/ : /^$|^\s|\s$|[.#$\[\]]|\/{2,}/;
 			return function (value, opt) {
 				if (typeof value === "string" && !regex.test(value)) return true;
 				if (!allowBlank && !value) return opt ? i18n("errors.empty-path") : false;
