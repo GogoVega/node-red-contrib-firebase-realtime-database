@@ -28,7 +28,7 @@ var FirebaseUI = FirebaseUI || (function () {
 			};
 		},
 		child: function (allowBlank = false) {
-			const regex = allowBlank ? /[\s.#$\[\]]|\/{2,}/ : /^$|[\s.#$\[\]]|\/{2,}/;
+			const regex = allowBlank ? /^\s|\s$|[.#$\[\]]|\/{2,}/ : /^$|^\s|\s$|[.#$\[\]]|\/{2,}/;
 			return function (value, opt) {
 				if (typeof value === "string" && !regex.test(value)) return true;
 				if (!allowBlank && !value) return opt ? i18n("errors.empty-child") : false;
@@ -64,7 +64,7 @@ var FirebaseUI = FirebaseUI || (function () {
 			};
 		},
 		path: function (allowBlank = false) {
-			const regex = allowBlank ? /[\s.#$\[\]]|\/{2,}/ : /^$|[\s.#$\[\]]|\/{2,}/;
+			const regex = allowBlank ? /^\s|\s$|[.#$\[\]]|\/{2,}/ : /^$|^\s|\s$|[.#$\[\]]|\/{2,}/;
 			return function (value, opt) {
 				if (typeof value === "string" && !regex.test(value)) return true;
 				if (!allowBlank && !value) return opt ? i18n("errors.empty-path") : false;
@@ -168,81 +168,78 @@ var FirebaseUI = FirebaseUI || (function () {
 			return els;
 		}
 
-		/**
-		 * @type {{cache: object, path: string, searchVal: string, options: any[]}}
-		 */
-		const currentCompletions = {
-			cache: {},
-			path: "",
-			searchVal: "",
-			options: [],
-		};
-
-		// Retrieve only the options for the depth of the given path - avoids loading the entire data from database
-		async function getCompletions(value, configNodeId) {
-			const paths = value.split("/");
-			const searchValue = paths.pop();
-
-			const path = paths.join("/");
-
-			// empty is not triggered, so check the first character
-			const pathEnd = /^.?$|\/$/.test(value);
-			const pathEqual = currentCompletions.path === path;
-
-			if (pathEnd || !pathEqual) {
-				currentCompletions.path = path;
-
-				if (currentCompletions.cache[path]) {
-					currentCompletions.options = currentCompletions.cache[path];
-				} else {
-					try {
-						currentCompletions.options = await get(`firebase/rtdb/autocomplete/${configNodeId}${value ? "?path=" + path : ""}`);
-	
-						currentCompletions.cache[path] = currentCompletions.options;
-					} catch (error) {
-						console.error("An error occurred while getting autocomplete options:\n", error);
-					}
+		const getKeysFromRuntime = function (configNodeId, searchKey, done) {
+			if (searchKey.length > 0) {
+				try {
+					RED.utils.normalisePropertyExpression(searchKey);
+				} catch (error) {
+					// Not a valid context key, so don't try looking up
+					done();
+					return;
 				}
 			}
 
-			currentCompletions.searchVal = searchValue;
+			const url = `firebase/rtdb/autocomplete/${configNodeId}?path=${encodeURIComponent(searchKey)}`;
 
-			return currentCompletions;
+			if (contextCache[url]) {
+				done();
+			} else {
+				$.getJSON(url, function (data) {
+					contextCache[url] = true;
+					const keys = data || [];
+					const keyPrefix = searchKey + (searchKey.length > 0 ? "/" : "")
+					keys.forEach((key) => {
+						contextKnownKeys.add(keyPrefix + key);
+					});
+
+					done();
+				})
+			}
 		}
 
-		return async function (value, done) {
+		const getKeys = function (key, configNodeId, done) {
+			const keyParts = key.split('/');
+			const partialKey = keyParts.pop();
+			const searchKey = keyParts.join('/');
+
+			getKeysFromRuntime(configNodeId, searchKey, function () {
+				if (contextKnownKeys.has(key)) {
+					getKeysFromRuntime(configNodeId, key, function () {
+						done(contextKnownKeys);
+					});
+				}
+
+				done(contextKnownKeys);
+			})
+		}
+
+		return function (val, done) {
 			const configNodeId = $("#node-input-database").val();
 
-			if (!configNodeId || configNodeId === "_ADD_") return [];
+			if (!configNodeId || configNodeId === "_ADD_") done([]);
 
-			const { path, searchVal, options } = await getCompletions(value, configNodeId);
-
-			const matches = options
-				.reduce((opts, optVal) => {
-					const valMatch = getMatch(optVal, searchVal);
+			getKeys(val, configNodeId, function (keys) {
+				const matches = []
+				keys.forEach((v) => {
+					let optVal = v;
+					let valMatch = getMatch(optVal, val);
 
 					if (valMatch.found) {
 						const element = $("<div>", { style: "display: flex" });
-
-						$("<div/>", { style: "font-family: var(--red-ui-monospace-font); white-space:nowrap; overflow: hidden; flex-grow:1" })
-							.append(generateSpans(valMatch))
-							.appendTo(element);
-
-						opts.push({
-							value: `${path}${path && "/"}${optVal}`,
+						const valEl = $("<div/>", { style: "font-family: var(--red-ui-monospace-font); white-space: nowrap; overflow: hidden; flex-grow: 1;" });
+						valEl.append(generateSpans(valMatch));
+						valEl.appendTo(element);
+						matches.push({
+							value: optVal,
 							label: element,
-							i: valMatch.index,
 						});
 					}
+				});
 
-					return opts;
-				}, [])
-				.sort(function (A, B) { return A.i - B.i });
-
-			if (done) return done(matches);
-
-			return matches;
-		};
+				matches.sort(function (a, b) { return a.value.localeCompare(b.value) });
+				done(matches);
+			})
+		}
 	}
 
 	function get(URL) {
