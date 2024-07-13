@@ -145,9 +145,6 @@ export class Firebase<Node extends FirebaseNode, Config extends FirebaseConfig =
 
 		let valueFound;
 		switch (type) {
-			case "date":
-				valueFound = Date.now();
-				break;
 			case "null":
 				valueFound = null;
 				break;
