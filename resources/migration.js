@@ -330,16 +330,20 @@
 			// Add the script to actions in order to run manually
 			RED.actions.add("firebase:run-firebase-migration", () => generateNotification("migrate"));
 
-			// Triggers the Migrate script if old config-node still in use
-			if (isOldConfigNodeStillInUse()) generateNotification("migrate");
-
-			// Triggers the Install script if the new config-nod was not found
+			// Research if the Config Node is missing in dependencies - Should not happen but handled
 			const status = await FirebaseUI.express.get("firebase/rtdb/config-node/status");
 
-			// If the config-node was found, check if it was loaded
-			if (!status.notifications.length && installFromPaletteManager()) generateNotification("install");
-
-			notify(status.notifications);
+			if (status.notifications.length) {
+				// Ask the user to trigger the Install script if the new Config Node was not found
+				notify(status.notifications);
+			} else if (installFromPaletteManager()) {
+				// Not loaded, so the user must restart NR
+				generateNotification("install");
+			} else if (isOldConfigNodeStillInUse()) {
+				// Now the Config Node has been loaded
+				// Triggers the Migrate script if old Config Node still in use
+				generateNotification("migrate");
+			}
 		} catch (error) {
 			console.error("An error occurred while checking the status of the config-node", error);
 		}
