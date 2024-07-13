@@ -25,16 +25,16 @@ export type ListenerType = Listener | "none";
 export type OutputType = "auto" | "json" | "string";
 
 export type Path = string;
-export type PathType = "flow" | "global" | "jsonata" | "msg" | "str";
+export type PathType = "env" | "flow" | "global" | "jsonata" | "msg" | "str";
 
 export type ChildField = string;
-export type ChildFieldType = "flow" | "global" | "jsonata" | "msg" | "str";
+export type ChildFieldType = "env" | "flow" | "global" | "jsonata" | "msg" | "str";
 
 export type ValueField = string;
-export type ValueFieldType = "bool" | "date" | "flow" | "global" | "jsonata" | "msg" | "null" | "num" | "str";
+export type ValueFieldType = "env" | "bool" | "date" | "flow" | "global" | "jsonata" | "msg" | "null" | "num" | "str";
 
 export type LimitField = string;
-export type LimitFieldType = "flow" | "global" | "jsonata" | "msg" | "num";
+export type LimitFieldType = "env" | "flow" | "global" | "jsonata" | "msg" | "num";
 
 export interface QueryConstraintPropertySignature {
 	child: { args: [child: ChildField, type: ChildFieldType, msg?: IncomingMessage]; promise: string };
