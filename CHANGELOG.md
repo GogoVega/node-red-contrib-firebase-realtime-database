@@ -1,5 +1,20 @@
 # Change log
 
+## 0.6.0-beta.2
+
+### Changes
+
+- Bump `@gogovega/firebase-config-node` from 0.0.1-beta.1 to 0.0.1-beta.2
+
+### Fixes
+
+- Fix the value of the date option for the field type (#69)
+- Add missing `env` to config types
+
+### Improvements
+
+- Avoid issuing both installation and migration notifications (#70)
+
 ## 0.6.0-beta.1
 
 ### Changes
