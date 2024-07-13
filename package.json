@@ -14,7 +14,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/GogoVega/node-red-contrib-firebase-realtime-database.git"
+    "url": "git+https://github.com/GogoVega/node-red-contrib-firebase-realtime-database.git"
   },
   "keywords": [
     "admin",
