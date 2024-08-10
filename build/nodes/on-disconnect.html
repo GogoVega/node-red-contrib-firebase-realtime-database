@@ -45,7 +45,7 @@
 				const labelArray = !this.sendMsgEvent ? [""] : this.sendMsgEvent.split(",");
 				return labelArray[index];
 			},
-			icon: "firebase.png",
+			icon: "firebase.svg",
 			paletteLabel: "On Disconnect",
 			label: function () {
 				const query = this.queryType?.match(/^(msg|none)$/) ? "" : this.queryType?.toUpperCase() || "";
