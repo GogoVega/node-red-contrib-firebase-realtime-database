@@ -19,8 +19,8 @@
     },
     "tips": {
       "tips": "<strong>Tips</strong>:",
-      "tip0": "You can use constraint(s) for the query by setting the <code>msg.method</code> property.",
-      "tip1": "If <code>msg.method</code> is set, Query Constraints defined in the node will be replaced by those contained in the message."
+      "tip0": "You can use constraint(s) for the query by setting the <code>msg.constraints</code> property.",
+      "tip1": "If <code>msg.constraints</code> is set, Query Constraints defined in the node will be replaced by those contained in the message."
     },
     "useConstraints": "Use Query Constraints to sort and order your data.",
     "passThrough": "If a message arrives, pass through the message?"

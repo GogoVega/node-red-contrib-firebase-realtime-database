@@ -19,8 +19,8 @@
     },
     "tips": {
       "tips": "<strong>Tips</strong>:",
-      "tip0": "Sie können Einschränkungen für die Abfrage verwenden in dem sie die <code>msg.method</code> Eigenschaft setzen.",
-      "tip1": "Wenn <code>msg.method</code> gesetzt ist, werden die im Knoten definierten Abfrageeinschränkungen durch die Nachricht enthaltenen ersetzt."
+      "tip0": "Sie können Einschränkungen für die Abfrage verwenden in dem sie die <code>msg.constraints</code> Eigenschaft setzen.",
+      "tip1": "Wenn <code>msg.constraints</code> gesetzt ist, werden die im Knoten definierten Abfrageeinschränkungen durch die Nachricht enthaltenen ersetzt."
     },
     "useConstraints": "Verwende Abfrageeinschränkungen um ihre Daten zu sortieren.",
     "passThrough": "Die Nachricht durchreichen, wenn eine Nachricht ankommt?"
