@@ -144,6 +144,7 @@ module.exports = function (RED: NodeAPI) {
 					],
 				});
 			} catch (error) {
+				console.error("Error during Migration", error);
 				res.json({
 					notifications: [
 						{

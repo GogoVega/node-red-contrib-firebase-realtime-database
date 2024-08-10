@@ -583,8 +583,8 @@ export class FirebaseIn extends Firebase<FirebaseInNode> {
 					constraints
 				);
 
-				send && msg2PassThrough && send(msg2PassThrough);
-				done && done();
+				if (send && msg2PassThrough) send(msg2PassThrough);
+				if (done) done();
 			} catch (error) {
 				this.onError(error, done);
 			}
@@ -595,7 +595,9 @@ export class FirebaseIn extends Firebase<FirebaseInNode> {
 	 * Unsubscribes from the listener in order to detach a callback (`sendMsg`) previously attached to the listener.
 	 */
 	public unsubscribe(): void {
-		this.unsubscribeCallback && this.unsubscribeCallback();
+		if (this.unsubscribeCallback) {
+			this.unsubscribeCallback();
+		}
 	}
 }
 

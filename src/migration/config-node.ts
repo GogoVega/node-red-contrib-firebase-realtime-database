@@ -59,7 +59,7 @@ function researchConfigNodeExistence(RED: NodeAPI) {
 		const packageFileExist = existsSync(packageFilePath);
 
 		if (packageFileExist) {
-			// eslint-disable-next-line @typescript-eslint/no-var-requires
+			// eslint-disable-next-line @typescript-eslint/no-require-imports
 			const content = require(packageFilePath);
 			configNodeInstalledManually =
 				typeof content === "object" &&
@@ -113,7 +113,7 @@ function researchConfigNodeExistence(RED: NodeAPI) {
 
 		return { found: true };
 	} catch (error) {
-		console.error("\nFirebase ERR! An error occurred while searching for the config-node.\n");
+		console.error("\nFirebase ERR! An error occurred while searching for the config-node.\n", error);
 	}
 }
 
