@@ -1,5 +1,19 @@
 # Change log
 
+## 0.6.0-beta.3
+
+### Changes
+
+- Bump `@gogovega/firebase-config-node` from 0.0.1-beta.2 to 0.0.1
+- Only allows installations on Node RED version >=3
+- Update Firebase icon
+
+## Fixes
+
+- Typos with `msg.method` instead of `msg.constraints`
+- Update documentation for `DECREMENT` reserved keyword
+- Migration: the error is not transmitted to the console
+
 ## 0.6.0-beta.2
 
 ### Changes

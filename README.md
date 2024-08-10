@@ -1,5 +1,5 @@
 <div align="center">
-  <h1>Node-RED nodes to communicate with <a href="https://firebase.google.com">Firebase Realtime Databases</a></h1>
+  <h1>Node-RED nodes to communicate with <a href="https://firebase.google.com/products/realtime-database">Firebase Realtime Databases</a></h1>
   <a href="https://firebase.google.com"><img src="assets/images/node-red-firebase-rtdb-logo.svg" alt="Logo" width="70%"></a>
   <p align="center">
     <br />
@@ -53,13 +53,14 @@ On the video above, we can see the "Query Constraint" feature, which is used to 
 Find this package `@gogovega/node-red-contrib-firebase-realtime-database` and click install.
 
 - Install Manually  
-  Rememeber to restart Node RED after using this method.  
   `.node-red` is usually relative to the users home directory that is running Node RED.
 
 ```bash
 cd ~/.node-red
 npm install @gogovega/node-red-contrib-firebase-realtime-database --omit=dev
 ```
+
+Remember to restart Node RED after using either method. 
 
 ## Authentication Methods
 
@@ -76,13 +77,12 @@ Read more about the different ways to authenticate [here](https://github.com/Gog
 - [Migrate to v0.6](https://github.com/GogoVega/node-red-contrib-firebase-realtime-database/wiki/migration-wizard): The migration procedure to update to v0.6
 - [Build Database](https://github.com/GogoVega/node-red-contrib-firebase-realtime-database/wiki/create-database): How to build a Firebase database?
 - [Authentication Methods](https://github.com/GogoVega/node-red-contrib-firebase-realtime-database/wiki/Authentication#authentication-methods): Which method used to connect?
+- [Firestore Nodes](https://github.com/GogoVega/node-red-contrib-cloud-firestore): You search for the Google Cloud Firestore Nodes?
 - [Wiki](https://github.com/GogoVega/node-red-contrib-firebase-realtime-database/wiki): Just about everything
 - [Firebase Site](https://firebase.google.com/): What is Firebase?
 - [Change Log](./CHANGELOG.md): Whats changed?
 
-## TODO List
-
-- [ ] Sign in with Google (Provider)
+## Feature Request
 
 If you have any other suggestions, please let me know [here](https://github.com/GogoVega/node-red-contrib-firebase-realtime-database/discussions/new?category=ideas).
 
@@ -90,7 +90,7 @@ If you have any other suggestions, please let me know [here](https://github.com/
 
 MIT License
 
-Copyright (c) 2022-2023 Gauthier Dandele
+Copyright (c) 2022-2024 Gauthier Dandele
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

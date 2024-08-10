@@ -1,6 +1,6 @@
 {
   "name": "@gogovega/node-red-contrib-firebase-realtime-database",
-  "version": "0.6.0-beta.2",
+  "version": "0.6.0-beta.3",
   "description": "Node-RED nodes to communicate with Google Firebase Realtime Databases",
   "main": "build/nodes/load-config.js",
   "scripts": {
@@ -47,21 +47,21 @@
       "firebase-out": "build/nodes/firebase-out.js",
       "on-disconnect": "build/nodes/on-disconnect.js"
     },
-    "version": ">=1.3.7"
+    "version": ">=3"
   },
   "dependencies": {
-    "@gogovega/firebase-config-node": "0.0.1-beta.2"
+    "@gogovega/firebase-config-node": "^0.0.1"
   },
   "devDependencies": {
     "@types/node-red": "^1.3.5",
-    "@typescript-eslint/eslint-plugin": "^7.16.0",
-    "@typescript-eslint/parser": "^7.16.0",
+    "@typescript-eslint/eslint-plugin": "^8.0.1",
+    "@typescript-eslint/parser": "^8.0.1",
     "eslint": "^8.57.0",
-    "mocha": "^10.6.0",
+    "mocha": "^10.7.3",
     "node-red": "^4.0.2",
     "node-red-node-test-helper": "^0.3.4",
-    "prettier": "^3.3.2",
-    "typescript": "^5.5.3"
+    "prettier": "^3.3.3",
+    "typescript": "^5.5.4"
   },
   "engines": {
     "node": ">=14"
