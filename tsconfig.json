@@ -22,6 +22,7 @@
     "strictFunctionTypes": true,
     "strictNullChecks": true,
     "strictPropertyInitialization": true,
+    "stripInternal": true,
   },
   "include": [
     "src"

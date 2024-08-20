@@ -14,118 +14,105 @@
  * limitations under the License.
  */
 
-import { exec } from "child_process";
 import { NodeAPI } from "node-red";
-import { existsSync } from "node:fs";
-import { join } from "node:path";
 
 /**
- * This function is used to check the existence of the config-node
- * because Node-RED does not yet allow to define nodes contained in dependencies.
+ * The required version of the {@link https://github.com/GogoVega/Firebase-Config-Node | Config Node}.
  *
- * See https://github.com/node-red/node-red/issues/569
+ * WARNING: Do not change the name because it's used by the publish script!
  *
- * If this module is installed from the palette manager, the runtime will not load the config-node,
- * a Node-RED restart is needed to load it.
- *
- * This function handles the case where the config-node is installed under a second `node_modules` directory
- * because it will not be loaded without adding it to the `package.json` in the `.node-red` folder.
- *
- * Default path is: `~/.node-red/node_modules/@gogovega/firebase-config-node/build/nodes/firebase-config.js`
- *
- * @param RED NodeAPI
+ * @internal
  */
-function researchConfigNodeExistence(RED: NodeAPI) {
-	const defaultUserDir = "~/.node-red";
-	const scope = "@gogovega";
-	const moduleName = "firebase-config-node";
-	const path2ConfigNode = "build/nodes/firebase-config.js";
+const requiredVersion = [0, 1, 2];
+
+/**
+ * Cache system to not read files multiple times.
+ *
+ * Indeed the {@link checkConfigNodeSatisfiesVersion} function is called in the Firebase Class which
+ * is the base of each Firebase node.
+ *
+ * @internal
+ */
+const cacheResult = { cached: false, errorEmitted: false };
+
+/**
+ * Checks if the {@link https://github.com/GogoVega/Firebase-Config-Node | Config Node} version matches
+ * the version required by this RTDB palette.
+ *
+ * When installing this palette, NPM may install the Config Node inside the Firestore/RTDB package which
+ * results that Node-RED not loading the correct version.
+ *
+ * @param RED The NodeAPI
+ * @param version The current version of the Config Node
+ * @returns `true` if the version of the Config Node is satisfied
+ */
+function checkConfigNodeSatisfiesVersion(RED: NodeAPI, version: string): boolean {
+	if (cacheResult.errorEmitted) return false;
+	if (cacheResult.cached) return true;
+
+	cacheResult.cached = true;
+
+	const match = /([0-9])\.([0-9]+)\.([0-9]+)/.exec(version);
+	if (match) {
+		match.shift();
+
+		const [major, minor, patch] = match.map((v) => parseInt(v, 10));
+
+		if (
+			major > requiredVersion[0] ||
+			(major === requiredVersion[0] &&
+				(minor > requiredVersion[1] || (minor === requiredVersion[1] && patch >= requiredVersion[2])))
+		)
+			return true;
+
+		cacheResult.errorEmitted = true;
+
+		RED.log.error("FIREBASE: The Config Node version does not meet the requirements of this palette.");
+		RED.log.error("  Required Version: " + requiredVersion.join("."));
+		RED.log.error("  Current Version:  " + version);
+		RED.log.error(
+			"  Please run the following command to resolve the issue:\n\n    cd ~/.node-red\n    npm update --omit=dev\n"
+		);
+
+		return false;
+	}
+
+	// Not supposed to happen
+	return true;
+}
+
+type Exec = Record<"run", (command: string, args: string[], option: object, emit: boolean) => Promise<object>>;
+
+async function runUpdateDependencies(RED: NodeAPI, exec: Exec) {
+	const isWindows = process.platform === "win32";
+	const npmCommand = isWindows ? "npm.cmd" : "npm";
+	const extraArgs = [
+		"--no-audit",
+		"--no-update-notifier",
+		"--no-fund",
+		"--save",
+		"--save-prefix=~",
+		"--omit=dev",
+		"--engine-strict",
+	];
+	const args = ["update", ...extraArgs];
+	const userDir = RED.settings.userDir || process.env.NODE_RED_HOME || ".";
+
+	RED.log.info("Starting to update Node-RED dependencies...");
 
 	try {
-		const userDir = (RED.settings.available() && RED.settings.userDir) || defaultUserDir;
-		let configNodeInstalledManually: boolean = false;
+		await exec.run(npmCommand, args, { cwd: userDir, shell: true }, true);
 
-		const relativePath = {
-			path: join(__dirname, "../../../", moduleName, path2ConfigNode),
-			valide: false,
-		};
-
-		const pathFromUserDir = {
-			path: join(userDir, "node_modules/", scope, moduleName, path2ConfigNode),
-			valide: false,
-		};
-
-		const packageFilePath = join(userDir, "package.json");
-		const packageFileExist = existsSync(packageFilePath);
-
-		if (packageFileExist) {
-			// eslint-disable-next-line @typescript-eslint/no-require-imports
-			const content = require(packageFilePath);
-			configNodeInstalledManually =
-				typeof content === "object" &&
-				"dependencies" in content &&
-				typeof content.dependencies === "object" &&
-				moduleName in content.dependencies;
-		}
-
-		// Check the path existence
-		for (const option of [relativePath, pathFromUserDir]) {
-			option.valide = existsSync(option.path);
-		}
-
-		const configNodeFound = pathFromUserDir.valide === true;
-		const userDirNotDefault = relativePath.path !== pathFromUserDir.path;
-
-		if (!configNodeFound && !configNodeInstalledManually) {
-			const msg = [
-				"\nFirebase ERR!  Unable to find the config-node!",
-				`The config-node is not located in\n  ${pathFromUserDir.path}`,
-			];
-
-			if (userDirNotDefault)
-				msg.push(`\nThe config-node ${relativePath.valide ? "is" : "is not"} located in\n  ${relativePath.path}\n`);
-
-			const installFromNPM = `npm install ${scope}/${moduleName}@latest --omit=dev --save`;
-			const installFromFile = `npm install file:${relativePath.path.split(`/${path2ConfigNode}`)[0]} --save`;
-			const installLink = relativePath.valide ? installFromFile : installFromNPM;
-			msg.push(`  To resolve this problem, please run:\n    cd ${userDir}`, `    ${installLink}`);
-
-			if (!relativePath.valide)
-				msg.push(
-					"\n  Or complete the path and run the following command:\n",
-					`npm install file:/path/to/${moduleName} --save`
-				);
-
-			msg.push(
-				"\nRead more about this problem at https://github.com/GogoVega/node-red-contrib-firebase-realtime-database/discussions/50\n"
-			);
-
-			console.error(msg.join("\n"));
-
-			return {
-				found: false,
-				dir: userDir,
-				install: installLink,
-				valide: relativePath.valide,
-				userDirValid: userDir !== defaultUserDir,
-			};
-		}
-
-		return { found: true };
+		RED.log.info("Successfully updated Node-RED dependencies. Please restarts Node-RED.");
 	} catch (error) {
-		console.error("\nFirebase ERR! An error occurred while searching for the config-node.\n", error);
+		const err = (error as Record<"stderr", string>).stderr;
+		RED.log.error("An error occured while updating Node-RED dependencies: " + err);
+		throw error;
 	}
 }
 
-function runInstallScript(userDir: string, install: string): Promise<void> {
-	return new Promise((resolve, reject) => {
-		exec(`cd "${userDir}" && ${install}`, function (error, stdout, stderr) {
-			if (stdout) console.log("Launching the Installation script:\n", stdout);
-			if (stderr) console.error("An error occurred during the Installation script:\n", stderr);
-			if (error) return reject(error);
-			resolve();
-		});
-	});
+function versionIsSatisfied(): boolean {
+	return !cacheResult.errorEmitted;
 }
 
-export { researchConfigNodeExistence, runInstallScript };
+export { versionIsSatisfied, checkConfigNodeSatisfiesVersion, runUpdateDependencies };

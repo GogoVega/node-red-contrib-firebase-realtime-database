@@ -57,16 +57,51 @@
 									setTimeout(() => $("#red-ui-diff-view-diff-merge").addClass("disabled"), 200);
 								}
 							};
-						} else if (button === "Confirm Install") {
+						} else if (button === "View Log") {
+							return {
+								text: button,
+								class: "pull-left",
+								click: () => {
+									RED.actions.invoke("core:show-event-log");
+								}
+							};
+						} else if (button === "Confirm Update") {
 							const path = "firebase/rtdb/config-node/scripts";
+
 							return {
 								text: "Confirm",
 								click: (event) => {
-									RED.utils.addSpinnerOverlay($(event.target));
+									const spinner = RED.utils.addSpinnerOverlay($(event.target));
 
-									FirebaseUI.express.post(path, { script: "install" }).then((resp) => {
+									// Start the event log panel
+									RED.eventLog.startEvent("FIREBASE: Updating dependencies...");
+
+									FirebaseUI.express.post(path, { script: "update-dependencies" }).then((resp) => {
+										spinner.remove();
 										myNotification.close();
-										notify(resp.notifications);
+										
+										if (resp.status === "success") {
+											notify({
+												msg: "<html><p>Update Successful!</p><p>Restarts now Node-RED and reload your browser</p></html>",
+												type: "success",
+												fixed: true,
+												buttons: ["Close"]
+											});
+										} else if (resp.status === "error") {
+											notify({
+												msg: `
+												<html>
+													<p>Update Failed!</p>
+													<p>Please raise an issue <a href="https://github.com/GogoVega/node-red-contrib-firebase-realtime-database/issues/new/choose">here</a> with log details:</p>
+													<pre>${resp.msg}</pre>
+												</html>`,
+												type: "error",
+												fixed: true,
+												buttons: ["Close"],
+											});
+										} else {
+											console.log("J'ai glissé chef!");
+										}
 									});
 								}
 							};
@@ -74,7 +109,7 @@
 							return {
 								text: "Confirm",
 								click: (event) => {
-									RED.utils.addSpinnerOverlay($(event.target));
+									const spinner = RED.utils.addSpinnerOverlay($(event.target));
 
 									try {
 										migrate();
@@ -94,17 +129,20 @@
 											msg: `
 												<html>
 													<p>Migration Failed!</p>
-													<p>Please raise an issue <a href="https://github.com/GogoVega/node-red-contrib-firebase-realtime-database/issues/new/choose">here</a> with browser log details</p>
+													<p>Please raise an issue <a href="https://github.com/GogoVega/node-red-contrib-firebase-realtime-database/issues/new/choose">here</a> with browser log details:</p>
+													<pre>${error.toString()}</pre>
 												</html>`,
 											type: "error",
 											fixed: true,
 											buttons: ["Close"],
 										}]);
 									}
+
+									spinner.remove();
 									myNotification.close();
 								}
 							};
-						} else if (button === "Run Migrate" || button === "Run Install") {
+						} else if (button === "Run Migrate") {
 							return {
 								text: button,
 								class: "pull-left",
@@ -114,9 +152,26 @@
 										msg: `
 											<html>
 												<p>Are you really sure you want to do this?</p>
-												<p>The ${button === "Run Migrate" ? "Migration" : "Install"} script will follow the steps described <a href="https://github.com/GogoVega/node-red-contrib-firebase-realtime-database/wiki/migration-wizard">here</a>.</p>
+												<p>The Migrate script will follow the steps described <a href="https://github.com/GogoVega/node-red-contrib-firebase-realtime-database/wiki/migration-wizard">here</a>.</p>
 											</html>`,
-										modal: true, fixed: true, type: "warning", buttons: [`Confirm ${button === "Run Migrate" ? "Migrate" : "Install"}`, "Cancel"]
+										modal: true, fixed: true, type: "warning", buttons: ["Confirm Migrate", "Cancel"]
+									}]);
+								}
+							};
+						} else if (button === "Run Update") {
+							return {
+								text: button,
+								class: "pull-left",
+								click: () => {
+									myNotification.close();
+									notify([{
+										msg: `
+											<html>
+												<p>Are you really sure you want to do this?</p>
+												<p>The Update script will run <code>npm update</code> in your Node-RED directory to update dependencies.</p>
+												<p><strong>Tip</strong>: Click on <strong>View Log</strong> then <strong>Confirm</strong> and not the other way around 🤫</p>
+											</html>`,
+										modal: false, fixed: true, type: "warning", buttons: ["Confirm Update", "View Log", "Cancel"]
 									}]);
 								}
 							};
@@ -300,26 +355,60 @@
 	}
 
 	function generateNotification(script) {
-		const msg = `
+		const migrateMsg = `
 			<html>
 				<p>Welcome to Migration Wizard</p>
-				<p>To use the new config-node introduced by v0.6 without losing the existing configuration, please run the Migration script.</p>
+				<p>To use the new Config Node introduced by v0.6 without losing the existing configuration, please run the Migration script.</p>
 				<p>Read more about this migration <a href="https://github.com/GogoVega/node-red-contrib-firebase-realtime-database/discussions/50">here</a>.</p>
 			</html>`;
-		const msg2 = `
+		const updateMsg = `
 			<html>
-				<p>Welcome to Migration Wizard</p>
-				<p>To use the new config-node introduced by v0.6, please restart Node-RED. If you are using FlowFuse, suspend then start the instance.</p>
+				<p>Welcome to Firebase Realtime Databases</p>
+				<p>The Config Node version don't meet the version required by the RTDB palette.</p>
+				<p>Can happen when you use both <a href="https://flows.nodered.org/node/@gogovega/node-red-contrib-cloud-firestore">Cloud Firestore</a> 
+				and RTDB palettes. Indeed NPM installs a new version into the wrong package instead of updating the existing one.</p>
+				<p>To solve this issue, please run the Update script.</p>
+			</html>`;
+		const restartMsg = `
+			<html>
+				<p>Welcome to Firebase Realtime Databases</p>
+				<p>To use the new Config Node introduced by v0.6, please restart Node-RED. If you are using FlowFuse, suspend then start the instance.</p>
 				<p>If you have installed from the Manage Palette you need to restart because Node-RED did not load all nodes correctly.</p>
-				<p>Read more about this migration <a href="https://github.com/GogoVega/node-red-contrib-firebase-realtime-database/discussions/50">here</a>.</p>
+				<p>Read more about this issue <a href="https://github.com/GogoVega/node-red-contrib-firebase-realtime-database/discussions/50">here</a>.</p>
+			</html>`;
+		const restartAfterUpdateMsg = `
+			<html>
+				<p>Don't forget to restart Node-RED!</p>
+				<p>It looks like you didn't restart Node-RED after running the Update script.</p>
 			</html>`;
 
+		let msg;
+		let buttons = ["Close"];
+		switch (script) {
+			case "migrate":
+				msg = migrateMsg;
+				buttons = ["Run Migrate", "Close"];
+				break;
+			case "update":
+				msg = updateMsg;
+				buttons = ["Run Update", "Close"];
+				break;
+			case "restart":
+				msg = restartMsg;
+				break;
+			case "restart-update":
+				msg = restartAfterUpdateMsg;
+				break;
+			default:
+				throw new Error("Unknown notification script: " + script);
+		}
+
 		notify([{
-			msg: script === "migrate" ? msg : msg2,
+			msg: msg,
 			type: "warning",
 			fixed: true,
 			modal: true,
-			buttons: script === "migrate" ? ["Run Migrate", "Close"] : ["Close"],
+			buttons: buttons,
 		}]);
 	}
 
@@ -330,17 +419,25 @@
 			// Add the script to actions in order to run manually
 			RED.actions.add("firebase:run-firebase-migration", () => generateNotification("migrate"));
 
-			// Research if the Config Node is missing in dependencies - Should not happen but handled
+			if (installFromPaletteManager()) {
+				// Config Node not loaded, so the user must restart NR
+				generateNotification("restart");
+				return;
+			}
+
+			// Research if the Config Node version satisfies the required version by this palette
 			const status = await FirebaseUI.express.get("firebase/rtdb/config-node/status");
 
-			if (status.notifications.length) {
-				// Ask the user to trigger the Install script if the new Config Node was not found
-				notify(status.notifications);
-			} else if (installFromPaletteManager()) {
-				// Not loaded, so the user must restart NR
-				generateNotification("install");
+			if (!status.status.versionIsSatisfied) {
+				if (status.status.updateScriptCalled) {
+					// The user has triggered the Update script but not restarted NR
+					generateNotification("restart-update");
+				} else {
+					// Ask the user to trigger the Update script
+					generateNotification("update");
+				}
 			} else if (isOldConfigNodeStillInUse()) {
-				// Now the Config Node has been loaded
+				// Now the Config Node has been loaded and the version is good
 				// Triggers the Migrate script if old Config Node still in use
 				generateNotification("migrate");
 			}

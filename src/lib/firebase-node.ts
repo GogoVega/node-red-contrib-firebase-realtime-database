@@ -44,6 +44,7 @@ import {
 	QueryConstraintPropertySignature,
 } from "./types";
 import { checkPath, checkPriority, printEnumKeys } from "./utils";
+import { checkConfigNodeSatisfiesVersion } from "../migration/config-node";
 
 /**
  * Firebase Class
@@ -100,6 +101,15 @@ export class Firebase<Node extends FirebaseNode, Config extends FirebaseConfig =
 
 		if (!isFirebaseConfigNode(node.database) && node.database)
 			throw new Error("The selected database is not compatible with this module, please check your config-node");
+
+		if (node.database) {
+			if (!checkConfigNodeSatisfiesVersion(RED, node.database.version)) {
+				node.status({ fill: "red", shape: "ring", text: "Invalid Database Version!" });
+
+				// To avoid initializing the database (avoid creating unhandled errors)
+				node.database = null;
+			}
+		}
 	}
 
 	/**
