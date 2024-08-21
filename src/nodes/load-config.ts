@@ -53,12 +53,19 @@ module.exports = function (RED: NodeAPI) {
 				if (scriptName === "update-dependencies") {
 					updateScriptCalled = true;
 
-					// @node-red/util.exec is not exported, so it's a workaround to get it
+					if (!RED.settings.userDir) throw new Error("Node-RED 'userDir' Setting not available");
+
+					// @node-red/util.exec is not imported to NodeAPI, so it's a workaround to get it
+					// TODO: if there is a risk that the "require" fails, make a locally revisited copy
 					const utilPath = join(process.env.NODE_RED_HOME || ".", "node_modules", "@node-red/util");
 					// eslint-disable-next-line @typescript-eslint/no-require-imports
 					const exec = require(utilPath).exec;
 
+					RED.log.info("Starting to update Node-RED dependencies...");
+
 					await runUpdateDependencies(RED, exec);
+
+					RED.log.info("Successfully updated Node-RED dependencies. Please restarts Node-RED.");
 				} else {
 					// Forbidden
 					res.sendStatus(403);
@@ -67,9 +74,13 @@ module.exports = function (RED: NodeAPI) {
 
 				res.json({ status: "success" });
 			} catch (error) {
+				const msg = error instanceof Error ? error.toString() : (error as Record<"stderr", string>).stderr;
+
+				RED.log.error("An error occured while updating Node-RED dependencies: " + msg);
+
 				res.json({
 					status: "error",
-					msg: error instanceof Error ? error.toString() : (error as Record<"stderr", string>).stderr,
+					msg: msg,
 				});
 			}
 		}

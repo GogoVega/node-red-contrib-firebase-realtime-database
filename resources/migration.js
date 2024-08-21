@@ -379,7 +379,7 @@
 		const restartAfterUpdateMsg = `
 			<html>
 				<p>Don't forget to restart Node-RED!</p>
-				<p>It looks like you didn't restart Node-RED after running the Update script.</p>
+				<p>It looks like you didn't restart Node-RED after running the Update script 🙄</p>
 			</html>`;
 
 		let msg;

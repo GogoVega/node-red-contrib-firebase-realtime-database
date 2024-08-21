@@ -83,7 +83,7 @@ function checkConfigNodeSatisfiesVersion(RED: NodeAPI, version: string): boolean
 
 type Exec = Record<"run", (command: string, args: string[], option: object, emit: boolean) => Promise<object>>;
 
-async function runUpdateDependencies(RED: NodeAPI, exec: Exec) {
+function runUpdateDependencies(RED: NodeAPI, exec: Exec): Promise<object> {
 	const isWindows = process.platform === "win32";
 	const npmCommand = isWindows ? "npm.cmd" : "npm";
 	const extraArgs = [
@@ -98,17 +98,7 @@ async function runUpdateDependencies(RED: NodeAPI, exec: Exec) {
 	const args = ["update", ...extraArgs];
 	const userDir = RED.settings.userDir || process.env.NODE_RED_HOME || ".";
 
-	RED.log.info("Starting to update Node-RED dependencies...");
-
-	try {
-		await exec.run(npmCommand, args, { cwd: userDir, shell: true }, true);
-
-		RED.log.info("Successfully updated Node-RED dependencies. Please restarts Node-RED.");
-	} catch (error) {
-		const err = (error as Record<"stderr", string>).stderr;
-		RED.log.error("An error occured while updating Node-RED dependencies: " + err);
-		throw error;
-	}
+	return exec.run(npmCommand, args, { cwd: userDir, shell: true }, true);
 }
 
 function versionIsSatisfied(): boolean {
