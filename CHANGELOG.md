@@ -1,5 +1,13 @@
 # Change log
 
+## 0.6.0-beta.4
+
+### Changes
+
+- Check if the required Config Node version is satisfied (#71)
+- Move all `name` fields to the top of the edit box (#72)
+- Bump `@gogovega/firebase-config-node` from 0.0.1 to 0.1.3
+
 ## 0.6.0-beta.3
 
 ### Changes
