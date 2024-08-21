@@ -16,79 +16,75 @@
 
 import { ConfigNode } from "@gogovega/firebase-config-node/types";
 import { NodeAPI } from "node-red";
-import { researchConfigNodeExistence, runInstallScript } from "../migration/config-node";
+import { join } from "node:path";
+import { runUpdateDependencies, versionIsSatisfied } from "../migration/config-node";
 
 /**
- * This fake node is used:
- * 1. To check the existence of the config-node See {@link researchConfigNodeExistence}
- * 2. An endpoint for nodes to request services from
- *   - returns options to autocomplete the path field
- *   - Informs the user (notification) about the config-node status (has it been found)
+ * This fake node is used as:
+ * An endpoint for nodes to request services from
+ *   - Returns options to autocomplete the path field
+ *   - Informs the editor about the config-node status
+ *   - Run a command to update NR dependencies
  *
  * Hosted services such as FlowFuse do not use a file system - so it's not possible to run the Migrate script
  * from the runtime.
  */
 module.exports = function (RED: NodeAPI) {
-	const configNodeStatus = {
-		configNode: researchConfigNodeExistence(RED),
-		installCalled: false,
-	};
+	let updateScriptCalled: boolean = false;
 
+	// Check if the Config Node version satisfies the require one
 	RED.httpAdmin.get("/firebase/rtdb/config-node/status", RED.auth.needsPermission("load-config.write"), (_req, res) => {
-		const notifications = [];
-
-		// Install Script
-		if (!configNodeStatus.configNode?.found && !configNodeStatus.installCalled) {
-			const msgInstallFromFile = `
-					<html>
-						<p>Welcome to Migration Wizard</p>
-						<p>In order to use the new config-node introduced by v0.6, please run the installation script</p>
-						<p>Read more about this migration <a href="https://github.com/GogoVega/node-red-contrib-firebase-realtime-database/discussions/50">here</a>.</p>
-					</html>`;
-			const msgInstallFromNPM = `
-					<html>
-						<p>Welcome to Migration Wizard</p>
-						<p>In order to use the new config-node introduced by v0.6, please run the installation script</p>
-						<p>Or run the following command in your terminal:</p>
-						<pre>cd ${configNodeStatus.configNode?.dir} && ${configNodeStatus.configNode?.install}</pre>
-						<p>Read more about this migration <a href="https://github.com/GogoVega/node-red-contrib-firebase-realtime-database/discussions/50">here</a>.</p>
-					</html>`;
-			const msgIfScriptNotRunnable = `
-					<html>
-						<p>Welcome to Migration Wizard</p>
-						<p>The new config-node introduced by v0.6 did not load correctly.</p>
-						<p>It looks like your user directory is not the default, please complete paths and run the following command:</p>
-						<pre>cd ${configNodeStatus.configNode?.dir} && ${configNodeStatus.configNode?.install}</pre>
-						<p>Or If you know the path to the module run the following command:</p>
-						<pre>cd ${configNodeStatus.configNode?.dir} && npm install file:/path/to/firebase-config-node --save</pre>
-						<p>Read more about this migration <a href="https://github.com/GogoVega/node-red-contrib-firebase-realtime-database/discussions/50">here</a>.</p>
-					</html>`;
-
-			const scriptRunnable = configNodeStatus.configNode?.userDirValid;
-			const msg = scriptRunnable
-				? configNodeStatus.configNode?.valide
-					? msgInstallFromFile
-					: msgInstallFromNPM
-				: msgIfScriptNotRunnable;
-			const buttons = scriptRunnable ? ["Run Install", "Close"] : ["Close"];
-
-			// Avoid spamming the user because this case should not happen
-			if (!scriptRunnable) configNodeStatus.installCalled = true;
-
-			notifications.push({
-				msg: msg,
-				type: "warning",
-				fixed: true,
-				modal: true,
-				buttons: buttons,
-			});
-		}
-
 		res.json({
-			status: !notifications.length ? "ready" : "error",
-			notifications: notifications,
+			status: {
+				versionIsSatisfied: versionIsSatisfied(),
+				updateScriptCalled: updateScriptCalled,
+			},
 		});
 	});
+
+	// Run the Update Script
+	RED.httpAdmin.post(
+		"/firebase/rtdb/config-node/scripts",
+		RED.auth.needsPermission("load-config.write"),
+		async (req, res) => {
+			try {
+				const scriptName = req.body.script;
+
+				if (scriptName === "update-dependencies") {
+					updateScriptCalled = true;
+
+					if (!RED.settings.userDir) throw new Error("Node-RED 'userDir' Setting not available");
+
+					// @node-red/util.exec is not imported to NodeAPI, so it's a workaround to get it
+					// TODO: if there is a risk that the "require" fails, make a locally revisited copy
+					const utilPath = join(process.env.NODE_RED_HOME || ".", "node_modules", "@node-red/util");
+					// eslint-disable-next-line @typescript-eslint/no-require-imports
+					const exec = require(utilPath).exec;
+
+					RED.log.info("Starting to update Node-RED dependencies...");
+
+					await runUpdateDependencies(RED, exec);
+
+					RED.log.info("Successfully updated Node-RED dependencies. Please restarts Node-RED.");
+				} else {
+					// Forbidden
+					res.sendStatus(403);
+					return;
+				}
+
+				res.json({ status: "success" });
+			} catch (error) {
+				const msg = error instanceof Error ? error.toString() : (error as Record<"stderr", string>).stderr;
+
+				RED.log.error("An error occured while updating Node-RED dependencies: " + msg);
+
+				res.json({
+					status: "error",
+					msg: msg,
+				});
+			}
+		}
+	);
 
 	// Get autocomplete options
 	RED.httpAdmin.get(
@@ -110,52 +106,6 @@ module.exports = function (RED: NodeAPI) {
 			const options = typeof data === "object" ? Object.keys(data ?? {}) : [];
 
 			return res.json(options);
-		}
-	);
-
-	// Run the Install Script
-	RED.httpAdmin.post(
-		"/firebase/rtdb/config-node/scripts",
-		RED.auth.needsPermission("load-config.write"),
-		async (req, res) => {
-			try {
-				const script = req.body.script;
-
-				if (script === "install") {
-					configNodeStatus.installCalled = true;
-
-					if (!configNodeStatus.configNode?.dir || !configNodeStatus.configNode?.install)
-						throw new Error("Node-RED Settings not available");
-
-					await runInstallScript(configNodeStatus.configNode.dir, configNodeStatus.configNode.install);
-				} else {
-					res.sendStatus(403);
-					return;
-				}
-
-				res.json({
-					notifications: [
-						{
-							msg: "<html><p>Migration Successful!</p><p>Restarts now Node-RED and reload your browser</p></html>",
-							type: "success",
-							fixed: true,
-							buttons: ["Close"],
-						},
-					],
-				});
-			} catch (error) {
-				console.error("Error during Migration", error);
-				res.json({
-					notifications: [
-						{
-							msg: '<html><p>Migration Failed!</p><p>Please raise an issue <a href="https://github.com/GogoVega/node-red-contrib-firebase-realtime-database/issues/new/choose">here</a> with log details</p></html>',
-							type: "error",
-							fixed: true,
-							buttons: ["Close"],
-						},
-					],
-				});
-			}
 		}
 	);
 };
