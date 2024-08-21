@@ -69,6 +69,11 @@
 
 <script type="text/html" data-template-name="firebase-get">
 	<div class="form-row">
+		<label for="node-input-name"><i class="fa fa-tag"></i> <span data-i18n="firebase-get.label.name"></span></label>
+		<input type="text" id="node-input-name" data-i18n="[placeholder]firebase-get.placeholder.name" />
+	</div>
+
+	<div class="form-row">
 		<label for="node-input-database"><i class="fa fa-database"></i> <span data-i18n="firebase-get.label.database"></span></label>
 		<input type="text" id="node-input-database" style="width:70%;" />
 	</div>
@@ -102,11 +107,6 @@
 		<label for="node-input-passThrough"></label>
 		<input type="checkbox" id="node-input-passThrough" style="display:inline-block; width:15px; vertical-align:baseline;" />
 		<span data-i18n="firebase-get.passThrough"></span>
-	</div>
-
-	<div class="form-row">
-		<label for="node-input-name"><i class="fa fa-tag"></i> <span data-i18n="firebase-get.label.name"></span></label>
-		<input type="text" id="node-input-name" data-i18n="[placeholder]firebase-get.placeholder.name" />
 	</div>
 
 	<div class="form-tips" id="firebase-get-tips">

@@ -79,6 +79,11 @@
 
 <script type="text/html" data-template-name="on-disconnect">
 	<div class="form-row">
+		<label for="node-input-name"><i class="fa fa-tag"></i> <span data-i18n="on-disconnect.label.name"></span></label>
+		<input type="text" id="node-input-name" data-i18n="[placeholder]on-disconnect.placeholder.name" />
+	</div>
+
+	<div class="form-row">
 		<label for="node-input-database"><i class="fa fa-database"></i> <span data-i18n="on-disconnect.label.database"></span></label>
 		<input type="text" id="node-input-database" style="width:70%;" />
 	</div>
@@ -107,10 +112,5 @@
 		<label for="node-input-sendMsgEvent"><i class="fa fa-sign-out"></i> <span data-i18n="on-disconnect.label.sendMsgEvent"></span></label>
 		<input type="text" id="node-input-sendMsgEvent" style="width:70%;" />
 		<input type="hidden" id="node-input-outputs" />
-	</div>
-
-	<div class="form-row">
-		<label for="node-input-name"><i class="fa fa-tag"></i> <span data-i18n="on-disconnect.label.name"></span></label>
-		<input type="text" id="node-input-name" data-i18n="[placeholder]on-disconnect.placeholder.name" />
 	</div>
 </script>
