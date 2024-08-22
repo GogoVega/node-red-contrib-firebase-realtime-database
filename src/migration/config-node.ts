@@ -83,6 +83,13 @@ function checkConfigNodeSatisfiesVersion(RED: NodeAPI, version: string): boolean
 
 type Exec = Record<"run", (command: string, args: string[], option: object, emit: boolean) => Promise<object>>;
 
+/**
+ * Run a system command with stdout/err being emitted as notification to the Event Log panel.
+ *
+ * @param RED The NodeAPI
+ * @param exec The `@node-red/util.exec` instance (because not imported to NodeAPI)
+ * @returns A promise that resolves (rc=0) or rejects (rc!=0) when the command completes.
+ */
 function runUpdateDependencies(RED: NodeAPI, exec: Exec): Promise<object> {
 	const isWindows = process.platform === "win32";
 	const npmCommand = isWindows ? "npm.cmd" : "npm";
@@ -101,6 +108,11 @@ function runUpdateDependencies(RED: NodeAPI, exec: Exec): Promise<object> {
 	return exec.run(npmCommand, args, { cwd: userDir, shell: true }, true);
 }
 
+/**
+ * Check if the Config Node version satisfies the required version by this palette.
+ *
+ * @returns `true` if the version is satisfied
+ */
 function versionIsSatisfied(): boolean {
 	return !cacheResult.errorEmitted;
 }

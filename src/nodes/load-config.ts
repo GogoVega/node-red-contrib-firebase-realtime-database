@@ -14,9 +14,10 @@
  * limitations under the License.
  */
 
-import { ConfigNode } from "@gogovega/firebase-config-node/types";
-import { NodeAPI } from "node-red";
+import { existsSync } from "node:fs";
 import { join } from "node:path";
+import { NodeAPI } from "node-red";
+import { ConfigNode } from "@gogovega/firebase-config-node/types";
 import { runUpdateDependencies, versionIsSatisfied } from "../migration/config-node";
 
 /**
@@ -51,13 +52,22 @@ module.exports = function (RED: NodeAPI) {
 				const scriptName = req.body.script;
 
 				if (scriptName === "update-dependencies") {
+					// To avoid a bad use - running the script multiple times
+					if (updateScriptCalled) throw new Error("Update Script already called");
+
 					updateScriptCalled = true;
 
 					if (!RED.settings.userDir) throw new Error("Node-RED 'userDir' Setting not available");
 
 					// @node-red/util.exec is not imported to NodeAPI, so it's a workaround to get it
 					// TODO: if there is a risk that the "require" fails, make a locally revisited copy
-					const utilPath = join(process.env.NODE_RED_HOME || ".", "node_modules", "@node-red/util");
+					let utilPath = join(process.env.NODE_RED_HOME || ".", "node_modules", "@node-red/util");
+
+					if (!existsSync(utilPath)) {
+						// Some installations like FlowFuse use this path
+						utilPath = join(process.env.NODE_RED_HOME || ".", "../", "@node-red/util");
+					}
+
 					// eslint-disable-next-line @typescript-eslint/no-require-imports
 					const exec = require(utilPath).exec;
 
