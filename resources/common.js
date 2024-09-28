@@ -189,7 +189,7 @@ var FirebaseUI = FirebaseUI || (function () {
 				}
 			}
 
-			const url = `firebase/rtdb/autocomplete/${configNodeId}?path=${encodeURIComponent(searchKey)}`;
+			const url = `firebase/rtdb/autocomplete/${configNodeId}${searchKey ? `?path=${encodeURIComponent(searchKey)}` : ""}`;
 
 			if (contextCache[url]) {
 				done();
