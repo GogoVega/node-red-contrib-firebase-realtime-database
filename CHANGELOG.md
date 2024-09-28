@@ -1,5 +1,17 @@
 # Change log
 
+## 0.6.0-beta.5
+
+### Changes
+
+- Bump `@gogovega/firebase-config-node` from 0.1.3 to 0.1.5
+  - Removed an unnecessary `console.log` statement
+  - Bump dependencies
+
+### Fixes
+
+- Autocomplete crash if database get request fails (#74)
+
 ## 0.6.0-beta.4
 
 ### Changes
@@ -7,6 +19,7 @@
 - Check if the required Config Node version is satisfied (#71)
 - Move all `name` fields to the top of the edit box (#72)
 - Bump `@gogovega/firebase-config-node` from 0.0.1 to 0.1.3
+  - Remove the deprecated `fetchSignInMethodsForEmail` function ([#11](https://github.com/GogoVega/Firebase-Config-Node/pull/11))
 
 ## 0.6.0-beta.3
 
@@ -16,7 +29,7 @@
 - Only allows installations on Node RED version >=3
 - Update Firebase icon
 
-## Fixes
+### Fixes
 
 - Typos with `msg.method` instead of `msg.constraints`
 - Update documentation for `DECREMENT` reserved keyword
