@@ -1,105 +1,54 @@
 # Change log
 
-## 0.6.0-beta.5
+## 0.6.0
+
+### Breaking Changes
+
+- The type of config-node (`database-config`) has changed to `firebase-config`.
+
+> [!CAUTION]
+> This change breaks the runtime - it must be resolved to start the flows.
+> See more about the [reason](https://github.com/GogoVega/node-red-contrib-firebase-realtime-database/pull/50) and the [migration procedure](https://github.com/GogoVega/node-red-contrib-firebase-realtime-database/wiki/Migration-Wizard).
+
+### Deprecated Features
+
+- (Firebase GET & IN) `msg.method` replaced by `msg.constraints`
+
+> [!WARNING]
+> This and other minor changes in the edit box are NON-breaking changes.
+> They are resolved automatically when you save a node. The Migration Wizard resolves them too.
 
 ### Changes
 
-- Bump `@gogovega/firebase-config-node` from 0.1.3 to 0.1.5
-  - Removed an unnecessary `console.log` statement
-  - Bump dependencies
-
-### Fixes
-
-- Autocomplete crash if database get request fails (#74)
-
-## 0.6.0-beta.4
-
-### Changes
-
-- Check if the required Config Node version is satisfied (#71)
-- Move all `name` fields to the top of the edit box (#72)
-- Bump `@gogovega/firebase-config-node` from 0.0.1 to 0.1.3
-  - Remove the deprecated `fetchSignInMethodsForEmail` function ([#11](https://github.com/GogoVega/Firebase-Config-Node/pull/11))
-
-## 0.6.0-beta.3
-
-### Changes
-
-- Bump `@gogovega/firebase-config-node` from 0.0.1-beta.2 to 0.0.1
-- Only allows installations on Node RED version >=3
+- (QueryConstraints) `constraint` and `msg.method` are deprecated (#57)
+- Only allows installations on Node RED version >=3 ([7120f4e](https://github.com/GogoVega/node-red-contrib-firebase-realtime-database/commit/7120f4e4efcd24c5fb63664d7c1c9e41ac2738b5))
 - Update Firebase icon
-
-### Fixes
-
-- Typos with `msg.method` instead of `msg.constraints`
-- Update documentation for `DECREMENT` reserved keyword
-- Migration: the error is not transmitted to the console
-
-## 0.6.0-beta.2
-
-### Changes
-
-- Bump `@gogovega/firebase-config-node` from 0.0.1-beta.1 to 0.0.1-beta.2
-
-### Fixes
-
-- Fix the value of the date option for the field type (#69)
-- Add missing `env` to config types
-
-### Improvements
-
-- Avoid issuing both installation and migration notifications (#70)
-
-## 0.6.0-beta.1
-
-### Changes
-
-- Use the new unified `DataSnapshot` structure
-- Allow the path to have spaces in the name
-- Bump devDependencies and dependencies to latest
+- Move all `name` fields to the top of the edit box (#72)
 
 ### New Features
 
+- Support to dynamically set `Firebase-in` node properties (#54)
+- A new option has been added to the `Output` field so that the data is in JSON format (#58)
+- `flow`, `global` and `jsonata` options has been added to the `Path` field for all nodes (#59)
+- QueryConstraints: `msg`, `flow`, `global` and `jsonata` as new types for the `Value` field and the `Child` field (#61)
 - (ServerValue) Relax Integer rule to Number and add `DECREMENT` keyword (#63)
 - Feature: Add `env` field type to `Path`, `Child` and `Value` inputs (#66)
 
 ### Enhancements
 
-- Clean up nodes history during migration
-- Improve the autocomplete of `Path` field (#67)
-- Ensure scripts have been loaded (#68)
+- Better use of [Node Messaging API](https://github.com/node-red/designs/blob/master/designs/node-messaging-api.md) (part of #53)
+- Input validation error message (#56)
+- Add `autocomplete` to all Path fields (#60)
 
-## 0.6.0-alpha.2
+### Refactors
+
+- Config Node Externalization (#53)
+- Use resources for editor to remove duplicates (#55)
 
 ### Fixes
 
-- Migration script and Installation script call
-
-## 0.6.0-alpha.1
-
-### Breaking Changes
-
-- The type of config-node (`database-config`) is changed to `firebase-config`
-
-> [!CAUTION]
-> This type change breaks the runtime - it must be resolved to start the flows
-
-### New Features
-
-- QueryConstraints: `msg`, `flow`, `global` and `jsonata` as new types for the `Value` field and the `Child` field
-- `flow`, `global` and `jsonata` options has been added to the `Path` field for all nodes.
-- A new option has been added to the `Output` field so that the data is in JSON format.
-- Support to dynamically set `Firebase-in` node properties
-
-### Enhancements
-
-- Add autocomplete to all Path fields
-- Validation error message
-
-### Changes/Refactors
-
-- Use resources for editor to remove duplicates
-- Config Node Externalization (see #50)
+- The value of the `date` option for the field type (#69)
+- Remove the deprecated `fetchSignInMethodsForEmail` function ([#11](https://github.com/GogoVega/Firebase-Config-Node/pull/11))
 
 ## 0.5.5
 
