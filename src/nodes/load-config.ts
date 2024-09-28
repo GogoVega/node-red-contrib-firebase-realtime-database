@@ -104,18 +104,29 @@ module.exports = function (RED: NodeAPI) {
 			const id = req.params.id as string | undefined;
 			const path = req.query.path as string | undefined;
 
-			if (!id) return res.status(400).send("The config-node ID is missing!");
+			if (!id) {
+				res.status(400).send("The config-node ID is missing!");
+				return;
+			}
 
 			const node = RED.nodes.getNode(id) as ConfigNode | null;
 
 			// Like database field not setted or new config-node not yet deployed
-			if (!node) return res.json([]);
+			if (!node) {
+				res.json([]);
+				return;
+			}
 
-			const snapshot = await node.rtdb?.get(path);
-			const data = snapshot ? snapshot.val() : {};
-			const options = typeof data === "object" ? Object.keys(data ?? {}) : [];
+			try {
+				// May fail if permission is denied
+				const snapshot = await node.rtdb?.get(decodeURI(path || ""));
+				const data = snapshot ? snapshot.val() : {};
+				const options = typeof data === "object" ? Object.keys(data ?? {}) : [];
 
-			return res.json(options);
+				res.json(options);
+			} catch (error) {
+				res.status(500).send({ message: String(error) });
+			}
 		}
 	);
 };
