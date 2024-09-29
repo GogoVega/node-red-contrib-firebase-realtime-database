@@ -21,7 +21,7 @@
 </div>
 <br />
 
-![demo nodes](./assets/images/demo-nodes.gif)
+![demo nodes](./assets/images/demo-flow.gif)
 
 > [!CAUTION]
 > **BREAKING CHANGES**: If you are updating to 0.6, please read the [migration procedure](https://github.com/GogoVega/node-red-contrib-firebase-realtime-database/wiki/migration-wizard).
@@ -44,7 +44,29 @@ There are 4 nodes included with this contrib:
 | Firebase&nbsp;out  | `SET`, `PUSH`, `UPDATE`, `REMOVE`, `SET PRIORITY` or `SET WITH PRIORITY` data at the target Database.                   |
 | On&nbsp;Disconnect | `SET`, `CANCEL`, `UPDATE`, `REMOVE` or `SET WITH PRIORITY` data at the target Database **when the Client disconnects**. |
 
-On the video above, we can see the "Query Constraint" feature, which is used to sort and order your data as required, and also shown is the "Drag and drop JSON file" feature, which automatically populates the fields with the content of the JSON file you provide.
+## Features
+
+- Autocomplete the `Path` field
+
+  ![demo autocomplete](./assets/images/autocomplete-feature.gif)
+
+- Editable List for Query Constraints
+
+  You can statically define your Query Constraints with an Editable List, which is used to sort and order your data as required.
+
+  ![demo query constraints](./assets/images/query-constraints-editablelist.gif)
+
+- Error message for incorrect input
+
+  The field tells you if the input is incorrect and gives you a reason.
+
+  ![demo error message](./assets/images/input-error-message.gif)
+
+- Drag and drop JSON file
+
+  Automatically populates the fields with the content of the JSON file you provide.
+
+  ![demo JSON file](./assets/images/drag-and-drop.gif)
 
 ## How to use?
 
