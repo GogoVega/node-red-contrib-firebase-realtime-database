@@ -20,7 +20,7 @@
     "tips": {
       "tips": "<strong>Astuces</strong> :",
       "tip0": "Vous pouvez utiliser des contraintes pour la requête en définissant la propriété <code>msg.constraints</code>.",
-      "tip1": "Si <code>msg.constraints</code> est défini, les contraintes de la requête définies dans le noeuud seront remplacées par celles contenues dans le message."
+      "tip1": "Si <code>msg.constraints</code> est défini, les contraintes de la requête définies dans le noeud seront remplacées par celles contenues dans le message."
     },
     "useConstraints": "Souhaitez-vous trier et ordonner vos données ?",
     "passThrough": "Si un message arrive, transmettre le message ?"

@@ -3,7 +3,7 @@
     "label": {
       "database": "Database",
       "sortData": "Sort Data?",
-      "constraints": "Constraint",
+      "constraints": "Constraints",
       "path": "Path",
       "output": "Output",
       "passThrough": "Pass Through",
@@ -12,7 +12,7 @@
     "outputType": {
       "auto": "auto-detect",
       "json": "a JSON object",
-      "string": "a String"
+      "string": "a JSON String"
     },
     "placeholder": {
       "name": "Name"
