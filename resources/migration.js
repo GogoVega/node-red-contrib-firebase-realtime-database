@@ -184,6 +184,15 @@
 		});
 	};
 
+	function ensureUnlocked(id, flowsToLock) {
+		const flow = id && (RED.nodes.workspace(id) || RED.nodes.subflow(id) || null);
+		const isLocked = flow ? flow.locked : false;
+		if (flow && isLocked) {
+			flow.locked = false;
+			flowsToLock.add(flow)
+		}
+	}
+
 	// Hosted services such as FlowFuse do not use a file system - so must migrate from the editor
 	// More practical for the user (diff) and safest
 	function migrate() {
@@ -212,6 +221,7 @@
 
 		if (newConfigNodes.length) {
 			// Import and replace by the new config-nodes
+			// Need to re-import to resolve the unknown type
 			const result = RED.nodes.import(newConfigNodes, { importMap: importMap });
 
 			// Used for the undo event, so replace the type by the older
@@ -220,8 +230,7 @@
 				return node;
 			});
 
-			// TODO: Config Nodes do not have `changed` property in the `replace` history
-			// and `dirty` property is not used for that config nodes.
+			// TODO: Config Nodes do not have `changed` property in the `replace` history (NR#4797)
 			// @ts-ignore
 			historyEvent.events.push({
 				t: "replace",
@@ -229,11 +238,17 @@
 			});
 		}
 
+		// Used to re-lock flows
+		const flowToLock = new Set();
+
 		RED.nodes.eachNode((node) => {
 			if (firebaseType.includes(node.type) && "database" in node && "path" in node) {
 				const wasChanged = node.changed;
 				const wasDirty = node.dirty;
 				const changes = {};
+
+				// Impossible to modify node properties if the flow is locked
+				ensureUnlocked(node.z, flowToLock);
 
 				// Resolve the non-breaking changes
 				if (node.type === "firebase-in" || node.type === "firebase-get") {
@@ -297,6 +312,11 @@
 				// Not works for after undo changes
 				RED.nodes.updateConfigNodeUsers(node);
 			}
+		});
+
+		// Re-lock flows which have been unlocked in order to modify a node.
+		flowToLock.forEach((flow) => {
+			flow.locked = true;
 		});
 
 		if (!historyEvent.events.length) return;
