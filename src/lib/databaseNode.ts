@@ -288,7 +288,11 @@ export default class FirebaseDatabase {
 		(async () => {
 			try {
 				// Initialize App
-				this.admin ? this.initAppWithSDK() : this.initApp();
+				if (this.admin) {
+					this.initAppWithSDK();
+				} else {
+					this.initApp();
+				}
 
 				// Initialize Logging
 				this.initLogging();
