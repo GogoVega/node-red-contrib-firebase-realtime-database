@@ -381,7 +381,7 @@
     "type": "inject",
     "z": "13c4e8e8f85d50b9",
     "g": "8f193a9c1fc939fb",
-    "name": "Remove Steve",
+    "name": "Remove Alan",
     "props": [
       {
         "p": "topic",
@@ -392,7 +392,7 @@
     "crontab": "",
     "once": false,
     "onceDelay": 0.1,
-    "topic": "users/steveisapple",
+    "topic": "users/alanisawesome",
     "x": 140,
     "y": 680,
     "wires": [
@@ -812,7 +812,7 @@
     "once": false,
     "onceDelay": 0.1,
     "topic": "",
-    "payload": "INCREMENT -1",
+    "payload": "DECREMENT 1",
     "payloadType": "str",
     "x": 140,
     "y": 1000,
