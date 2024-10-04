@@ -3,39 +3,26 @@
     "label": {
       "database": "Datenbank",
       "sortData": "Daten sortieren?",
+      "constraints": "Abfrageeinschränkungen",
       "path": "Pfad",
       "output": "Ausgabe",
+      "passThrough": "Durchreichen",
       "name": "Name"
-    },
-    "constraint": {
-      "orderByChild": "Nach Kindern sortieren",
-      "orderByKey": "Nach Schlüssel sortieren",
-      "orderByPriority": "Nach Priorität sortieren",
-      "orderByValue": "Nach Wert sortieren",
-      "limitToFirst": "Zum Anfang begrenzen",
-      "limitToLast": "Zum Ende begrenzen",
-      "endAt": "Ende bei",
-      "endBefore": "Ende vor",
-      "equalTo": "gleich zu",
-      "startAfter": "Starte nach",
-      "startAt": "Starte bei"
     },
     "outputType": {
       "auto": "Automatisch erkennen",
+      "json": "ein JSON-Objekt",
       "string": "eine Zeichenkette"
     },
     "placeholder": {
-      "name": "Name",
-      "value": "Wert",
-      "child": "Kind schlüssel"
+      "name": "Name"
     },
     "tips": {
       "tips": "<strong>Tips</strong>:",
-      "tip0": "Sie können Einschränkungen für die Abfrage verwenden in dem sie die <code>msg.method</code> Eigenschaft setzen.",
-      "tip1": "Wenn <code>msg.method</code> gesetzt ist, werden die im Knoten definierten Abfrageeinschränkungen durch die Nachricht enthaltenen ersetzt."
+      "tip0": "Sie können Einschränkungen für die Abfrage verwenden in dem sie die <code>msg.constraints</code> Eigenschaft setzen.",
+      "tip1": "Wenn <code>msg.constraints</code> gesetzt ist, werden die im Knoten definierten Abfrageeinschränkungen durch die Nachricht enthaltenen ersetzt."
     },
-    "useConstraint": "Verwende Abfrageeinschränkungen um ihre Daten zu sortieren.",
-    "addConstraint": "Abfrageeinschränkungen hinzufügen",
+    "useConstraints": "Verwende Abfrageeinschränkungen um ihre Daten zu sortieren.",
     "passThrough": "Die Nachricht durchreichen, wenn eine Nachricht ankommt?"
   }
 }

@@ -61,7 +61,6 @@
 		"no-obj-calls": 2,
 		"no-octal": 2,
 		"no-prototype-builtins": 2,
-		"no-redeclare": 2,
 		"no-regex-spaces": 2,
 		"no-self-assign": 2,
 		"no-setter-return": 2,

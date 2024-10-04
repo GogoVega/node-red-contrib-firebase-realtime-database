@@ -1,5 +1,5 @@
 <!--
-  Copyright 2022-2023 Gauthier Dandele
+  Copyright 2022-2024 Gauthier Dandele
 
   Licensed under the MIT License,
   you may not use this file except in compliance with the License.
@@ -18,6 +18,15 @@
 	<p>
 		Stellt eine Verbindung zu einer Firebase Realtime Database her und abonniert die Daten unter dem angegebenen Pfad.
 	</p>
+	<h3>Eingaben</h3>
+	<dl class="message-properties">
+		<dt>listener<span class="property-type">Zeichenkette</span></dt>
+		<dd>welche Art von Veränderung Sie verwenden möchten.</dd>
+		<dt class="optional">constraints<span class="property-type">Objekt</span></dt>
+		<dd>ein Objekt, das die Einschränkung(en) enthält, die auf die Abfrage angewendet werden sollen.</dd>
+		<dt class="optional">topic<span class="property-type">Zeichenkette</span></dt>
+		<dd>der Pfad der abzurufenden Daten. Standardmäßig 'topic'.</dd>
+	</dl>
 	<h3>Ausgabe</h3>
 	<dl class="message-properties">
 		<dt>payload<span class="property-type">Zeichenkette | Wahrheitswert | Zahl | Liste | Objekt | Null</span></dt>
@@ -45,15 +54,41 @@
 		<li><code>Kind verschoben</code></li>
 		<li><code>Kind gelöscht</code></li>
 	</ul>
-	<p>Sie können Beschränkungen für die Abfrage definieren, um Ihre Daten zu sortieren und zu ordnen.</p>
 	<p>
-		Der <strong>Pfad</strong> bestimmt, von wo die Daten gelesen werden. Er kann leer sein, in diesem Fall kommen die
-		Daten von der Wurzel der Datenbank kommen.
+		Der <strong>Pfad</strong> bestimmt, von wo die Daten gelesen werden. Er kann im Node oder dynamisch mit der
+		Eigenschaft <code>msg.topic</code> definiert werden. Er kann leer sein, in diesem Fall kommen die gesendeten Daten
+		aus dem Stamm der Datenbank.
 	</p>
+	<p>Unter <strong>Ausgabe</strong> können Sie das Datenausgabeformat auswählen.</p>
 	<p>
-		<strong>Ausgabe</strong> kann auf <strong>Automatisch erkennen</strong> gesetzt werden, um ein Objekt zu senden, das
-		die Daten enthält, oder <strong>eine Zeichenkette</strong> um die Daten als Zeichenkette zu senden.
+		Sie können Einschränkungen für die Abfrage definieren, um Ihre Daten zu sortieren und zu ordnen. Sie können eine
+		oder mehrere der folgenden Einschränkungen in der Eigenschaft <code>msg.constraints</code> oder direkt im Node
+		definieren:
 	</p>
+	<ul>
+		<li><code>endAt</code><span class="property-type">Objekt</span></li>
+		<li><code>endBefore</code><span class="property-type">Objekt</span></li>
+		<li><code>equalTo</code><span class="property-type">Objekt</span></li>
+		<li><code>limitToFirst</code><span class="property-type">Zahl</span></li>
+		<li><code>limitToLast</code><span class="property-type">Zahl</span></li>
+		<li><code>orderByChild</code><span class="property-type">Zeichenkette</span></li>
+		<li><code>orderByKey</code><span class="property-type">Null</span></li>
+		<li><code>orderByPriority</code><span class="property-type">Null</span></li>
+		<li><code>orderByValue</code><span class="property-type">Null</span></li>
+		<li><code>startAfter</code><span class="property-type">Objekt</span></li>
+		<li><code>startAt</code><span class="property-type">Objekt</span></li>
+	</ul>
+	<p><code>msg.constraints</code> schaut folgendermaßen aus:</p>
+	<pre>
+{
+  "orderByChild": "name",
+  "limitToFirst": 5,
+  "startAt": {
+    "value": "Alex",
+    "key": "name"
+  }
+}</pre
+	>
 	<p>
 		Erfahren sie
 		<a href="https://github.com/GogoVega/node-red-contrib-firebase-realtime-database/wiki/firebase-in">hier</a> mehr

@@ -1,5 +1,5 @@
 /**
- * Copyright 2022-2023 Gauthier Dandele
+ * Copyright 2022-2024 Gauthier Dandele
  *
  * Licensed under the MIT License,
  * you may not use this file except in compliance with the License.
@@ -14,25 +14,7 @@
  * limitations under the License.
  */
 
-import { NodeDef } from "node-red";
-
-export enum Query {
-	"none",
-	"cancel",
-	"set",
-	"update",
-	"remove",
-	"setWithPriority",
-}
-
-type PathType = "msg" | "str";
-type QueryType = "msg" | keyof typeof Query;
-type SendMsgEvent = "" | "onConnected" | "onDisconnect" | "onConnected,onDisconnect";
-
-export type OnDisconnectConfigType = NodeDef & {
-	database: string;
-	path?: string;
-	pathType?: PathType;
-	queryType?: QueryType;
-	sendMsgEvent?: SendMsgEvent;
-};
+export * from "./firebase-config";
+export * from "./firebase-node";
+export * from "./ondisconnect-config";
+export * from "./ondisconnect-node";

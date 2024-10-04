@@ -1,5 +1,5 @@
 <!--
-  Copyright 2022-2023 Gauthier Dandele
+  Copyright 2022-2024 Gauthier Dandele
 
   Licensed under the MIT License,
   you may not use this file except in compliance with the License.
@@ -22,12 +22,12 @@
 
 <script type="text/html" data-help-name="firebase-get">
 	<p>
-		Se connecte à une base de données en temps réel Firebase et récupère les données à partir du chemin spécifié.
-		Vous pouvez définir des contraintes pour la requête afin de trier et ordonner vos données.
+		Se connecte à une base de données en temps réel Firebase et récupère les données à partir du chemin spécifié. Vous
+		pouvez définir des contraintes pour la requête afin de trier et ordonner vos données.
 	</p>
 	<h3>Entrées</h3>
 	<dl class="message-properties">
-		<dt class="optional">method<span class="property-type">objet</span></dt>
+		<dt class="optional">constraints<span class="property-type">objet</span></dt>
 		<dd>un objet contenant la ou les contraintes à appliquer à la requête.</dd>
 		<dt class="optional">topic<span class="property-type">chaîne de caractères</span></dt>
 		<dd>le chemin des données à lire. Par défaut 'topic'.</dd>
@@ -37,7 +37,9 @@
 		<dt>payload<span class="property-type">chaîne | booléen | nombre | tableau | objet | nul</span></dt>
 		<dd>contient les données de votre requête provenant de la base de données.</dd>
 		<dt class="optional">previousChildName<span class="property-type">chaîne de caractères</span></dt>
-		<dd>contient la clé de l'enfant précédent, par ordre de tri, ou <code>null</code> s'il s'agit du premier enfant.</dd>
+		<dd>
+			contient la clé de l'enfant précédent, par ordre de tri, ou <code>null</code> s'il s'agit du premier enfant.
+		</dd>
 		<dt>priority<span class="property-type">nombre</span></dt>
 		<dd>la priorité des données.</dd>
 		<dt>topic<span class="property-type">chaîne de caractères</span></dt>
@@ -47,16 +49,13 @@
 	<p>Ce noeud lit les données d'un chemin spécifié et les envoie dans un message, y compris les données enfants.</p>
 	<p>
 		Le <strong>Chemin</strong> détermine où les données seront lues. Il peut être défini dans le noeud ou dynamiquement
-		avec la propriété <code>msg.topic</code>. Il peut être vide, dans ce cas les données envoyées proviennent de la racine de
-		la base des données.
+		avec la propriété <code>msg.topic</code>. Il peut être vide, dans ce cas les données envoyées proviennent de la
+		racine de la base des données.
 	</p>
-	<p>
-		La <strong>Sortie</strong> peut être définie sur <strong>détection automatique</strong> pour envoyer un objet contenant
-		les données, ou <strong>une chaîne de caractères</strong> pour envoyer les données sous forme de chaîne de caractères.
-	</p>
+	<p>La <strong>Sortie</strong> permet de choisir le format de sortie des données.</p>
 	<p>
 		Vous pouvez définir des contraintes pour la requête afin de trier et d'ordonner vos données. Vous pouvez définir une
-		ou plusieurs des contraintes suivantes dans la propriété <code>msg.method</code> ou directement dans le noeud :
+		ou plusieurs des contraintes suivantes dans la propriété <code>msg.constraints</code> ou directement dans le noeud :
 	</p>
 	<ul>
 		<li><code>endAt</code><span class="property-type">objet</span></li>
@@ -71,7 +70,7 @@
 		<li><code>startAfter</code><span class="property-type">objet</span></li>
 		<li><code>startAt</code><span class="property-type">objet</span></li>
 	</ul>
-	<p>Le <code>msg.method</code> ressemblera à ceci :</p>
+	<p>Le <code>msg.constraints</code> ressemblera à ceci :</p>
 	<pre>
 {
   "orderByChild": "nom",
@@ -80,9 +79,10 @@
     "value": "Alex",
     "key": "nom"
   }
-}</pre>
-<p>
-	Cliquer <a href="https://github.com/GogoVega/node-red-contrib-firebase-realtime-database/wiki/firebase-get">ici</a> 
-	pour en savoir plus sur l'utilisation de ce noeud.
-</p>
+}</pre
+	>
+	<p>
+		Cliquer <a href="https://github.com/GogoVega/node-red-contrib-firebase-realtime-database/wiki/firebase-get">ici</a> 
+		pour en savoir plus sur l'utilisation de ce noeud.
+	</p>
 </script>

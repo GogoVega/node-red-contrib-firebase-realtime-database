@@ -1,5 +1,5 @@
 <!--
-  Copyright 2022-2023 Gauthier Dandele
+  Copyright 2022-2024 Gauthier Dandele
 
   Licensed under the MIT License,
   you may not use this file except in compliance with the License.
@@ -27,7 +27,7 @@
 	</p>
 	<h3>Eingaben</h3>
 	<dl class="message-properties">
-		<dt class="optional">method<span class="property-type">Objekt</span></dt>
+		<dt class="optional">constraints<span class="property-type">Objekt</span></dt>
 		<dd>ein Objekt, das die Einschränkung(en) enthält, die auf die Abfrage angewendet werden sollen.</dd>
 		<dt class="optional">topic<span class="property-type">Zeichenkette</span></dt>
 		<dd>der Pfad der abzurufenden Daten. Standardmäßig 'topic'.</dd>
@@ -55,13 +55,10 @@
 		Eigenschaft <code>msg.topic</code> definiert werden. Er kann leer sein, in diesem Fall kommen die gesendeten Daten
 		aus dem Stamm der Datenbank.
 	</p>
-	<p>
-		<strong>Ausgabe</strong> kann auf <strong>automatisch erkennen</strong> gesetzt werden um ein Objekt das die Daten
-		enthält zu verwenden, oder <strong>eine Zeichenkette</strong> um die Daten als Zeichenkette zu senden.
-	</p>
+	<p>Unter <strong>Ausgabe</strong> können Sie das Datenausgabeformat auswählen.</p>
 	<p>
 		Sie können Einschränkungen für die Abfrage definieren, um Ihre Daten zu sortieren und zu ordnen. Sie können eine
-		oder mehrere der folgenden Einschränkungen in der Eigenschaft <code>msg.method</code> oder direkt im Node
+		oder mehrere der folgenden Einschränkungen in der Eigenschaft <code>msg.constraints</code> oder direkt im Node
 		definieren:
 	</p>
 	<ul>
@@ -77,7 +74,7 @@
 		<li><code>startAfter</code><span class="property-type">Objekt</span></li>
 		<li><code>startAt</code><span class="property-type">Objekt</span></li>
 	</ul>
-	<p><code>msg.method</code> schaut folgendermaßen aus:</p>
+	<p><code>msg.constraints</code> schaut folgendermaßen aus:</p>
 	<pre>
 {
   "orderByChild": "name",

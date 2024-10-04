@@ -1,5 +1,55 @@
 # Change log
 
+## 0.6.0
+
+### Breaking Changes
+
+- The type of config-node (`database-config`) has changed to `firebase-config`.
+
+> [!CAUTION]
+> This change breaks the runtime - it must be resolved to start the flows.
+> See more about the [reason](https://github.com/GogoVega/node-red-contrib-firebase-realtime-database/pull/50) and the [migration procedure](https://github.com/GogoVega/node-red-contrib-firebase-realtime-database/wiki/Migration-Wizard).
+
+### Deprecated Features
+
+- (Firebase GET & IN) `msg.method` replaced by `msg.constraints`
+
+> [!WARNING]
+> This and other minor changes in the edit box are NON-breaking changes.
+> They are resolved automatically when you save a node. The Migration Wizard resolves them too.
+
+### Changes
+
+- (QueryConstraints) `constraint` and `msg.method` are deprecated (#57)
+- Only allows installations on Node RED version >=3 ([7120f4e](https://github.com/GogoVega/node-red-contrib-firebase-realtime-database/commit/7120f4e4efcd24c5fb63664d7c1c9e41ac2738b5))
+- Update Firebase icon
+- Move all `name` fields to the top of the edit box (#72)
+
+### New Features
+
+- Support to dynamically set `Firebase-in` node properties (#54)
+- A new option has been added to the `Output` field so that the data is in JSON format (#58)
+- `flow`, `global` and `jsonata` options has been added to the `Path` field for all nodes (#59)
+- QueryConstraints: `msg`, `flow`, `global` and `jsonata` as new types for the `Value` field and the `Child` field (#61)
+- (ServerValue) Relax Integer rule to Number and add `DECREMENT` keyword (#63)
+- Feature: Add `env` field type to `Path`, `Child` and `Value` inputs (#66)
+
+### Enhancements
+
+- Better use of [Node Messaging API](https://github.com/node-red/designs/blob/master/designs/node-messaging-api.md) (part of #53)
+- Input validation error message (#56)
+- Add `autocomplete` to all Path fields (#60)
+
+### Refactors
+
+- Config Node Externalization (#53)
+- Use resources for editor to remove duplicates (#55)
+
+### Fixes
+
+- The value of the `date` option for the field type (#69)
+- Remove the deprecated `fetchSignInMethodsForEmail` function ([#11](https://github.com/GogoVega/Firebase-Config-Node/pull/11))
+
 ## 0.5.5
 
 ### Changes

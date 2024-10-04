@@ -1,5 +1,5 @@
 /**
- * Copyright 2022-2023 Gauthier Dandele
+ * Copyright 2022-2024 Gauthier Dandele
  *
  * Licensed under the MIT License,
  * you may not use this file except in compliance with the License.
@@ -15,33 +15,20 @@
  */
 
 import { NodeAPI } from "node-red";
-import { FirebaseOut } from "../lib/firebaseNode";
-import { DatabaseNodeType } from "../lib/types/DatabaseNodeType";
-import { FirebaseOutConfigType } from "../lib/types/FirebaseConfigType";
-import { FirebaseOutNodeType, InputMessageType } from "../lib/types/FirebaseNodeType";
+import { FirebaseOut } from "../lib/firebase-node";
+import { FirebaseOutConfig, FirebaseOutNode, IncomingMessage } from "../lib/types";
 
 module.exports = function (RED: NodeAPI) {
-	function FirebaseOutNode(this: FirebaseOutNodeType, config: FirebaseOutConfigType) {
+	function FirebaseOutNode(this: FirebaseOutNode, config: FirebaseOutConfig) {
 		RED.nodes.createNode(this, config);
-		const self = this;
 
-		self.config = config;
-		self.database = RED.nodes.getNode(config.database) as DatabaseNodeType | null;
-		self.RED = RED;
+		const firebase = new FirebaseOut(this, config, RED);
 
-		const firebase = new FirebaseOut(self);
+		firebase.attachStatusListener();
 
-		firebase.registerNode();
-		firebase.setNodeStatus();
+		this.on("input", (msg: IncomingMessage, _send, done) => firebase.modify(msg, done));
 
-		self.on("input", (msg: InputMessageType, _send, done) => {
-			firebase
-				.doWriteQuery(msg)
-				.then(() => done())
-				.catch((error: Error) => self.onError(error, done));
-		});
-
-		self.on("close", (removed: boolean, done: () => void) => firebase.deregisterNode(removed, done));
+		this.on("close", (done: () => void) => firebase.detachStatusListener(done));
 	}
 
 	RED.nodes.registerType("firebase-out", FirebaseOutNode);

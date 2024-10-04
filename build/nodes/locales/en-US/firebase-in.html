@@ -1,5 +1,5 @@
 <!--
-  Copyright 2022-2023 Gauthier Dandele
+  Copyright 2022-2024 Gauthier Dandele
 
   Licensed under the MIT License,
   you may not use this file except in compliance with the License.
@@ -16,6 +16,15 @@
 
 <script type="text/html" data-help-name="firebase-in">
 	<p>Connects to a Firebase Realtime Database and subscribes to data at the specified path.</p>
+	<h3>Inputs</h3>
+	<dl class="message-properties">
+		<dt>listener<span class="property-type">string</span></dt>
+		<dd>what type of change you want to listen to.</dd>
+		<dt class="optional">constraints<span class="property-type">object</span></dt>
+		<dd>an object containing the constraint(s) to apply to the query.</dd>
+		<dt class="optional">topic<span class="property-type">string</span></dt>
+		<dd>the path of the data to fetch. By default 'topic'.</dd>
+	</dl>
 	<h3>Outputs</h3>
 	<dl class="message-properties">
 		<dt>payload<span class="property-type">string | boolean | number | array | object | null</span></dt>
@@ -37,15 +46,40 @@
 		<li><code>Child Moved</code></li>
 		<li><code>Child Removed</code></li>
 	</ul>
-	<p>You can define constraint(s) for the query to sort and order your data.</p>
 	<p>
-		The <strong>Path</strong> determines where the data will be read from. It can be empty, in this case the data sent
-		comes from the root of the database.
+		The <strong>Path</strong> determines where the data will be read from. It can be defined in the node or dynamically
+		with the <code>msg.topic</code> property. It can be empty, in this case the data sent comes from the root of the
+		database.
 	</p>
+	<p>The <strong>Output</strong> allows you to choose the data output format.</p>
 	<p>
-		<strong>Output</strong> can be set to <strong>auto-detect</strong> to send an object containing the data, or
-		<strong>a String</strong> to send the data as a string.
+		You can define query constraint(s) to sort and order your data. You can define one or more of the following
+		constraints in the <code>msg.constraints</code> property or directly in the node:
 	</p>
+	<ul>
+		<li><code>endAt</code><span class="property-type">object</span></li>
+		<li><code>endBefore</code><span class="property-type">object</span></li>
+		<li><code>equalTo</code><span class="property-type">object</span></li>
+		<li><code>limitToFirst</code><span class="property-type">number</span></li>
+		<li><code>limitToLast</code><span class="property-type">number</span></li>
+		<li><code>orderByChild</code><span class="property-type">string</span></li>
+		<li><code>orderByKey</code><span class="property-type">null</span></li>
+		<li><code>orderByPriority</code><span class="property-type">null</span></li>
+		<li><code>orderByValue</code><span class="property-type">null</span></li>
+		<li><code>startAfter</code><span class="property-type">object</span></li>
+		<li><code>startAt</code><span class="property-type">object</span></li>
+	</ul>
+	<p>The <code>msg.constraints</code> will look like this:</p>
+	<pre>
+{
+  "orderByChild": "name",
+  "limitToFirst": 5,
+  "startAt": {
+    "value": "Alex",
+    "key": "name"
+  }
+}</pre
+	>
 	<p>
 		Learn more about how to use this node
 		<a href="https://github.com/GogoVega/node-red-contrib-firebase-realtime-database/wiki/firebase-in">here</a>.

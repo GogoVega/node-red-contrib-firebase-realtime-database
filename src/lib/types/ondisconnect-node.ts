@@ -1,5 +1,5 @@
 /**
- * Copyright 2022-2023 Gauthier Dandele
+ * Copyright 2022-2024 Gauthier Dandele
  *
  * Licensed under the MIT License,
  * you may not use this file except in compliance with the License.
@@ -15,17 +15,17 @@
  */
 
 import { NodeMessage } from "node-red";
-import { FirebaseNode } from "./FirebaseNodeType";
-import { OnDisconnectConfigType } from "./OnDisconnectConfigType";
+import { FirebaseBaseNode } from "./firebase-node";
+import { OnDisconnectConfig } from "./ondisconnect-config";
 
 export type SendMsgEvent = "connected" | "disconnect";
 
-export interface OutputMessageType extends NodeMessage {
+export interface OnDisconnectMessage extends NodeMessage {
 	payload: number;
 	event: SendMsgEvent;
 	topic: string;
 }
 
-export type OnDisconnectNodeType = FirebaseNode & {
-	config: OnDisconnectConfigType;
-};
+export interface OnDisconnectNode extends FirebaseBaseNode {
+	config: OnDisconnectConfig;
+}

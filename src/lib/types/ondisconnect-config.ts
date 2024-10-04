@@ -1,5 +1,5 @@
 /**
- * Copyright 2022-2023 Gauthier Dandele
+ * Copyright 2022-2024 Gauthier Dandele
  *
  * Licensed under the MIT License,
  * you may not use this file except in compliance with the License.
@@ -14,17 +14,13 @@
  * limitations under the License.
  */
 
-import { NodeDef } from "node-red";
+import { OnDisconnectQueryMethod } from "@gogovega/firebase-config-node/rtdb";
+import { BaseConfig } from "./firebase-config";
 
-type AuthType = "anonymous" | "email" | "privateKey" | "customToken";
+type QueryType = OnDisconnectQueryMethod | "msg" | "none";
+type SendMsgEvent = "" | "onConnected" | "onDisconnect" | "onConnected,onDisconnect";
 
-type ClaimsType = Record<string, { value?: unknown; type?: unknown } | never>;
-
-type DatabaseConfigType = NodeDef & {
-	authType?: AuthType;
-	claims?: ClaimsType;
-	createUser?: boolean;
-	useClaims?: boolean;
+export type OnDisconnectConfig = BaseConfig & {
+	queryType?: QueryType;
+	sendMsgEvent?: SendMsgEvent;
 };
-
-export default DatabaseConfigType;

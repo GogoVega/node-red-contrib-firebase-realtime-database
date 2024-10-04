@@ -1,5 +1,5 @@
 <!--
-  Copyright 2022-2023 Gauthier Dandele
+  Copyright 2022-2024 Gauthier Dandele
 
   Licensed under the MIT License,
   you may not use this file except in compliance with the License.
@@ -21,7 +21,10 @@
 		<dt>payload<span class="property-type">chaîne | booléen | nombre | tableau | objet | nul</span></dt>
 		<dd>les données qui seront envoyées à la base de données.</dd>
 		<dt class="optional">method<span class="property-type">chaîne de caractères</span></dt>
-		<dd>le type de requête à appliquer aux données (définir, pousser, mettre à jour, supprimer, définir la priorité ou définir avec priorité).</dd>
+		<dd>
+			le type de requête à appliquer aux données (définir, pousser, mettre à jour, supprimer, définir la priorité ou
+			définir avec priorité).
+		</dd>
 		<dt class="optional">priority<span class="property-type">nombre</span></dt>
 		<dd>la priorité à appliquer aux données. Par défaut 1.</dd>
 		<dt class="optional">topic<span class="property-type">chaîne de caractères</span></dt>
@@ -31,18 +34,25 @@
 	<p>Ce noeud vous permet d'ajouter/modifier des données à/de la base de données.</p>
 	<ul>
 		<li><strong>Définir</strong> : écrase les données à chaque écriture.</li>
-		<li><strong>Pousser</strong> : ajoute les données à la référence Firebase en tant que nouvelle référence enfant avec une clé unique.</li>
-		<li><strong>Mettre à jour</strong> : mets à jour les valeurs pour chaque clé correspondante dans la base de données.</li>
-		<li><strong>Supprimer</strong> : les données de la référence Firebase et toutes les données enfants sont supprimées.</li>
 		<li>
-			<strong>Définir la priorité</strong> : la priorité est utilisée pour trier les enfants sous un parent spécifique ou dans une requête si
-			aucune autre condition de tri n'est spécifiée.
+			<strong>Pousser</strong> : ajoute les données à la référence Firebase en tant que nouvelle référence enfant avec
+			une clé unique.
+		</li>
+		<li>
+			<strong>Mettre à jour</strong> : mets à jour les valeurs pour chaque clé correspondante dans la base de données.
+		</li>
+		<li>
+			<strong>Supprimer</strong> : les données de la référence Firebase et toutes les données enfants sont supprimées.
+		</li>
+		<li>
+			<strong>Définir la priorité</strong> : la priorité est utilisée pour trier les enfants sous un parent spécifique
+			ou dans une requête si aucune autre condition de tri n'est spécifiée.
 		</li>
 		<li><strong>Définir avec priorité</strong> : écrase les données et défini la priorité.</li>
 	</ul>
 	<p>
-		Le <strong>Chemin</strong> détermine où les données seront écrites. Il peut être défini dans le noeud ou dynamiquement
-		avec la propriété <code>msg.topic</code>.
+		Le <strong>Chemin</strong> détermine où les données seront écrites. Il peut être défini dans le noeud ou
+		dynamiquement avec la propriété <code>msg.topic</code>.
 	</p>
 	<p>
 		Le mot-clé réservé <code>"TIMESTAMP"</code> permet d'utiliser l'horodatage de la base de données.
@@ -56,8 +66,8 @@
   path: "currentServerTimestamp"
 }</pre>
 	<p>
-		Le mot-clé réservé <code>"INCREMENT [delta]"</code> précédé d'un entier positif ou négatif permet d'incrémenter
-		une valeur numérique d'un delta.
+		Le mot-clé réservé <code>"INCREMENT [delta]"</code> précédé d'un nombre positif ou négatif permet d'incrémenter
+		une valeur numérique d'un delta. Le mot-clé réservé <code>"DECREMENT [delta]"</code> existe également.
 		Il doit être écrit au format chaîne de caractères et peut être utilisé dans un tableau ou un objet.
 		L'exemple suivant incrémentera la valeur de 1 à l'emplacement "updateIndex".
 	</p>

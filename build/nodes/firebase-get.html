@@ -1,5 +1,5 @@
 <!--
-  Copyright 2022-2023 Gauthier Dandele
+  Copyright 2022-2024 Gauthier Dandele
 
   Licensed under the MIT License,
   you may not use this file except in compliance with the License.
@@ -14,10 +14,18 @@
   limitations under the License.
 -->
 
+<!-- Load Scripts -->
+<script type="text/javascript" src="resources/@gogovega/node-red-contrib-firebase-realtime-database/common.js"></script>
+<script type="text/javascript" src="resources/@gogovega/node-red-contrib-firebase-realtime-database/constraints-container.js"></script>
+
 <script type="text/javascript">
+	"use strict";
+
 	(function () {
-		let queryConstraintFieldType = ["endAt", "endBefore", "equalTo", "limitToFirst", "limitToLast", "orderByChild", "orderByKey", "orderByPriority", "orderByValue", "startAfter", "startAt"];
-		let translationInitialized = false;
+		const editableConstraintsList = FirebaseQueryConstraintsContainer.editableConstraintsList.create();
+		const { isConstraintsValid } = FirebaseQueryConstraintsContainer.validators;
+		const { typedPathField, validators } = FirebaseUI;
+		const i18n = (key) => FirebaseUI._(key, "firebase-get");
 
 		RED.nodes.registerType("firebase-get", {
 			align: "left",
@@ -25,17 +33,19 @@
 			color: "#e2a12b",
 			defaults: {
 				name: { value: "" },
-				constraint: { value: {}, validate: isConstraintValid },
-				database: { value: "", type: "database-config" },
-				outputType: { value: "auto", validate: RED.validators.regex(/^(auto|string)$/) },
-				passThrough: { value: false },
-				path: { value: "topic" },
-				pathType: { value: "msg", validate: RED.validators.regex(/^(msg|str)$/) },
-				useConstraint: { value: false },
+				constraint: {},	// Legacy Config
+				constraints: { value: {}, label: i18n("label.constraints"), validate: isConstraintsValid() },
+				database: { value: "", type: "firebase-config", required: true },
+				outputType: { value: "auto", label: i18n("label.output"), validate: validators.outputType() },
+				passThrough: { value: false, label: i18n("label.passThrough"), validate: validators.boolean() },
+				path: { value: "topic", label: i18n("label.path"), validate: validators.typedInput("pathType", { allowBlank: true }) },
+				pathType: { value: "msg", label: i18n("label.path"), validate: validators.pathType() },
+				useConstraints: { value: false, label: i18n("label.sortData"), validate: validators.boolean() },
+				useConstraint: {},	// Legacy Config
 			},
 			inputs: 1,
 			outputs: 1,
-			icon: "firebase.png",
+			icon: "firebase.svg",
 			paletteLabel: "Firebase get",
 			label: function () {
 				const path = this.pathType === "msg" ? "" : this.path || "root";
@@ -45,262 +55,37 @@
 				return this.name ? "node_label_italic" : "";
 			},
 			oneditprepare: function () {
-				const constraintContainer = $("#node-input-constraint-container");
-				const useConstraint = $("#node-input-useConstraint");
-				const node = this;
+				editableConstraintsList.build(this);
 
-				$("#node-input-path").typedInput({
-					typeField: "#node-input-pathType",
-					types: ["msg", { value: "str", label: "string", icon: "red/images/typedInput/az.svg", validate: isPathValid }],
-				});
+				const pathField = typedPathField.create().allowBlank(true).enableAutoComplete();
 
-				if (!translationInitialized) {
-					translationInitialized = true;
-					queryConstraintFieldType = queryConstraintFieldType.map((fieldName) => (
-						{ value: fieldName, label: node._(`firebase-get.constraint.${fieldName}`) }
-					));
-				}
-
-				constraintContainer.css({ "min-height": "150px", "min-width": "300px" }).editableList({
-					addButton: node._("firebase-get.addConstraint"),
-					addItem: addItem.bind(node),
-					removable: true,
-					sortable: true,
-				});
-
-				useConstraint.on("change", useConstraintHandler.bind(node));
+				pathField.build();
 			},
-			oneditsave: saveItems,
+			oneditsave: () => editableConstraintsList.saveItems(),
+			oneditresize: (size) => editableConstraintsList.reSize(size),
 		});
-
-		function addItem(container, index, data) {
-			const id = Math.floor((0x99999 - 0x10000) * Math.random()).toString();
-
-			const HTMLBody = `
-				<div style="flex-grow:1;">
-					<div style="width:45%; vertical-align:top; display:inline-block;">
-						<input type="text" id="node-input-constraintType-case-${id}" style="width:100%; text-align:center;">
-					</div>
-					<div style="width:calc(54% - 5px); margin-left:5px; vertical-align:top; display:inline-block;">
-						<div class="container-row-value-case-${id}">
-							<input type="text" id="node-input-value-case-${id}" style="width:100%;" placeholder="${this._("firebase-get.placeholder.value")}" />
-							<input type="hidden" id="node-input-valueType-case-${id}" />
-						</div>
-						<input type="text" id="node-input-child-case-${id}" style="width:100%;" placeholder="${this._("firebase-get.placeholder.child")}" />
-					</div>
-				</div>`;
-
-			container.css({
-				overflow: "auto",
-				whiteSpace: "normal",
-				display: "flex",
-				"align-items": "center",
-			});
-
-			$(container).html(HTMLBody);
-			const constraintType = $(container).find(`#node-input-constraintType-case-${id}`);
-			const valueContainer = $(container).find(`.container-row-value-case-${id}`);
-			const valueField = $(container).find(`#node-input-value-case-${id}`);
-			const childField = $(container).find(`#node-input-child-case-${id}`);
-
-			valueField.typedInput({ default: "num", typeField: `#node-input-valueType-case-${id}`, types: ["num"] });
-			childField
-				.typedInput({ default: "str", types: [{ value: "str", label: "string", icon: "red/images/typedInput/az.svg", validate: (c) => isChildValid(c, constraintType.val()) }] })
-				.typedInput("hide");
-
-			constraintType
-				.typedInput({ types: [{ options: queryConstraintFieldType }] })
-				.on("change", (_event, _type, value) => updateTypeOfTypedInput(valueField, valueContainer, childField, value))
-				.typedInput("value", "limitToLast");
-
-			if (Array.isArray(data)) {
-				const [key, value] = data;
-
-				constraintType.typedInput("value", key);
-
-				if (value && typeof value === "object") {
-					valueField.typedInput("value", value.value?.toString() ?? "");
-					valueField.typedInput("type", value.type ?? "str");
-					childField.typedInput("value", value.key ?? "");
-				} else {
-					if (key === "orderByChild") {
-						valueField.typedInput("value", "");
-						childField.typedInput("value", value ?? "");
-					} else {
-						valueField.typedInput("value", value ?? "");
-						childField.typedInput("value", "");
-					}
-				}
-
-				data = {};
-				$(container).data("data", data);
-			}
-
-			data.id = id;
-			data.index = index;
-		}
-
-		function compare(a, b) {
-			return a.index - b.index;
-		}
-
-		function isChildValid(child, constraintType) {
-			// orderByChild cannot be empty!
-			const empty = constraintType === "orderByChild" ? false : true;
-
-			if ((!child && !empty) || typeof child !== "string") return false;
-			if (child?.match(/^\s|[.#$\[\]]/g)) return false;
-			return true;
-		}
-
-		function isConstraintValid(constraint = {}, opt) {
-			if (typeof constraint !== "object") return false;
-
-			for (let [k, v] of Object.entries(constraint)) {
-				if (!queryConstraintFieldType.some((q) => q.value === k || q === k)) return false;
-				if (v === null) v = {};
-				if (v.type && v.type.match(/^(num|date)$/) && (typeof v.value !== "number" || Number.isNaN(v.value))) return false;
-				if (v.type === "bool" && typeof v.value !== "boolean") return false;
-				if (v.type === "json" && typeof v.value !== "object") return false;
-				if (v.type === "str" && typeof v.value !== "string") return false;
-				if (k === "limitToFirst" && (!Number.isInteger(Number(v)) || Number(v) <= 0)) return false;
-				if (k === "limitToLast" && (!Number.isInteger(Number(v)) || Number(v) <= 0)) return false;
-				if (k === "orderByChild" && !isChildValid(v, k)) return false;
-				if (v.key && !isChildValid(v.key, k)) return false;
-			}
-
-			return true;
-		}
-
-		function isPathValid(path) {
-			if (typeof path !== "string") return false;
-			if (path.match(/^\s|[.#$\[\]]/g)) return false;
-			return true;
-		}
-
-		function saveItems() {
-			const container = $("#node-input-constraint-container").editableList("items").sort(compare);
-			const node = this;
-
-			node.constraint = {};
-
-			container.each(function () {
-				const id = $(this).data("data")?.id;
-				const constraintType = $(this).find(`#node-input-constraintType-case-${id}`).val();
-				const value = $(this).find(`#node-input-value-case-${id}`).val();
-				const child = $(this).find(`#node-input-child-case-${id}`).val() || undefined;
-				const type = $(this).find(`#node-input-valueType-case-${id}`).val();
-
-				switch (constraintType) {
-					case "endAt":
-					case "endBefore":
-					case "equalTo":
-					case "startAfter":
-					case "startAt": {
-						let valueParsed =
-							type === "date" ? Date.now() :
-							type === "null" ? null :
-							type === "num" ? Number(value) :
-							type === "bool" ? (value === "true" ? true : false) :
-							value;
-
-						if (type === "num" && Number.isNaN(valueParsed)) {
-							RED.notify("Query Constraints: Setted value is not a number!", "error");
-							valueParsed = value;
-						}
-
-						node.constraint[constraintType] = { value: valueParsed, key: child, type: type };
-						break;
-					}
-					case "limitToFirst":
-					case "limitToLast": {
-						let valueParsed = Number(value);
-						if (!Number.isInteger(valueParsed) || valueParsed <= 0) {
-							RED.notify("Query Constraints: Setted value is not an integrer > 0!", "error");
-							valueParsed = value;
-						}
-
-						node.constraint[constraintType] = valueParsed;
-						break;
-					}
-					case "orderByChild":
-						node.constraint[constraintType] = child || null;
-						break;
-					case "orderByKey":
-					case "orderByPriority":
-					case "orderByValue":
-						node.constraint[constraintType] = null;
-						break;
-				}
-			});
-		}
-
-		function updateTypeOfTypedInput(value, valueContainer, child, key) {
-			// Initial state
-			value.typedInput("show");
-			valueContainer.css("padding-bottom", "0px");
-			child.typedInput("hide");
-			child.typedInput("value", "");
-
-			switch (key) {
-				case "endAt":
-				case "endBefore":
-				case "equalTo":
-				case "startAfter":
-				case "startAt":
-					value.typedInput("types", ["flow", "global", "msg", "bool", "num", "str", "date", { value: "null", label: "null", hasValue: false }]);
-					valueContainer.css("padding-bottom", "5px");
-					child.typedInput("show");
-					break;
-				case "limitToFirst":
-				case "limitToLast":
-					value.typedInput("types", ["num"]);
-					break;
-				case "orderByChild":
-					value.typedInput("hide");
-					child.typedInput("show");
-					break;
-				case "orderByKey":
-				case "orderByPriority":
-				case "orderByValue":
-					value.typedInput("hide");
-					break;
-			}
-		}
-
-		function useConstraintHandler() {
-			const constraintContainer = $("#node-input-constraint-container");
-			const useConstraint = $("#node-input-useConstraint");
-
-			if (useConstraint.prop("checked") === true) {
-				let constraint = Object.entries(this.constraint || {});
-
-				if (constraint.length === 0) constraint = [["limitToLast", 5]];
-
-				constraint.forEach((item) => constraintContainer.editableList("addItem", item));
-				$(".form-row-constraint").show();
-			} else {
-				$(".form-row-constraint").hide();
-				constraintContainer.editableList("empty");
-			}
-		}
 	})();
 </script>
 
 <script type="text/html" data-template-name="firebase-get">
+	<div class="form-row">
+		<label for="node-input-name"><i class="fa fa-tag"></i> <span data-i18n="firebase-get.label.name"></span></label>
+		<input type="text" id="node-input-name" data-i18n="[placeholder]firebase-get.placeholder.name" />
+	</div>
+
 	<div class="form-row">
 		<label for="node-input-database"><i class="fa fa-database"></i> <span data-i18n="firebase-get.label.database"></span></label>
 		<input type="text" id="node-input-database" style="width:70%;" />
 	</div>
 
 	<div class="form-row">
-		<label for="node-input-useConstraint"><i class="fa fa-sort"></i> <span data-i18n="firebase-get.label.sortData"></span></label>
-		<input type="checkbox" id="node-input-useConstraint" style="display:inline-block; width:15px; vertical-align:baseline;" />
-		<span data-i18n="firebase-get.useConstraint"></span>
+		<label for="node-input-useConstraints"><i class="fa fa-sort"></i> <span data-i18n="firebase-get.label.sortData"></span></label>
+		<input type="checkbox" id="node-input-useConstraints" style="display:inline-block; width:15px; vertical-align:baseline;" />
+		<span data-i18n="firebase-get.useConstraints"></span>
 	</div>
 
-	<div class="form-row form-row-constraint node-input-constraint-container-row">
-		<ol id="node-input-constraint-container"></ol>
+	<div class="form-row node-input-constraints-container-row">
+		<ol id="node-input-constraints-container"></ol>
 	</div>
 
 	<div class="form-row">
@@ -313,6 +98,7 @@
 		<label for="node-input-outputType"><i class="fa fa-sign-out"></i> <span data-i18n="firebase-get.label.output"></span></label>
 		<select id="node-input-outputType" style="width:70%;">
 			<option value="auto" data-i18n="firebase-get.outputType.auto"></option>
+			<option value="json" data-i18n="firebase-get.outputType.json"></option>
 			<option value="string" data-i18n="firebase-get.outputType.string"></option>
 		</select>
 	</div>
@@ -321,11 +107,6 @@
 		<label for="node-input-passThrough"></label>
 		<input type="checkbox" id="node-input-passThrough" style="display:inline-block; width:15px; vertical-align:baseline;" />
 		<span data-i18n="firebase-get.passThrough"></span>
-	</div>
-
-	<div class="form-row">
-		<label for="node-input-name"><i class="fa fa-tag"></i> <span data-i18n="firebase-get.label.name"></span></label>
-		<input type="text" id="node-input-name" data-i18n="[placeholder]firebase-get.placeholder.name" />
 	</div>
 
 	<div class="form-tips" id="firebase-get-tips">

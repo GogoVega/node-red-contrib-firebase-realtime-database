@@ -94,7 +94,7 @@
     "database": "e8796a1869e179bc",
     "path": "timestampList",
     "pathType": "str",
-    "priority": "",
+    "priority": "1",
     "queryType": "push",
     "x": 370,
     "y": 100,
@@ -106,14 +106,20 @@
     "z": "28464b7f6be41cb4",
     "g": "f86f4fb427eea069",
     "name": "List First 2 Changes",
-    "constraint": {
-      "limitToFirst": 2
+    "constraints": {
+      "limitToFirst": {
+        "value": "2",
+        "type": "num"
+      }
     },
     "database": "e8796a1869e179bc",
+    "inputs": 0,
     "listenerType": "value",
     "outputType": "auto",
+    "passThrough": false,
     "path": "timestampList",
-    "useConstraint": true,
+    "pathType": "str",
+    "useConstraints": true,
     "x": 150,
     "y": 200,
     "wires": [
@@ -156,14 +162,20 @@
     "z": "28464b7f6be41cb4",
     "g": "f86f4fb427eea069",
     "name": "List Last 2 Changes",
-    "constraint": {
-      "limitToLast": 2
+    "constraints": {
+      "limitToLast": {
+        "value": "2",
+        "type": "num"
+      }
     },
     "database": "e8796a1869e179bc",
+    "inputs": 0,
     "listenerType": "value",
     "outputType": "auto",
+    "passThrough": false,
     "path": "timestampList",
-    "useConstraint": true,
+    "pathType": "str",
+    "useConstraints": true,
     "x": 150,
     "y": 320,
     "wires": [
@@ -250,7 +262,7 @@
     "database": "e8796a1869e179bc",
     "path": "topic",
     "pathType": "msg",
-    "priority": "",
+    "priority": "1",
     "queryType": "set",
     "x": 420,
     "y": 520,
@@ -320,18 +332,28 @@
     "z": "28464b7f6be41cb4",
     "g": "de5313f319e7d726",
     "name": "Sorts \"Computer\" as hobby",
-    "constraint": {
-      "orderByChild": "hobby",
+    "constraints": {
+      "orderByChild": {
+        "value": "hobby",
+        "type": "str"
+      },
       "equalTo": {
         "value": "Computer",
-        "type": "str"
+        "key": "",
+        "types": {
+          "value": "str",
+          "child": "str"
+        }
       }
     },
     "database": "e8796a1869e179bc",
+    "inputs": 0,
     "listenerType": "value",
     "outputType": "auto",
+    "passThrough": false,
     "path": "users",
-    "useConstraint": true,
+    "pathType": "str",
+    "useConstraints": true,
     "x": 180,
     "y": 660,
     "wires": [
@@ -393,18 +415,28 @@
     "z": "28464b7f6be41cb4",
     "g": "de5313f319e7d726",
     "name": "Sorts by year of birth after 1920",
-    "constraint": {
-      "orderByChild": "year_of_birth",
+    "constraints": {
+      "orderByChild": {
+        "value": "year_of_birth",
+        "type": "str"
+      },
       "startAt": {
-        "value": 1920,
-        "type": "num"
+        "value": "1920",
+        "key": "",
+        "types": {
+          "value": "num",
+          "child": "str"
+        }
       }
     },
     "database": "e8796a1869e179bc",
+    "inputs": 0,
     "listenerType": "value",
     "outputType": "auto",
+    "passThrough": false,
     "path": "users",
-    "useConstraint": true,
+    "pathType": "str",
+    "useConstraints": true,
     "x": 190,
     "y": 780,
     "wires": [
@@ -447,7 +479,7 @@
   },
   {
     "id": "e8796a1869e179bc",
-    "type": "database-config",
+    "type": "firebase-config",
     "name": "My Database",
     "authType": "privateKey",
     "claims": {},

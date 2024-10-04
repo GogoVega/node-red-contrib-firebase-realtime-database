@@ -1,5 +1,5 @@
 /**
- * Copyright 2022-2023 Gauthier Dandele
+ * Copyright 2022-2024 Gauthier Dandele
  *
  * Licensed under the MIT License,
  * you may not use this file except in compliance with the License.
@@ -15,34 +15,24 @@
  */
 
 import { NodeAPI } from "node-red";
-import { FirebaseIn } from "../lib/firebaseNode";
-import { DatabaseNodeType } from "../lib/types/DatabaseNodeType";
-import { FirebaseInConfigType } from "../lib/types/FirebaseConfigType";
-import { FirebaseInNodeType } from "../lib/types/FirebaseNodeType";
+import { FirebaseIn } from "../lib/firebase-node";
+import { FirebaseInConfig, FirebaseInNode } from "../lib/types";
 
 module.exports = function (RED: NodeAPI) {
-	function FirebaseInNode(this: FirebaseInNodeType, config: FirebaseInConfigType) {
+	function FirebaseInNode(this: FirebaseInNode, config: FirebaseInConfig) {
 		RED.nodes.createNode(this, config);
-		const self = this;
 
-		self.config = config;
-		self.database = RED.nodes.getNode(config.database) as DatabaseNodeType | null;
-		self.RED = RED;
+		const firebase = new FirebaseIn(this, config, RED);
 
-		try {
-			const firebase = new FirebaseIn(self);
+		firebase.attachStatusListener();
+		firebase.subscribe();
 
-			firebase.registerNode();
-			firebase.setNodeStatus();
-			firebase.doSubscriptionQuery();
+		this.on("input", (msg, send, done) => firebase.subscribe(msg, send, done));
 
-			self.on("close", (removed: boolean, done: () => void) => {
-				firebase.doUnSubscriptionQuery();
-				firebase.deregisterNode(removed, done);
-			});
-		} catch (error) {
-			self.error(error);
-		}
+		this.on("close", (done: () => void) => {
+			firebase.unsubscribe();
+			firebase.detachStatusListener(done);
+		});
 	}
 
 	RED.nodes.registerType("firebase-in", FirebaseInNode);

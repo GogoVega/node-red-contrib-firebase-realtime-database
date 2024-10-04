@@ -4,40 +4,29 @@
       "database": "Database",
       "listener": "Listener",
       "sortData": "Sort Data?",
+      "constraints": "Constraints",
       "path": "Path",
       "output": "Output",
+      "passThrough": "Pass Through",
       "name": "Name"
     },
     "listenerType": {
+      "none": "- use msg.listener -",
       "value": "Value",
       "child_added": "Child Added",
       "child_changed": "Child Changed",
       "child_moved": "Child Moved",
       "child_removed": "Child Removed"
     },
-    "constraint": {
-      "orderByChild": "Order by Child",
-      "orderByKey": "Order by Key",
-      "orderByPriority": "Order by Priority",
-      "orderByValue": "Order by Value",
-      "limitToFirst": "Limit to First",
-      "limitToLast": "Limit to Last",
-      "endAt": "End At",
-      "endBefore": "End Before",
-      "equalTo": "Equal To",
-      "startAfter": "Start After",
-      "startAt": "Start At"
-    },
     "outputType": {
       "auto": "auto-detect",
-      "string": "a String"
+      "json": "a JSON object",
+      "string": "a JSON String"
     },
     "placeholder": {
-      "name": "Name",
-      "value": "Value",
-      "child": "Child Key"
+      "name": "Name"
     },
-    "useConstraint": "Use Query Constraint to sort and order your data.",
-    "addConstraint": "Add Query Constraint Set"
+    "useConstraints": "Use Query Constraints to sort and order your data.",
+    "passThrough": "If a message arrives, pass through the message?"
   }
 }

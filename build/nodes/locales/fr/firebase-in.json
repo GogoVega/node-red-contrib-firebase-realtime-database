@@ -4,40 +4,29 @@
       "database": "Database",
       "listener": "Écouteur",
       "sortData": "Trier ?",
+      "constraints": "Contraintes",
       "path": "Chemin",
       "output": "Sortie",
+      "passThrough": "Transmettre ?",
       "name": "Nom"
     },
     "listenerType": {
+      "none": "- utiliser msg.listener -",
       "value": "Valeur",
       "child_added": "Enfant ajouté",
       "child_changed": "Enfant modifié",
       "child_moved": "Enfant déplacé",
       "child_removed": "Enfant supprimé"
     },
-    "constraint": {
-      "orderByChild": "Trier par enfant",
-      "orderByKey": "Trier par clé",
-      "orderByPriority": "Trier par priorité",
-      "orderByValue": "Trier par valeur",
-      "limitToFirst": "Limiter aux premiers",
-      "limitToLast": "Limiter aux derniers",
-      "endAt": "Terminer à",
-      "endBefore": "Terminer avant",
-      "equalTo": "Égal à",
-      "startAfter": "Commencer après",
-      "startAt": "Commencer à"
-    },
     "outputType": {
       "auto": "détection automatique",
+      "json": "un objet JSON",
       "string": "une chaîne de caractères"
     },
     "placeholder": {
-      "name": "Nom",
-      "value": "Valeur",
-      "child": "Clé de l'enfant"
+      "name": "Nom"
     },
-    "useConstraint": "Souhaitez-vous trier et ordonner vos données ?",
-    "addConstraint": "Ajouter une contrainte de requête"
+    "useConstraints": "Souhaitez-vous trier et ordonner vos données ?",
+    "passThrough": "Si un message arrive, transmettre le message ?"
   }
 }
