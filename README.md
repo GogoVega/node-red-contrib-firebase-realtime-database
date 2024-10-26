@@ -24,7 +24,10 @@
 ![demo nodes](./assets/images/demo-flow.gif)
 
 > [!CAUTION]
-> **BREAKING CHANGES**: If you are updating to 0.6, please read the [migration procedure](https://github.com/GogoVega/node-red-contrib-firebase-realtime-database/wiki/migration-wizard).
+> **BREAKING CHANGES**: v0.7.0: the required version of Node.js is now >=18
+
+> [!CAUTION]
+> **BREAKING CHANGES**: If you are updating to v0.6, please read the [migration procedure](https://github.com/GogoVega/node-red-contrib-firebase-realtime-database/wiki/migration-wizard).
 
 ## What is it?
 
@@ -82,7 +85,7 @@ cd ~/.node-red
 npm install @gogovega/node-red-contrib-firebase-realtime-database --omit=dev
 ```
 
-Remember to restart Node RED after using either method. 
+Remember to restart Node RED after using either method.
 
 ## Authentication Methods
 

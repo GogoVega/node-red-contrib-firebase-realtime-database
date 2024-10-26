@@ -1,5 +1,18 @@
 # Change log
 
+## 0.7.0
+
+### Breaking Changes
+
+- Set required version of Node.js to >=18
+
+### Changes
+
+- Bump `@gogovega/firebase-config-node` from 0.1.5 to 0.2.0
+  - Only don't wait signout for Firestore and add a safety delay ([#12](https://github.com/GogoVega/Firebase-Config-Node/pull/12))
+  - Set required version of Node.js to >=18
+  - Set required version of Node-RED to >=3
+
 ## 0.6.0
 
 ### Breaking Changes
