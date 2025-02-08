@@ -1,5 +1,16 @@
 # Change log
 
+## 0.7.1
+
+### Changes
+- Bump `@gogovega/firebase-config-node` from 0.2.0 to 0.2.1
+  - Do not call `signout` if app initialization failed ([#15](https://github.com/GogoVega/Firebase-Config-Node/pull/15))
+  - Fix bad `Query` object returned by `applyQueryConstraints` ([#16](https://github.com/GogoVega/Firebase-Config-Node/pull/16))
+
+### New Features
+
+- Introduce the `First flow` tour guide (#79)
+
 ## 0.7.0
 
 ### Breaking Changes
