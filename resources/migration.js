@@ -461,6 +461,18 @@
 				// Triggers the Migrate script if old Config Node still in use
 				generateNotification("migrate");
 			}
+
+			// Run the 'First flow' guide
+			// TODO: see with the NR team a guideline
+			const tourName = "first-flow";
+			const packageName = "gogovega/node-red-contrib-firebase-realtime-database";
+			const settingName = `editor.tours.${packageName}.${tourName}`;
+			if (!RED.settings.get(settingName, false)) {
+				RED.tourGuide.run(`/resources/@${packageName}/${tourName}.js`, function(error) {
+					if (error) console.error("Firebase: ", error);
+					RED.settings.set(settingName, true);
+				});
+			}
 		} catch (error) {
 			console.error("An error occurred while checking the status of the config-node", error);
 		}
