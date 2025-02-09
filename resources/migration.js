@@ -432,6 +432,44 @@
 		}]);
 	}
 
+	// TODO: see with the NR team a guideline (#4965)
+	// To avoid lots of tours randomly popping up in the editor
+	function initTourGuide() {
+		const tourName = "first-flow";
+		const packageName = "gogovega/node-red-contrib-firebase-realtime-database";
+		const settingName = `editor.tours.${packageName}.${tourName}`;
+
+		let originalRemove;
+		const tourGuide = function () {
+			const tourRunning = $(".red-ui-tourGuide-shade").length > 0;
+
+			// Skip if a tour is running - concurrent calls are not yet protected
+			if (!tourRunning && !RED.settings.get(settingName, false)) {
+				// Restore the original remove handler
+				if (originalRemove) {
+					$.fn.remove = originalRemove;
+				}
+
+				RED.tourGuide.run(`/resources/@${packageName}/${tourName}.js`, function(error) {
+					if (error) console.error("Firebase: ", error);
+					RED.settings.set(settingName, true);
+				});
+			} else if (tourRunning) {
+				// Change the 'remove' handler to triggers an event
+				originalRemove = $.fn.remove;
+				$.fn.remove = function () {
+					this.trigger("remove");
+					return originalRemove.apply(this, arguments);
+				};
+
+				// Listen to the event to run the tour once the current one has finished
+				$(".red-ui-tourGuide-shade").one("remove", () => setTimeout(tourGuide, 1000));
+			}
+		};
+
+		tourGuide();
+	}
+
 	async function init() {
 		try {
 			console.log("Firebase Migration Wizard Started");
@@ -460,18 +498,9 @@
 				// Now the Config Node has been loaded and the version is good
 				// Triggers the Migrate script if old Config Node still in use
 				generateNotification("migrate");
-			}
-
-			// Run the 'First flow' guide
-			// TODO: see with the NR team a guideline
-			const tourName = "first-flow";
-			const packageName = "gogovega/node-red-contrib-firebase-realtime-database";
-			const settingName = `editor.tours.${packageName}.${tourName}`;
-			if (!RED.settings.get(settingName, false)) {
-				RED.tourGuide.run(`/resources/@${packageName}/${tourName}.js`, function(error) {
-					if (error) console.error("Firebase: ", error);
-					RED.settings.set(settingName, true);
-				});
+			} else {
+				// Run the 'First flow' guide
+				initTourGuide();
 			}
 		} catch (error) {
 			console.error("An error occurred while checking the status of the config-node", error);
