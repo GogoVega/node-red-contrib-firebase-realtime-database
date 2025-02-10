@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+let paletteFilter;
+
 /**
  * First Flow tour guide for creating a Firebase flow in Node-RED.
  *
@@ -24,7 +26,7 @@
 export default {
 	steps: [
 		{
-			titleIcon: "fa fa-map-o",	// TODO: Firebase icon
+			titleIcon: 'firebase"><img src="/icons/@gogovega/node-red-contrib-firebase-realtime-database/firebase.svg',
 			title: {
 				"en-US": "Create your first Firebase flow",
 				"fr": "Créer votre premier flux Firebase"
@@ -44,15 +46,20 @@ export default {
 			},
 			prepare: function (done) {
 				// Show only the Firebase category - to avoid to freeze the workspace
-				// RED.palette doesn't allow this sort of filter so it's a trick 🤫
-				$("#red-ui-palette .red-ui-palette-header").closest(".red-ui-palette-category").hide();
-				$("#red-ui-palette-header-Firebase").closest(".red-ui-palette-category").show();
-				setTimeout(done, 200);
+				// RED.palette doesn't allow to sort by category so it's a trick 🤫
+				const filter = $("#red-ui-palette-search input");
+				paletteFilter = filter.searchBox("value");
+				filter.searchBox("value", "");
+				setTimeout(function () {
+					$("#red-ui-palette .red-ui-palette-header").closest(".red-ui-palette-category").hide();
+					$("#red-ui-palette-header-Firebase").closest(".red-ui-palette-category").show();
+					done();
+				}, 200);
 			},
 			complete: function () {
 				// Clear the Firebase filter to returns to previous Palette state
 				$("#red-ui-palette-search input").searchBox("value", "pending");
-				$("#red-ui-palette-search input").searchBox("value", "");
+				$("#red-ui-palette-search input").searchBox("value", paletteFilter || "");
 			}
 		},
 		{
