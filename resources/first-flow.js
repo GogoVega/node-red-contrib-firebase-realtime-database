@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+let paletteFilter;
+
 /**
  * First Flow tour guide for creating a Firebase flow in Node-RED.
  *
@@ -23,8 +25,8 @@
  */
 export default {
 	steps: [
-		{
-			titleIcon: "fa fa-map-o",	// TODO: Firebase icon
+		{	// TODO: go through a class for icon
+			titleIcon: 'firebase"><img src="/icons/@gogovega/node-red-contrib-firebase-realtime-database/firebase.svg',
 			title: {
 				"en-US": "Create your first Firebase flow",
 				"fr": "Créer votre premier flux Firebase"
@@ -39,28 +41,87 @@ export default {
 			element: "#red-ui-palette-base-category-Firebase",
 			direction: "right",
 			description: {
-				"en-US": "The Firebase palette lists all of the nodes available to use.",
-				"fr": "La palette Firebase répertorie tous les noeuds disponibles à utiliser."
+				"en-US": "The Firebase palette lists all of the nodes available to use. Lets explore them.",
+				"fr": "La palette Firebase répertorie tous les noeuds disponibles à utiliser. Prenons un moment pour les découvrir."
 			},
 			prepare: function (done) {
 				// Show only the Firebase category - to avoid to freeze the workspace
-				// RED.palette doesn't allow this sort of filter so it's a trick 🤫
-				$("#red-ui-palette .red-ui-palette-header").closest(".red-ui-palette-category").hide();
-				$("#red-ui-palette-header-Firebase").closest(".red-ui-palette-category").show();
-				setTimeout(done, 200);
+				// RED.palette doesn't allow to sort by category so it's a trick 🤫
+				const filter = $("#red-ui-palette-search input");
+				paletteFilter = filter.searchBox("value");
+				filter.searchBox("value", "");
+				setTimeout(function () {
+					$("#red-ui-palette .red-ui-palette-header").closest(".red-ui-palette-category").hide();
+					$("#red-ui-palette-header-Firebase").closest(".red-ui-palette-category").show();
+					done();
+				}, 200);
+			}
+		},
+		{
+			element: ".red-ui-palette-node[data-palette-type='firebase-in']",
+			direction: "right",
+			title: {
+				"en-US": "The Firebase In Node",
+				"fr": "Le noeud Firebase In"
+			},
+			description: {
+				"en-US": "This node subscribes to data at the specified path and sends a payload for each change.",
+				"fr": "Ce noeud s'abonne aux données du chemin spécifié et envoie une charge utile pour chaque changement."
+			}
+		},
+		{
+			element: ".red-ui-palette-node[data-palette-type='firebase-get']",
+			direction: "right",
+			title: {
+				"en-US": "The Firebase Get Node",
+				"fr": "Le noeud Firebase Get"
+			},
+			description: {
+				"en-US": "This node reads the data from the specified path and sends a payload.",
+				"fr": "Ce noeud lit les données du chemin spécifié et envoie une charge utile."
+			}
+		},
+		{
+			element: ".red-ui-palette-node[data-palette-type='firebase-out']",
+			direction: "right",
+			title: {
+				"en-US": "The Firebase Out Node",
+				"fr": "Le noeud Firebase Out"
+			},
+			description: {
+				"en-US": "This node modifies the data at the specified path.",
+				"fr": "Ce noeud modifie les données du chemin spécifié."
+			}
+		},
+		{
+			element: ".red-ui-palette-node[data-palette-type='on-disconnect']",
+			direction: "right",
+			width: 400,
+			title: {
+				"en-US": "The On-Disconnect Node",
+				"fr": "Le noeud On-Disconnect"
+			},
+			description: {
+				"en-US": "This node modifies the data at the specified path only when a connection loss occurs between Node-RED and Firebase.",
+				"fr": "Ce noeud modifie les données du chemin spécifié uniquement lors d'une perte de connexion entre Node-RED et Firebase."
 			},
 			complete: function () {
 				// Clear the Firebase filter to returns to previous Palette state
 				$("#red-ui-palette-search input").searchBox("value", "pending");
-				$("#red-ui-palette-search input").searchBox("value", "");
+				$("#red-ui-palette-search input").searchBox("value", paletteFilter || "");
 			}
 		},
 		{
 			element: "#red-ui-tab-red-ui-clipboard-dialog-import-tab-examples",
 			direction: "bottom",
+			width: 400,
+			title: {
+				"en-US": "Let's import a flow of examples",
+				"fr": "Importons un flux d'exemples"
+			},
 			description: {
-				"en-US": "<p>Let's import a flow of examples. Click on the '<strong>Examples</strong>' button.</p>",
-				"fr": "<p>Importons un flux d'exemples. Cliquer sur le bouton '<strong>Exemples</strong>'.</p>"
+				"en-US": "<p>Click on the '<strong>Examples</strong>' button.</p>",
+				"fr": "<p>Cliquer sur le bouton '<strong>Exemples</strong>'.</p>"
 			},
 			fallback: "inset-bottom-right",
 			wait: {
