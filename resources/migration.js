@@ -450,8 +450,15 @@
 					$.fn.remove = originalRemove;
 				}
 
-				RED.tourGuide.run(`/resources/@${packageName}/${tourName}.js`, function(error) {
-					if (error) console.error("Firebase: ", error);
+				// TODO: At this stage, it's better to load the file from the repo
+				// to avoid publishing a new version for every change made to the tour.
+				const url = "https://cdn.jsdelivr.net/gh/GogoVega/node-red-contrib-firebase-realtime-database@master/resources/first-flow.js";
+				RED.tourGuide.run(url/*`/resources/@${packageName}/${tourName}.js`*/, function(error) {
+					if (error) {
+						console.error("Firebase tour: ", error);
+						RED.notify("Failed to load the Firebase tour", "error");
+					}
+
 					RED.settings.set(settingName, true);
 				});
 			} else if (tourRunning) {
