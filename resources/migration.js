@@ -169,6 +169,7 @@
 											<html>
 												<p>Are you really sure you want to do this?</p>
 												<p>The Update script will run <code>npm update</code> in your Node-RED directory to update dependencies.</p>
+												<p>If you have version constraints with one or more nodes, please check first the pinning of those versions.</p>
 												<p><strong>Tip</strong>: Click on <strong>View Log</strong> then <strong>Confirm</strong> and not the other way around 🤫</p>
 											</html>`,
 										modal: false, fixed: true, type: "warning", buttons: ["Confirm Update", "View Log", "Cancel"]
