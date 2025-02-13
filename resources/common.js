@@ -286,10 +286,15 @@ var FirebaseUI = FirebaseUI || (function () {
 
 	class TypedPathInput {
 		constructor() {
-			this._autoComplete = false;
+			this._autoComplete = {};
 			this._allowBlank = false;
-			this._modeByDefault = "dynamic";
+			this.mode = "dynamic";
 			this.pathField = $("#node-input-path");
+		}
+
+		#applyNewTypes() {
+			const types = this.mode === "static" ? this.staticFieldOptions : this.dynamicFieldOptions;
+			this.pathField.typedInput("types", types);
 		}
 
 		/**
@@ -308,12 +313,17 @@ var FirebaseUI = FirebaseUI || (function () {
 		 * @returns {void}
 		 */
 		build() {
-			const others = this._autoComplete ? { autoComplete: autoComplete() } : {};
-			this.staticFieldOptions = [{ value: "str", label: "string", icon: "red/images/typedInput/az.svg", validate: validators.path(this._allowBlank), ...others }];
-			this.dynamicFieldOptions = [...this.staticFieldOptions, "msg", "flow", "global", "jsonata", "env"];
+			this.staticFieldOptions = [{
+				value: "str",
+				label: "string",
+				icon: "red/images/typedInput/az.svg",
+				validate: validators.path(this._allowBlank),
+				...this._autoComplete
+			}, "env"];
+			this.dynamicFieldOptions = [...this.staticFieldOptions, "msg", "flow", "global", "jsonata"];
 			this.pathField.typedInput({
 				typeField: "#node-input-pathType",
-				types: this._modeByDefault === "dynamic" ? this.dynamicFieldOptions : this.staticFieldOptions,
+				types: this.mode === "dynamic" ? this.dynamicFieldOptions : this.staticFieldOptions,
 			});
 		}
 
@@ -322,7 +332,7 @@ var FirebaseUI = FirebaseUI || (function () {
 		 * @returns {TypedPathInput}
 		 */
 		enableAutoComplete() {
-			this._autoComplete = true;
+			this._autoComplete = { autoComplete: autoComplete() };
 			return this;
 		}
 
@@ -332,20 +342,22 @@ var FirebaseUI = FirebaseUI || (function () {
 		 * @returns {TypedPathInput}
 		 */
 		modeByDefault(mode) {
-			if (mode === "static") this._modeByDefault = "static";
-			else if (mode === "dynamic") this._modeByDefault = "dynamic";
-			else throw new Error("mode must be 'static' or 'dynamic'");
+			if (mode !== "static" && mode !== "dynamic")
+				throw new Error("mode must be 'static' or 'dynamic'");
+			this.mode = mode;
 			return this;
 		}
 
 		/**
 		 * Switch the types of the typedPathField to static or dynamic
-		 * @param {boolean} toStatic True to set the types to static
+		 * @param {"static"|"dynamic"} mode The mode to swith on (`static` or `dynamic`)
 		 * @returns {void}
 		 */
-		switchModeToStaticOrDynamic(toStatic) {
-			const types = toStatic ? this.staticFieldOptions : this.dynamicFieldOptions;
-			this.pathField.typedInput("types", types);
+		switchMode(mode) {
+			if (mode !== "static" && mode !== "dynamic")
+				throw new Error("mode must be 'static' or 'dynamic'");
+			this.mode = mode;
+			this.#applyNewTypes();
 		}
 	}
 
