@@ -159,7 +159,7 @@ export class Firebase<Node extends FirebaseNode, Config extends FirebaseConfig =
 				valueFound = null;
 				break;
 			default:
-				if (!msg && this.dynamicFieldTypes.includes(type))
+				if (!msg && this.dynamicFieldTypes.includes(type) && (type === "msg" || /\[msg\./.test(value)))
 					throw new Error("Incoming message missing to evaluate the Query Constraints");
 				valueFound = await this.evaluateNodeProperty(value, type, this.node, msg!);
 		}
@@ -217,7 +217,7 @@ export class Firebase<Node extends FirebaseNode, Config extends FirebaseConfig =
 		if (!["flow", "global", "jsonata", "env", "msg", "str"].includes(type!))
 			throw new Error(`Invalid type (${type}) for the Path field. Please reconfigure this node.`);
 
-		if (!msg && this.dynamicFieldTypes.includes(type!))
+		if (!msg && this.dynamicFieldTypes.includes(type!) && (type === "msg" || /\[msg\./.test(value)))
 			throw new Error("Incoming message missing to evaluate the path");
 
 		return this.evaluateNodeProperty(value, type!, this.node, msg!);
@@ -573,14 +573,15 @@ export class FirebaseIn extends Firebase<FirebaseInNode> {
 		(async () => {
 			try {
 				const listener = this.getListener(msg);
+
+				// Await the listener defined in the incoming message
+				if (listener === "none" || (this.node.config.inputs === 1 && !msg)) return;
+
 				const path = await this.getPath(msg, true);
 				const constraints = await this.getQueryConstraints(msg);
 				const msg2PassThrough = this.node.config.passThrough ? msg : undefined;
 
 				if (!this.rtdb) return;
-
-				// Await the listener defined in the incoming message
-				if (listener === "none") return;
 
 				if (!(await this.node.database?.clientSignedIn())) return;
 
