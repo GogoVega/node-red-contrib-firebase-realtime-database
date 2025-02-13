@@ -21,7 +21,8 @@
     "database",
     "firebase",
     "node-red",
-    "realtime"
+    "realtime",
+    "rtdb"
   ],
   "author": {
     "name": "Gauthier Dandele",
