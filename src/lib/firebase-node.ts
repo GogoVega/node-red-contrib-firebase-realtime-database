@@ -538,12 +538,20 @@ export class FirebaseGet extends Firebase<FirebaseGetNode> {
  */
 export class FirebaseIn extends Firebase<FirebaseInNode> {
 	/**
+	 * Whether the node should await a payload to subscribe to data.
+	 */
+	private isDynamicConfig: boolean = false;
+
+	/**
 	 * This property contains the **method to call** to unsubscribe the listener
 	 */
 	private unsubscribeCallback?: Unsubscribe;
 
 	constructor(node: FirebaseInNode, config: FirebaseInConfig, RED: NodeAPI) {
 		super(node, config, RED);
+
+		// No need to re-check all config - if the node has an input, the config is dynamic.
+		this.isDynamicConfig = this.node.config.inputs === 1;
 	}
 
 	/**
@@ -575,7 +583,7 @@ export class FirebaseIn extends Firebase<FirebaseInNode> {
 				const listener = this.getListener(msg);
 
 				// Await the listener defined in the incoming message
-				if (listener === "none" || (this.node.config.inputs === 1 && !msg)) return;
+				if (listener === "none" || (this.isDynamicConfig && !msg)) return;
 
 				const path = await this.getPath(msg, true);
 				const constraints = await this.getQueryConstraints(msg);
