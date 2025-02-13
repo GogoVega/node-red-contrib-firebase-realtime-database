@@ -108,6 +108,7 @@ export type FirebaseInConfig = BaseConfig & {
 	 */
 	constraint?: QueryConstraint;
 	constraints?: QueryConstraint;
+	inputs?: 0 | 1;
 	listenerType?: ListenerType;
 	outputType?: OutputType;
 	passThrough?: boolean;
