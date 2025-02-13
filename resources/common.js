@@ -251,39 +251,6 @@ var FirebaseUI = FirebaseUI || (function () {
 		}
 	}
 
-	function get(URL) {
-		return new Promise((resolve, reject) => {
-			$.ajax({
-				type: "GET",
-				url: URL,
-				beforeSend: function (jqXHR) {
-					const authTokens = RED.settings.get("auth-tokens");
-					if (authTokens) jqXHR.setRequestHeader("Authorization", `Bearer ${authTokens.access_token}`);
-				},
-				success: (data) => resolve(data),
-				error: (jqXHR, _textStatus, errorThrown) => reject(`${errorThrown}: ${jqXHR.responseText}`),
-				dataType: "json",
-			});
-		});
-	}
-
-	function post(URL, data) {
-		return new Promise((resolve, reject) => {
-			$.ajax({
-				type: "POST",
-				url: URL,
-				data: data,
-				dataType: "json",
-				beforeSend: function (jqXHR) {
-					const authTokens = RED.settings.get("auth-tokens");
-					if (authTokens) jqXHR.setRequestHeader("Authorization", `Bearer ${authTokens.access_token}`);
-				},
-				success: (data) => resolve(data),
-				error: (jqXHR, _textStatus, errorThrown) => reject(`${errorThrown}: ${jqXHR.responseText}`),
-			});
-		});
-	}
-
 	class TypedPathInput {
 		constructor() {
 			this._autoComplete = false;
@@ -364,7 +331,6 @@ var FirebaseUI = FirebaseUI || (function () {
 
 	return {
 		_: i18nFullOptions,
-		express: { get: get, post: post },
 		typedPathField: { create: () => new TypedPathInput() },
 		validators: validators,
 	};

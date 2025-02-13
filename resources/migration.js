@@ -76,33 +76,35 @@
 									// Start the event log panel
 									RED.eventLog.startEvent("FIREBASE: Updating dependencies...");
 
-									FirebaseUI.express.post(path, { script: "update-dependencies" }).then((resp) => {
-										spinner.remove();
-										myNotification.close();
-										
-										if (resp.status === "success") {
-											notify({
-												msg: "<html><p>Update Successful!</p><p>Restarts now Node-RED and reload your browser</p></html>",
-												type: "success",
-												fixed: true,
-												buttons: ["Close"]
-											});
-										} else if (resp.status === "error") {
-											notify({
-												msg: `
-												<html>
-													<p>Update Failed!</p>
-													<p>Please raise an issue <a href="https://github.com/GogoVega/node-red-contrib-firebase-realtime-database/issues/new/choose">here</a> with log details:</p>
-													<pre>${resp.msg}</pre>
-												</html>`,
-												type: "error",
-												fixed: true,
-												buttons: ["Close"],
-											});
-										} else {
-											console.log("J'ai glissé chef!");
-										}
-									});
+									$.post(path, { script: "update-dependencies" })
+										.done((resp) => {
+											if (resp.status === "success") {
+												notify({
+													msg: "<html><p>Update Successful!</p><p>Restarts now Node-RED and reload your browser</p></html>",
+													type: "success",
+													fixed: true,
+													buttons: ["Close"]
+												});
+											} else if (resp.status === "error") {
+												notify({
+													msg: `
+													<html>
+														<p>Update Failed!</p>
+														<p>Please raise an issue <a href="https://github.com/GogoVega/node-red-contrib-firebase-realtime-database/issues/new/choose">here</a> with log details:</p>
+														<pre>${resp.msg}</pre>
+													</html>`,
+													type: "error",
+													fixed: true,
+													buttons: ["Close"],
+												});
+											} else {
+												console.log("J'ai glissé chef!");
+											}
+										})
+										.always(() => {
+											spinner.remove();
+											myNotification.close();
+										});
 								}
 							};
 						} else if (button === "Confirm Migrate") {
@@ -492,24 +494,24 @@
 			}
 
 			// Research if the Config Node version satisfies the required version by this palette
-			const status = await FirebaseUI.express.get("firebase/rtdb/config-node/status");
-
-			if (!status.status.versionIsSatisfied) {
-				if (status.status.updateScriptCalled) {
-					// The user has triggered the Update script but not restarted NR
-					generateNotification("restart-update");
+			$.getJSON("firebase/rtdb/config-node/status", function (result) {
+				if (!result.status.versionIsSatisfied) {
+					if (result.status.updateScriptCalled) {
+						// The user has triggered the Update script but not restarted NR
+						generateNotification("restart-update");
+					} else {
+						// Ask the user to trigger the Update script
+						generateNotification("update");
+					}
+				} else if (isOldConfigNodeStillInUse()) {
+					// Now the Config Node has been loaded and the version is good
+					// Triggers the Migrate script if old Config Node still in use
+					generateNotification("migrate");
 				} else {
-					// Ask the user to trigger the Update script
-					generateNotification("update");
+					// All ready => run the 'First flow' guide
+					initTourGuide();
 				}
-			} else if (isOldConfigNodeStillInUse()) {
-				// Now the Config Node has been loaded and the version is good
-				// Triggers the Migrate script if old Config Node still in use
-				generateNotification("migrate");
-			} else {
-				// Run the 'First flow' guide
-				initTourGuide();
-			}
+			});
 		} catch (error) {
 			console.error("An error occurred while checking the status of the config-node", error);
 		}
