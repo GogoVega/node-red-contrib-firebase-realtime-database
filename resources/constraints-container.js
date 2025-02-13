@@ -21,6 +21,10 @@ var FirebaseQueryConstraintsContainer = FirebaseQueryConstraintsContainer || (fu
 		return;
 	}
 
+	const i18n = function (key) {
+		return FirebaseUI._(key, "load-config", "query-constraints");
+	};
+
 	const queryConstraintTypes = new Array("endAt", "endBefore", "equalTo", "limitToFirst", "limitToLast", "orderByChild", "orderByKey", "orderByPriority", "orderByValue", "startAfter", "startAt");
 	const queryConstraintFieldOptions = queryConstraintTypes.map((fieldName) => (
 		{ value: fieldName, label: i18n(`constraint.${fieldName}`) }
@@ -201,10 +205,6 @@ var FirebaseQueryConstraintsContainer = FirebaseQueryConstraintsContainer || (fu
 
 	function compareItemsList(a, b) {
 		return a.index - b.index;
-	}
-
-	function i18n(key) {
-		return RED._(`@gogovega/node-red-contrib-firebase-realtime-database/load-config:query-constraints.${key}`);
 	}
 
 	function isChildValid(child, constraintType, opt) {

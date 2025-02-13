@@ -17,6 +17,10 @@
 var FirebaseUI = FirebaseUI || (function () {
 	"use strict";
 
+	const i18n = function (key, tplStrs) {
+		return i18nFullOptions(key, "load-config", "validator", tplStrs);
+	};
+
 	const validators = {
 		boolean: function () {
 			return function (value, opt) {
@@ -314,10 +318,6 @@ var FirebaseUI = FirebaseUI || (function () {
 			const types = toStatic ? this.staticFieldOptions : this.dynamicFieldOptions;
 			this.pathField.typedInput("types", types);
 		}
-	}
-
-	function i18n(key, tplStrs) {
-		return RED._(`@gogovega/node-red-contrib-firebase-realtime-database/load-config:validator.${key}`, tplStrs);
 	}
 
 	function i18nFullOptions(key, dict, group = "", tplStrs) {
