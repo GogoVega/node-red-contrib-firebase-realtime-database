@@ -36,7 +36,8 @@
       "invalid-type-prop": "__prop__ : Le type de la propriété __prop__ n'est pas ou plus valide, veuillez sélectionner un type valide",
       "no-integer": "La valeur de la propriété définie doit être un entier",
       "no-integer-prop": "__prop__ : La valeur de la propriété __prop__ définie doit être un entier",
-      "no-object": "La valeur de la propriété définie doit être un objet"
+      "no-object": "La valeur de la propriété définie doit être un objet",
+      "type-in-use": "Ce type de contrainte est déjà utilisé"
     }
   }
 }

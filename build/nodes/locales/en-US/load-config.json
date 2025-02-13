@@ -36,7 +36,8 @@
       "invalid-type-prop": "__prop__: The type of property __prop__ is not or no longer valid, please select a valid type",
       "no-integer": "The value of the defined property must be an integer",
       "no-integer-prop": "__prop__: The value of the defined __prop__ property must be an integer",
-      "no-object": "The value of the defined property must be an object"
+      "no-object": "The value of the defined property must be an object",
+      "type-in-use": "This type of constraint is already used"
     }
   }
 }
