@@ -59,16 +59,23 @@
 				editableConstraintsList.build(this);
 
 				const pathField = typedPathField.create().allowBlank(true).enableAutoComplete();
-				const listenerType = $("#node-input-listenerType");
 
 				pathField.build();
-
-				listenerType.on("change", () => pathField.switchModeToStaticOrDynamic(listenerType.val() !== "none"));
 			},
 			oneditsave: function () {
 				editableConstraintsList.saveItems();
 
-				const inputs = $("#node-input-listenerType").val() === "none" ? 1 : 0;
+				const isDynamic = function (type = "str", value) {
+					return type === "msg" ? true : (type !== "str" && type !== "env")
+						? /\[msg/.test(value ?? "")
+						: false;
+				};
+
+				const path = $("#node-input-path");
+				const listenerDynamic = $("#node-input-listenerType").val() === "none";
+				const pathDynamic = isDynamic(path.typedInput("type"), path.typedInput("value"));
+				const constraintDynamic = Object.values(this.constraints).some((v) => isDynamic(v?.type ?? v?.types?.child ?? v?.types?.value, v?.value ?? v?.key));
+				const inputs = (listenerDynamic || pathDynamic || constraintDynamic) ? 1 : 0;
 				$("#node-input-inputs").val(inputs);
 			},
 			oneditresize: (size) => editableConstraintsList.reSize(size),

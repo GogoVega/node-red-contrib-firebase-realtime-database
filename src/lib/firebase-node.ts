@@ -159,7 +159,7 @@ export class Firebase<Node extends FirebaseNode, Config extends FirebaseConfig =
 				valueFound = null;
 				break;
 			default:
-				if (!msg && this.dynamicFieldTypes.includes(type))
+				if (!msg && this.dynamicFieldTypes.includes(type) && (type === "msg" || /\[msg\./.test(value)))
 					throw new Error("Incoming message missing to evaluate the Query Constraints");
 				valueFound = await this.evaluateNodeProperty(value, type, this.node, msg!);
 		}
@@ -217,7 +217,7 @@ export class Firebase<Node extends FirebaseNode, Config extends FirebaseConfig =
 		if (!["flow", "global", "jsonata", "env", "msg", "str"].includes(type!))
 			throw new Error(`Invalid type (${type}) for the Path field. Please reconfigure this node.`);
 
-		if (!msg && this.dynamicFieldTypes.includes(type!))
+		if (!msg && this.dynamicFieldTypes.includes(type!) && (type === "msg" || /\[msg\./.test(value)))
 			throw new Error("Incoming message missing to evaluate the path");
 
 		return this.evaluateNodeProperty(value, type!, this.node, msg!);
@@ -538,12 +538,20 @@ export class FirebaseGet extends Firebase<FirebaseGetNode> {
  */
 export class FirebaseIn extends Firebase<FirebaseInNode> {
 	/**
+	 * Whether the node should await a payload to subscribe to data.
+	 */
+	private isDynamicConfig: boolean = false;
+
+	/**
 	 * This property contains the **method to call** to unsubscribe the listener
 	 */
 	private unsubscribeCallback?: Unsubscribe;
 
 	constructor(node: FirebaseInNode, config: FirebaseInConfig, RED: NodeAPI) {
 		super(node, config, RED);
+
+		// No need to re-check all config - if the node has an input, the config is dynamic.
+		this.isDynamicConfig = this.node.config.inputs === 1;
 	}
 
 	/**
@@ -572,15 +580,23 @@ export class FirebaseIn extends Firebase<FirebaseInNode> {
 	public subscribe(msg?: IncomingMessage, send?: (msg: NodeMessage) => void, done?: (error?: Error) => void): void {
 		(async () => {
 			try {
-				const listener = this.getListener(msg);
-				const path = await this.getPath(msg, true);
-				const constraints = await this.getQueryConstraints(msg);
 				const msg2PassThrough = this.node.config.passThrough ? msg : undefined;
 
-				if (!this.rtdb) return;
+				// If the listener is missing in the incoming message, skip the subscription and passthrough the msg
+				if (msg && typeof msg.listener === "undefined") {
+					if (send && msg2PassThrough) send(msg2PassThrough);
+					if (done) done();
+					return;
+				}
 
 				// Await the listener defined in the incoming message
-				if (listener === "none") return;
+				const listener = this.getListener(msg);
+				if (listener === "none" || (this.isDynamicConfig && !msg)) return;
+
+				const path = await this.getPath(msg, true);
+				const constraints = await this.getQueryConstraints(msg);
+
+				if (!this.rtdb) return;
 
 				if (!(await this.node.database?.clientSignedIn())) return;
 
