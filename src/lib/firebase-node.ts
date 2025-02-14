@@ -580,14 +580,21 @@ export class FirebaseIn extends Firebase<FirebaseInNode> {
 	public subscribe(msg?: IncomingMessage, send?: (msg: NodeMessage) => void, done?: (error?: Error) => void): void {
 		(async () => {
 			try {
-				const listener = this.getListener(msg);
+				const msg2PassThrough = this.node.config.passThrough ? msg : undefined;
+
+				// If the listener is missing in the incoming message, skip the subscription and passthrough the msg
+				if (msg && typeof msg.listener === "undefined") {
+					if (send && msg2PassThrough) send(msg2PassThrough);
+					if (done) done();
+					return;
+				}
 
 				// Await the listener defined in the incoming message
+				const listener = this.getListener(msg);
 				if (listener === "none" || (this.isDynamicConfig && !msg)) return;
 
 				const path = await this.getPath(msg, true);
 				const constraints = await this.getQueryConstraints(msg);
-				const msg2PassThrough = this.node.config.passThrough ? msg : undefined;
 
 				if (!this.rtdb) return;
 
