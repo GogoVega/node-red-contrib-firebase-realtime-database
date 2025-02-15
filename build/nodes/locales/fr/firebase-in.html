@@ -48,12 +48,17 @@
 	</p>
 	<p>L' <strong>Écouteur</strong> vous permet de choisir le type de changement que vous souhaitez écouter :</p>
 	<ul>
-		<li><code>Valeur</code></li>
-		<li><code>Enfant ajouté</code></li>
-		<li><code>Enfant modifié</code></li>
-		<li><code>Enfant déplacé</code></li>
-		<li><code>Enfant supprimé</code></li>
+		<li><strong>Valeur</strong> - (<code>value</code>)</li>
+		<li><strong>Enfant ajouté</strong> - (<code>child_added</code>)</li>
+		<li><strong>Enfant modifié</strong> - (<code>child_changed</code>)</li>
+		<li><strong>Enfant déplacé</strong> - (<code>child_moved</code>)</li>
+		<li><strong>Enfant supprimé</strong> - (<code>child_removed</code>)</li>
 	</ul>
+	<p>
+		Utiliser la valeur entre parenthèses pour définir le <code>msg.listener</code>.
+		Pour chaque message valide reçu, la souscription sera remplacée par la nouvelle.
+		Vous pouvez également arrêter une souscription en utilisant la valeur <code>reset</code>.
+	</p>
 	<p>
 		Le <strong>Chemin</strong> détermine où les données seront lues. Il peut être défini dans le noeud ou dynamiquement
 		avec la propriété <code>msg.topic</code>. Il peut être vide, dans ce cas les données envoyées proviennent de la
