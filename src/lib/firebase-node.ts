@@ -508,9 +508,9 @@ export class FirebaseGet extends Firebase<FirebaseGetNode> {
 				const constraints = await this.getQueryConstraints(msg);
 				const msg2PassThrough = this.node.config.passThrough ? msg : undefined;
 
-				if (!this.rtdb) return;
+				if (!this.rtdb) return done();
 
-				if (!(await this.node.database?.clientSignedIn())) return;
+				if (!(await this.node.database?.clientSignedIn())) return done();
 
 				const snapshot = await this.rtdb.get(path, constraints);
 
@@ -591,14 +591,18 @@ export class FirebaseIn extends Firebase<FirebaseInNode> {
 
 				// Await the listener defined in the incoming message
 				const listener = this.getListener(msg);
-				if (listener === "none" || (this.isDynamicConfig && !msg)) return;
+				if (listener === "none" || (this.isDynamicConfig && !msg)) {
+					if (done) done();
+					return;
+				}
 
 				const path = await this.getPath(msg, true);
 				const constraints = await this.getQueryConstraints(msg);
 
-				if (!this.rtdb) return;
-
-				if (!(await this.node.database?.clientSignedIn())) return;
+				if (!this.rtdb || !(await this.node.database?.clientSignedIn())) {
+					if (done) done();
+					return;
+				}
 
 				this.unsubscribe();
 				this.unsubscribeCallback = this.rtdb.subscribe(
@@ -685,9 +689,9 @@ export class FirebaseOut extends Firebase<FirebaseOutNode> {
 				const query = this.getQueryMethod(msg);
 				const payload = this.evaluatePayloadForServerValue(msg.payload);
 
-				if (!this.rtdb) return Promise.resolve();
+				if (!this.rtdb) return done();
 
-				if (!(await this.node.database?.clientSignedIn())) return;
+				if (!(await this.node.database?.clientSignedIn())) return done();
 
 				switch (query) {
 					case "update":

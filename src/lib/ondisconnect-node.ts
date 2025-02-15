@@ -133,15 +133,17 @@ export class OnDisconnect extends Firebase<OnDisconnectNode> {
 	public mofifyOnDisconnect(msg: IncomingMessage, done: (error?: Error) => void): void {
 		(async () => {
 			try {
+				if (!this.rtdb) return done();
+
 				const query = this.getQueryMethod(msg);
+
+				// The node can be used for events only
+				if (query === "none") return done();
+
 				const payload = this.evaluatePayloadForServerValue(msg.payload);
-
-				if (!this.rtdb) return;
-				if (query === "none") return Promise.resolve();
-
 				const path = await this.getPath(msg);
 
-				if (!(await this.node.database?.clientSignedIn())) return Promise.resolve();
+				if (!(await this.node.database?.clientSignedIn())) return done();
 
 				switch (query) {
 					case "cancel":
