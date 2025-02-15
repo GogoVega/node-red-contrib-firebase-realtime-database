@@ -66,15 +66,23 @@ import { checkConfigNodeSatisfiesVersion } from "../migration/config-node";
  * @returns Firebase Class
  */
 export class Firebase<Node extends FirebaseNode, Config extends FirebaseConfig = NodeConfig<Node>> {
-	/**
-	 * Incoming msg is needed for this types
-	 */
-	protected dynamicFieldTypes = ["flow", "global", "jsonata", "msg"];
+	private readonly serviceType: ServiceType = "rtdb";
+
 	/**
 	 * This property contains the identifier of the timer used to define the error status of the node and will be used
 	 * to clear the timeout.
 	 */
 	private errorTimeoutID?: ReturnType<typeof setTimeout>;
+
+	/**
+	 * Incoming msg is needed for this types
+	 */
+	protected static dynamicFieldTypes = ["flow", "global", "jsonata", "msg"];
+
+	protected static pathFieldTypes = ["flow", "global", "jsonata", "env", "msg", "str"];
+	protected static childFieldTypes = ["flow", "global", "jsonata", "env", "msg", "str"];
+	protected static limitFieldTypes = ["flow", "global", "jsonata", "env", "msg", "num"];
+	protected static rangeFieldTypes = ["bool", "date", "flow", "global", "jsonata", "env", "msg", "null", "num", "str"];
 
 	protected legacyWarningMessageEmitted: boolean = false;
 
@@ -83,8 +91,6 @@ export class Firebase<Node extends FirebaseNode, Config extends FirebaseConfig =
 	 * Error received when database rules deny reading/writing data.
 	 */
 	protected permissionDeniedStatus = false;
-
-	private readonly serviceType: ServiceType = "rtdb";
 
 	constructor(
 		protected node: Node,
@@ -97,12 +103,10 @@ export class Firebase<Node extends FirebaseNode, Config extends FirebaseConfig =
 		if (!node.database) {
 			node.error("Database not selected or disabled!");
 			node.status({ fill: "red", shape: "ring", text: "Database not ready!" });
-		}
+		} else {
+			if (!isFirebaseConfigNode(node.database))
+				throw new Error("The selected database is not compatible with this module, please check your config-node");
 
-		if (!isFirebaseConfigNode(node.database) && node.database)
-			throw new Error("The selected database is not compatible with this module, please check your config-node");
-
-		if (node.database) {
 			if (!checkConfigNodeSatisfiesVersion(RED, node.database.version)) {
 				node.status({ fill: "red", shape: "ring", text: "Invalid Database Version!" });
 
@@ -145,10 +149,10 @@ export class Firebase<Node extends FirebaseNode, Config extends FirebaseConfig =
 		const [value, type, msg] = args;
 		const typesAllowed =
 			field === "child"
-				? ["flow", "global", "jsonata", "env", "msg", "str"]
+				? Firebase.childFieldTypes
 				: field === "value"
-					? ["bool", "date", "flow", "global", "jsonata", "env", "msg", "null", "num", "str"]
-					: ["flow", "global", "jsonata", "env", "msg", "num"];
+					? Firebase.rangeFieldTypes
+					: Firebase.limitFieldTypes;
 
 		if (!typesAllowed.includes(type))
 			throw new Error(`Invalid type (${type}) for the ${field} field. Please reconfigure this node.`);
@@ -159,8 +163,6 @@ export class Firebase<Node extends FirebaseNode, Config extends FirebaseConfig =
 				valueFound = null;
 				break;
 			default:
-				if (!msg && this.dynamicFieldTypes.includes(type) && (type === "msg" || /\[msg\./.test(value)))
-					throw new Error("Incoming message missing to evaluate the Query Constraints");
 				valueFound = await this.evaluateNodeProperty(value, type, this.node, msg!);
 		}
 
@@ -188,14 +190,22 @@ export class Firebase<Node extends FirebaseNode, Config extends FirebaseConfig =
 	 * @param msg the message object to evaluate against
 	 * @return A promise with the evaluted property
 	 */
-	protected evaluateNodeProperty(value: string, type: string, node: Node, msg: IncomingMessage) {
-		return new Promise((resolve, reject) =>
-			this.RED.util.evaluateNodeProperty(value, type, node, msg, (error, result) => {
+	protected evaluateNodeProperty<T = unknown>(
+		value: string,
+		type: string,
+		node: Node,
+		msg?: IncomingMessage
+	): Promise<T> {
+		return new Promise((resolve, reject) => {
+			if (!msg && Firebase.dynamicFieldTypes.includes(type) && (type === "msg" || /\[msg\./.test(value)))
+				return reject("Incoming message missing to evaluate the node/msg property.");
+
+			this.RED.util.evaluateNodeProperty(value, type, node, msg!, (error, result) => {
 				if (error) return reject(error);
 
 				resolve(result);
-			})
-		);
+			});
+		});
 	}
 
 	/**
@@ -214,11 +224,8 @@ export class Firebase<Node extends FirebaseNode, Config extends FirebaseConfig =
 		// TODO: Remove Me
 		if (this.isFirebaseInNode(this.node) && type === undefined) type = "str";
 
-		if (!["flow", "global", "jsonata", "env", "msg", "str"].includes(type!))
+		if (!Firebase.pathFieldTypes.includes(type!))
 			throw new Error(`Invalid type (${type}) for the Path field. Please reconfigure this node.`);
-
-		if (!msg && this.dynamicFieldTypes.includes(type!) && (type === "msg" || /\[msg\./.test(value)))
-			throw new Error("Incoming message missing to evaluate the path");
 
 		return this.evaluateNodeProperty(value, type!, this.node, msg!);
 	}
@@ -266,14 +273,6 @@ export class Firebase<Node extends FirebaseNode, Config extends FirebaseConfig =
 		}
 	}
 
-	protected getMessageProperty(msg: IncomingMessage, property: string): unknown {
-		if (typeof msg !== "object" || !msg) throw new TypeError("The incoming message must be an object");
-		if (typeof property !== "string" || !property)
-			throw new TypeError("The message property to evaluate must be a string");
-
-		return this.RED.util.getMessageProperty(msg, property);
-	}
-
 	protected getPath(msg: IncomingMessage | undefined, empty: true): Promise<string | undefined>;
 	protected getPath(msg?: IncomingMessage | undefined, empty?: false): Promise<string>;
 	protected async getPath(msg?: IncomingMessage, empty?: boolean): Promise<string | undefined> {
@@ -303,6 +302,7 @@ export class Firebase<Node extends FirebaseNode, Config extends FirebaseConfig =
 
 		if (msg?.constraints) return msg.constraints;
 
+		// TODO: remove deepCopy
 		const constraints = deepCopy(this.node.config.constraint ?? this.node.config.constraints ?? {});
 
 		if (typeof constraints !== "object" || !constraints)
@@ -390,9 +390,9 @@ export class Firebase<Node extends FirebaseNode, Config extends FirebaseConfig =
 	 * @param done If defined, a function to be called to return the error message.
 	 */
 	protected onError(error: unknown, done?: (error?: Error) => void) {
-		const msg = error instanceof Error ? error.message : "";
+		const msg = error instanceof Error ? error.message : String(error);
 
-		if (/(permission_denied|Permission denied)/gm.test(msg)) {
+		if (/(permission_denied|Permission denied)/.test(msg)) {
 			this.setStatus("Permission Denied");
 		} else {
 			this.setStatus("Error", 5000);
@@ -416,7 +416,7 @@ export class Firebase<Node extends FirebaseNode, Config extends FirebaseConfig =
 		msg?: IncomingMessage,
 		send?: (msg: NodeMessage) => void
 	) {
-		if (this.isFirebaseOutNode(this.node)) return;
+		if (this.isFirebaseOutNode(this.node)) throw new Error("Invalid call to 'sendMsg' by Firebase OUT node");
 
 		// Clear Permission Denied Status
 		if (this.permissionDeniedStatus) {

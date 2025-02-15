@@ -68,11 +68,10 @@ function checkConfigNodeSatisfiesVersion(RED: NodeAPI, version: string): boolean
 		cacheResult.errorEmitted = true;
 
 		RED.log.error("FIREBASE: The Config Node version does not meet the requirements of this palette.");
-		RED.log.error("  Required Version: " + requiredVersion.join("."));
-		RED.log.error("  Current Version:  " + version);
-		RED.log.error(
-			"  Please run the following command to resolve the issue:\n\n    cd ~/.node-red\n    npm update --omit=dev\n"
-		);
+		RED.log.error("\tRequired Version:\t" + requiredVersion.join("."));
+		RED.log.error("\tCurrent Version: \t" + version);
+		RED.log.error("\tPlease run the following command to resolve the issue:");
+		RED.log.error("\n\t\tcd ~/.node-red\n\t\tnpm update --omit=dev --save --engine-strict\n");
 
 		return false;
 	}
