@@ -34,9 +34,12 @@
       "invalid-range-prop": "__prop__: The value of the __prop__ property defined is not in a valid range",
       "invalid-type": "The selected type is not or no longer valid, please select a valid type",
       "invalid-type-prop": "__prop__: The type of property __prop__ is not or no longer valid, please select a valid type",
+      "multiple-limit": "Only one constraint of type 'Limit to...' is allowed",
+      "multiple-order": "Only one constraint of type 'Order by...' is allowed",
       "no-integer": "The value of the defined property must be an integer",
       "no-integer-prop": "__prop__: The value of the defined __prop__ property must be an integer",
-      "no-object": "The value of the defined property must be an object"
+      "no-object": "The value of the defined property must be an object",
+      "type-in-use": "This type of constraint is already used"
     }
   }
 }

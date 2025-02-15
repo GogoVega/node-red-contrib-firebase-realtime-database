@@ -34,6 +34,8 @@ var FirebaseQueryConstraintsContainer = FirebaseQueryConstraintsContainer || (fu
 	const limitFieldTypes = [{ value: "num", label: "number", icon: "red/images/typedInput/09.svg", validate: FirebaseUI.validators.priority() }, ...dynamicFieldTypes];
 	const rangeFieldTypes = ["bool", "num", "str", "date", { value: "null", label: "null", hasValue: false }, ...dynamicFieldTypes];
 
+	const constraintUsedTypes = new Set();
+
 	class EditableQueryConstraintsList {
 		constructor() {
 			this.containerId = "#node-input-constraints-container";
@@ -77,6 +79,7 @@ var FirebaseQueryConstraintsContainer = FirebaseQueryConstraintsContainer || (fu
 			} else {
 				this.containerRow?.hide();
 				this.container?.editableList("empty");
+				constraintUsedTypes.clear();
 			}
 
 			RED.tray.resize();
@@ -147,6 +150,8 @@ var FirebaseQueryConstraintsContainer = FirebaseQueryConstraintsContainer || (fu
 						break;
 				}
 			});
+
+			constraintUsedTypes.clear();
 		}
 	}
 
@@ -175,8 +180,28 @@ var FirebaseQueryConstraintsContainer = FirebaseQueryConstraintsContainer || (fu
 			})
 			.typedInput("hide");
 
+		let previousValue;
 		constraintType
-			.typedInput({ types: [{ options: queryConstraintFieldOptions }] })
+			.typedInput({ type: "constraint", types: [{
+					value: "constraint",
+					options: queryConstraintFieldOptions,
+					validate: function (value, opt) {	// Missing tooltip NR#5051
+						constraintUsedTypes.delete(previousValue);
+						if (constraintUsedTypes.has(value))
+							return opt ? FirebaseUI._("errors.type-in-use", "load-config", "validator") : false;
+						if (/^(limitTo|orderBy)/.test(value)) {
+							const delim = value.substring(0, 7);
+							for (const type of constraintUsedTypes) {
+								if (type.startsWith(delim))
+									return opt ? FirebaseUI._(`errors.multiple-${value.substring(0, 5)}`, "load-config", "validator") : false;
+							}
+						}
+						constraintUsedTypes.add(value);
+						previousValue = value;
+						return true;
+					}
+				}]
+			})
 			.on("change", (_event, _type, value) => updateTypeOfTypedInput(valueField, row3, childField, value))
 			.typedInput("value", "orderByValue");
 
