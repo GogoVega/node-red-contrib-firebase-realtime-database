@@ -189,6 +189,13 @@ var FirebaseQueryConstraintsContainer = FirebaseQueryConstraintsContainer || (fu
 						constraintUsedTypes.delete(previousValue);
 						if (constraintUsedTypes.has(value))
 							return opt ? FirebaseUI._("errors.type-in-use", "load-config", "validator") : false;
+						if (/^(limitTo|orderBy)/.test(value)) {
+							const delim = value.substring(0, 7);
+							for (const type of constraintUsedTypes) {
+								if (type.startsWith(delim))
+									return opt ? FirebaseUI._(`errors.multiple-${value.substring(0, 5)}`, "load-config", "validator") : false;
+							}
+						}
 						constraintUsedTypes.add(value);
 						previousValue = value;
 						return true;
