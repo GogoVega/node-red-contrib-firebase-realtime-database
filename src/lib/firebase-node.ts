@@ -566,6 +566,7 @@ export class FirebaseIn extends Firebase<FirebaseInNode> {
 
 		const listener = listenerType === "none" ? msg?.listener : listenerType;
 
+		if (listener === "reset") return "none"; // Not supposed to happen
 		if (typeof listener === "string" && listener in ListenerMap) return listener;
 
 		throw new Error(`The Listener should be one of ${printEnumKeys(ListenerMap)}. Please re-configure this node.`);
@@ -582,8 +583,9 @@ export class FirebaseIn extends Firebase<FirebaseInNode> {
 			try {
 				const msg2PassThrough = this.node.config.passThrough ? msg : undefined;
 
-				// If the listener is missing in the incoming message, skip the subscription and passthrough the msg
-				if (msg && typeof msg.listener === "undefined") {
+				// Unsubscribe and passthrough the msg
+				if (msg && msg.listener === "reset") {
+					this.unsubscribe();
 					if (send && msg2PassThrough) send(msg2PassThrough);
 					if (done) done();
 					return;

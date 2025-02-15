@@ -48,12 +48,17 @@
 	</p>
 	<p>Der <strong>Listener</strong> ermöglicht es Ihnen zu wählen, welche Art von Veränderung Sie verwenden möchten:</p>
 	<ul>
-		<li><code>Wert</code></li>
-		<li><code>Kind hinzugefügt</code></li>
-		<li><code>Kind aktualisiert</code></li>
-		<li><code>Kind verschoben</code></li>
-		<li><code>Kind gelöscht</code></li>
+		<li><strong>Wert</strong> - (<code>value</code>)</li>
+		<li><strong>Kind hinzugefügt</strong> - (<code>child_added</code>)</li>
+		<li><strong>Kind aktualisiert</strong> - (<code>child_changed</code>)</li>
+		<li><strong>Kind verschoben</strong> - (<code>child_moved</code>)</li>
+		<li><strong>Kind gelöscht</strong> - (<code>child_removed</code>)</li>
 	</ul>
+	<p>
+		Verwenden Sie den Wert in Klammern, um den <code>msg.listener</code> festzulegen.
+		Bei jeder empfangenen gültigen Nachricht wird das Abonnement durch das neue ersetzt.
+		Sie können ein Abonnement auch mit dem Wert <code>reset</code> beenden.
+	</p>
 	<p>
 		Der <strong>Pfad</strong> bestimmt, von wo die Daten gelesen werden. Er kann im Node oder dynamisch mit der
 		Eigenschaft <code>msg.topic</code> definiert werden. Er kann leer sein, in diesem Fall kommen die gesendeten Daten

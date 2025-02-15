@@ -21,7 +21,7 @@ import { FirebaseGetConfig, FirebaseInConfig, FirebaseOutConfig } from "./fireba
 
 export interface IncomingMessage extends NodeMessageInFlow {
 	constraints?: Constraint;
-	listener?: Listener;
+	listener?: Listener | "reset";
 	method?: QueryMethod;
 	priority?: Priority;
 }

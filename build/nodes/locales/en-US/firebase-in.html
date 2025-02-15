@@ -40,12 +40,17 @@
 	<p>This node reads data from a path and will send a message whenever the data, including children, changes.</p>
 	<p>The <strong>Listener</strong> allows you to choose what type of change you want to listen to:</p>
 	<ul>
-		<li><code>Value</code></li>
-		<li><code>Child Added</code></li>
-		<li><code>Child Changed</code></li>
-		<li><code>Child Moved</code></li>
-		<li><code>Child Removed</code></li>
+		<li><strong>Value</strong> - (<code>value</code>)</li>
+		<li><strong>Child Added</strong> - (<code>child_added</code>)</li>
+		<li><strong>Child Changed</strong> - (<code>child_changed</code>)</li>
+		<li><strong>Child Moved</strong> - (<code>child_moved</code>)</li>
+		<li><strong>Child Removed</strong> - (<code>child_removed</code>)</li>
 	</ul>
+	<p>
+		Use the value in parentheses to set the <code>msg.listener</code>.
+		For each valid message received, the subscription will be replaced with the new one.
+		You can also stop a subscription by using the <code>reset</code> value.
+	</p>
 	<p>
 		The <strong>Path</strong> determines where the data will be read from. It can be defined in the node or dynamically
 		with the <code>msg.topic</code> property. It can be empty, in this case the data sent comes from the root of the
