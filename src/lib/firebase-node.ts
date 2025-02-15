@@ -424,6 +424,8 @@ export class Firebase<Node extends FirebaseNode, Config extends FirebaseConfig =
 			this.setStatus();
 		}
 
+		if (!this.isFirebaseInNode(this.node)) this.setStatus("Query Done", 500);
+
 		const topic = snapshot.key;
 		const payload =
 			this.node.config.outputType === "string"
@@ -458,6 +460,10 @@ export class Firebase<Node extends FirebaseNode, Config extends FirebaseConfig =
 			this.errorTimeoutID = setTimeout(() => this.setStatus(), time);
 		}
 
+		if (this.permissionDeniedStatus && status === "") {
+			status = "Permission Denied";
+		}
+
 		switch (status) {
 			case "Error":
 				this.node.status({ fill: "red", shape: "dot", text: status });
@@ -468,6 +474,10 @@ export class Firebase<Node extends FirebaseNode, Config extends FirebaseConfig =
 				break;
 			case "Query Done":
 				this.node.status({ fill: "blue", shape: "dot", text: "Query Done!" });
+				break;
+			case "Subscribed":
+			case "Unsubscribed":
+				this.node.status({ fill: "blue", shape: "dot", text: status });
 				break;
 			case "":
 				this.node.database?.setCurrentStatus(this.node.id);
@@ -586,6 +596,7 @@ export class FirebaseIn extends Firebase<FirebaseInNode> {
 				// Unsubscribe and passthrough the msg
 				if (msg && msg.listener === "reset") {
 					this.unsubscribe();
+					this.setStatus("Unsubscribed", 1000);
 					if (send && msg2PassThrough) send(msg2PassThrough);
 					if (done) done();
 					return;
@@ -614,6 +625,8 @@ export class FirebaseIn extends Firebase<FirebaseInNode> {
 					path,
 					constraints
 				);
+
+				this.setStatus("Subscribed", 2000);
 
 				if (send && msg2PassThrough) send(msg2PassThrough);
 				if (done) done();
