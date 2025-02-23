@@ -1,5 +1,25 @@
 # Change log
 
+## 0.7.3
+
+### Changes
+
+- (Firebase IN) Offers all types to the `Path` field by default (#83)
+- Bump `@gogovega/firebase-config-node` from 0.2.1 to 0.2.2
+  - Allow UI to set the RTDB `defaultWriteSizeLimit` setting ([#18](https://github.com/GogoVega/Firebase-Config-Node/pull/18))
+
+### Enhances
+
+- (Query Constraint) Mark select input as error if constraint already used (#85)
+- Allow `msg.listener` to unsubscribe from data (#86)
+- Add new node statuses to improve tracking (#87)
+- Improve the node status and add Waiting status (#88)
+
+### Improves
+
+- Avoid Node Messaging timeout (#84)
+- Slight cleanup and move some Firebase class properties to static
+
 ## 0.7.2
 
 ### Changes
@@ -18,7 +38,7 @@
   - Do not call `signout` if app initialization failed ([#15](https://github.com/GogoVega/Firebase-Config-Node/pull/15))
   - Fix bad `Query` object returned by `applyQueryConstraints` ([#16](https://github.com/GogoVega/Firebase-Config-Node/pull/16))
 
-### New Features
+### Enhances
 
 - Introduce the `First flow` tour guide (#79)
 
