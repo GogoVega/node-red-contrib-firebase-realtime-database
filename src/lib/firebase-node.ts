@@ -124,11 +124,11 @@ export class Firebase<Node extends FirebaseNode, Config extends FirebaseConfig =
 	}
 
 	public attachStatusListener() {
-		this.node.database?.addStatusListener(this.node.id, this.serviceType);
+		this.node.database?.addStatusListener(this.node, this.serviceType);
 	}
 
 	public detachStatusListener(done: () => void) {
-		this.node.database?.removeStatusListener(this.node.id, this.serviceType, done);
+		this.node.database?.removeStatusListener(this.node, this.serviceType, done);
 		if (!this.node.database) done();
 	}
 
@@ -479,8 +479,11 @@ export class Firebase<Node extends FirebaseNode, Config extends FirebaseConfig =
 			case "Unsubscribed":
 				this.node.status({ fill: "blue", shape: "dot", text: status });
 				break;
+			case "Waiting":
+				this.node.status({ fill: "blue", shape: "ring", text: "Waiting for Subscription..." });
+				break;
 			case "":
-				this.node.database?.setCurrentStatus(this.node.id);
+				this.node.database?.setCurrentStatus(this.node);
 				break;
 			default:
 				this.node.status({ fill: "red", shape: "dot", text: status });
@@ -596,11 +599,15 @@ export class FirebaseIn extends Firebase<FirebaseInNode> {
 				// Unsubscribe and passthrough the msg
 				if (msg && msg.listener === "reset") {
 					this.unsubscribe();
-					this.setStatus("Unsubscribed", 1000);
+					this.setStatus("Unsubscribed");
 					if (send && msg2PassThrough) send(msg2PassThrough);
 					if (done) done();
 					return;
 				}
+
+				// Not work when starting the flow
+				// TODO: need LocalStatus to resolve it
+				this.setStatus("Waiting");
 
 				// Await the listener defined in the incoming message
 				const listener = this.getListener(msg);
