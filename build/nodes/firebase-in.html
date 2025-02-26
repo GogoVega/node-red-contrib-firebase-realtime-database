@@ -27,6 +27,12 @@
 		const { typedPathField, validators } = FirebaseUI;
 		const i18n = (key) => FirebaseUI._(key, "firebase-in");
 
+		const isDynamic = function (type = "str", value) {
+			return type === "msg" ? true : (type !== "str" && type !== "env")
+				? /\[msg/.test(value ?? "")
+				: false;
+		};
+
 		RED.nodes.registerType("firebase-in", {
 			align: "left",
 			category: "Firebase",
@@ -65,16 +71,15 @@
 			oneditsave: function () {
 				editableConstraintsList.saveItems();
 
-				const isDynamic = function (type = "str", value) {
-					return type === "msg" ? true : (type !== "str" && type !== "env")
-						? /\[msg/.test(value ?? "")
-						: false;
-				};
-
 				const path = $("#node-input-path");
 				const listenerDynamic = $("#node-input-listenerType").val() === "none";
 				const pathDynamic = isDynamic(path.typedInput("type"), path.typedInput("value"));
-				const constraintDynamic = Object.values(this.constraints).some((v) => isDynamic(v?.type ?? v?.types?.child ?? v?.types?.value, v?.value ?? v?.key));
+				const constraintDynamic = Object.values(this.constraints).some((v) => {
+					if (Object.keys(v).length > 2) {
+						if (isDynamic(v.types.child, v.key)) return true;
+					}
+					return isDynamic(v?.type ?? v?.types?.value, v?.value);
+				});
 				const inputs = (listenerDynamic || pathDynamic || constraintDynamic) ? 1 : 0;
 				$("#node-input-inputs").val(inputs);
 			},
