@@ -442,38 +442,27 @@
 		const packageName = "gogovega/node-red-contrib-firebase-realtime-database";
 		const settingName = `editor.tours.${packageName}.${tourName}`;
 
-		let originalRemove;
 		const tourGuide = function () {
-			const tourRunning = $(".red-ui-tourGuide-shade").length > 0;
+			// Skip if the tour has already been runned
+			if (RED.settings.get(settingName, false) === true) return;
 
 			// Skip if a tour is running - concurrent calls are not yet protected
-			if (!tourRunning && !RED.settings.get(settingName, false)) {
-				// Restore the original remove handler
-				if (originalRemove) {
-					$.fn.remove = originalRemove;
-				}
-
+			const tourRunning = $(".red-ui-tourGuide-shade").length > 0;
+			if (tourRunning) {
+				// Listen to the event to run the tour once the current one has finished
+				$(".red-ui-tourGuide-shade").one("remove", () => setTimeout(tourGuide, 1000));
+			} else {
 				// TODO: At this stage, it's better to load the file from the repo
 				// to avoid publishing a new version for every change made to the tour.
 				const url = "https://cdn.jsdelivr.net/gh/GogoVega/node-red-contrib-firebase-realtime-database@master/resources/first-flow.js";
-				RED.tourGuide.run(url/*`/resources/@${packageName}/${tourName}.js`*/, function(error) {
+				RED.tourGuide.run(url/*`/resources/@${packageName}/${tourName}.js`*/, function (error) {
 					if (error) {
 						console.error("Firebase tour: ", error);
-						RED.notify("Failed to load the Firebase tour", "error");
+						RED.notify("Failed to load/run the Firebase tour", "error");
 					}
 
 					RED.settings.set(settingName, true);
 				});
-			} else if (tourRunning) {
-				// Change the 'remove' handler to triggers an event
-				originalRemove = $.fn.remove;
-				$.fn.remove = function () {
-					this.trigger("remove");
-					return originalRemove.apply(this, arguments);
-				};
-
-				// Listen to the event to run the tour once the current one has finished
-				$(".red-ui-tourGuide-shade").one("remove", () => setTimeout(tourGuide, 1000));
 			}
 		};
 
