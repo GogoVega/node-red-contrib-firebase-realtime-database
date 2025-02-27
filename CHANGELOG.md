@@ -1,5 +1,21 @@
 # Change log
 
+## 0.7.4
+
+### Changes
+
+- Bump `@gogovega/firebase-config-node` from 0.2.2 to 0.2.3
+  - Using RTDB status must validate database URL
+  - Silent error when getting RTDB Setting
+
+### Fixes
+
+- The Firebase IN node input calculator
+
+### Improves
+
+- The `tourGuide` runner (for concurrent calls)
+
 ## 0.7.3
 
 ### Changes
