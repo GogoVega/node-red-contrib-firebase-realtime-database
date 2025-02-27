@@ -39,3 +39,16 @@ jobs:
           access: public
           tag: ${{ contains(github.ref, '-beta') && 'beta' || contains(github.ref, '-alpha') && 'alpha' || 'latest' }}
           token: ${{ secrets.NPM_TOKEN }}
+
+  # TODO: Use a webhook because sleep is not ideal
+  update-library:
+    needs: publish-npm
+    runs-on: ubuntu-latest
+    steps:
+      - name: Wait 5 minutes
+        run: sleep 5m
+
+      - name: Update Node-RED flow-library
+        uses: BigThunderSR/update-package-node-red-flow-library-action@v1.3.11
+        with:
+          package-name: '@gogovega/node-red-contrib-firebase-realtime-database'
