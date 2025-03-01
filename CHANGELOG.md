@@ -1,5 +1,12 @@
 # Change log
 
+## 0.7.5
+
+### Changes
+
+- Bump `@gogovega/firebase-config-node` from 0.2.3 to 0.2.4
+  - Fix `got` dependency missing - replaced by `axios` ([#22](https://github.com/GogoVega/Firebase-Config-Node/pull/22))
+
 ## 0.7.4
 
 ### Changes
