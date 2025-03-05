@@ -111,6 +111,12 @@ Read more about the different ways to authenticate [here](https://github.com/Gog
 
 If you have any other suggestions, please let me know [here](https://github.com/GogoVega/node-red-contrib-firebase-realtime-database/discussions/new?category=ideas).
 
+## Telemetry Usage
+
+Anonymous telemetry data are collected to improve the user experience of the `First Flow` tour guide.
+The data collected only contains the progress of the tour. No personal information or credential is collected.
+Read more [here](./assets/tours/README.md).
+
 ## License
 
 MIT License

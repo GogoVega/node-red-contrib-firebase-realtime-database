@@ -23,7 +23,7 @@ let paletteFilter;
  * to help users create their first Firebase flow in Node-RED. Each step includes
  * a title, description, and actions to be performed.
  */
-export default {
+const tour = {
 	steps: [
 		{	// TODO: go through a class for icon
 			titleIcon: 'firebase"><img src="/icons/@gogovega/node-red-contrib-firebase-realtime-database/firebase.svg',
@@ -35,6 +35,20 @@ export default {
 			description: {
 				"en-US": "This tutorial will guide you through creating your first Firebase flow.",
 				"fr": "Ce didacticiel vous guidera dans la création de votre premier flux Firebase."
+			},
+			prepare: function () {
+				// Ensure all trays are closed
+				RED.tray.close();
+
+				const that = this;
+				const url = "https://cdn.jsdelivr.net/gh/GogoVega/node-red-contrib-firebase-realtime-database@master/assets/tours/telemetry.js";
+				import(url).then(function (telemetry) {
+					telemetry.prepareTelemetry(tour);
+					// Send telemetry when the tour has finished
+					$(".red-ui-tourGuide-shade").one("remove", function () {
+						telemetry.sendTelemetry(that);
+					});
+				});
 			}
 		},
 		{
@@ -231,12 +245,19 @@ export default {
 			description: {
 				"en-US": `
 					<p>This flow will introduce you to the basic usage of nodes. Enjoy exploring!</p>
-					<p>I hope this tutorial helped you... feel free to send me your <a href="https://github.com/GogoVega/node-red-contrib-firebase-realtime-database/discussions/new?category=ideas">comments <i class="fa fa-external-link-square"></i></a> to improve it 🙂</p>`,
+					<p>I hope this tutorial helped you... feel free to send me your comments on <a href="https://github.com/GogoVega/node-red-contrib-firebase-realtime-database/discussions/new?category=ideas" title="open GitHub">GitHub <i class="fa fa-external-link-square"></i></a> to improve it 🙂</p>
+					<textarea id="tour-input-submit-feedback" placeholder="Or send me your comments anonymously by writing them here..." style="width: 100%;" maxlength="1000"></textarea>`,
 				"fr": `
 					<p>Ce flux d'exemples vous fera découvrir l'utilisation basique des noeuds. Bonne découverte!</p>
-					<p>J'espère que ce didacticiel vous a aidé... n'hésitez pas à me transmettre vos <a href="https://github.com/GogoVega/node-red-contrib-firebase-realtime-database/discussions/new?category=ideas">remarques <i class="fa fa-external-link-square"></i></a> pour l'enrichir 🙂</p>`
+					<p>J'espère que ce didacticiel vous a aidé... n'hésitez pas à me transmettre vos remarques sur <a href="https://github.com/GogoVega/node-red-contrib-firebase-realtime-database/discussions/new?category=ideas" title="ouvrir GitHub">GitHub <i class="fa fa-external-link-square"></i></a> pour l'enrichir 🙂</p>
+					<textarea id="tour-input-submit-feedback" placeholder="Ou transmettez-moi vos remarques de manière anonyme en les écrivant ici..." style="width: 100%; " maxlength="1000"></textarea>`
 			},
-			width: 400
+			width: 400,
+			complete: function () {
+				this.feedback = $("#tour-input-submit-feedback").val();
+			}
 		}
 	],
-}
+};
+
+export default tour;
