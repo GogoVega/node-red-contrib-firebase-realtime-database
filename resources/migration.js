@@ -438,35 +438,63 @@
 	// TODO: see with the NR team a guideline (#4965)
 	// To avoid lots of tours randomly popping up in the editor
 	function initTourGuide() {
+		// Skip if the user don't want tours
+		if (RED.settings.theme("tours") === false) return;
+
 		const tourName = "first-flow";
 		const packageName = "gogovega/node-red-contrib-firebase-realtime-database";
 		const settingName = `editor.tours.${packageName}.${tourName}`;
 
-		const tourGuide = function () {
+		// Skip if the tour has already been runned
+		if (RED.settings.get(settingName, false) === true) return;
+
+		// TODO: At this stage, it's better to load the file from the repo
+		// to avoid publishing a new version for every change made to the tour.
+		const tourUrl = "https://gogovega.github.io/firebase-tours/rtdb/first-flow.js";
+		//const tourUrl = `/resources/@${packageName}/${tourName}.js`;
+
+		let telemetry;
+		const tourGuide = function (tour) {
 			// Skip if the tour has already been runned
 			if (RED.settings.get(settingName, false) === true) return;
 
 			// Skip if a tour is running - concurrent calls are not yet protected
+			// Can happen with both Firestore and RTDB installed
 			const tourRunning = $(".red-ui-tourGuide-shade").length > 0;
 			if (tourRunning) {
 				// Listen to the event to run the tour once the current one has finished
-				$(".red-ui-tourGuide-shade").one("remove", () => setTimeout(tourGuide, 1000));
+				$(".red-ui-tourGuide-shade").one("remove", () => setTimeout(() => tourGuide(tour), 1000));
 			} else {
-				// TODO: At this stage, it's better to load the file from the repo
-				// to avoid publishing a new version for every change made to the tour.
-				const url = "https://cdn.jsdelivr.net/gh/GogoVega/node-red-contrib-firebase-realtime-database@master/resources/first-flow.js";
-				RED.tourGuide.run(url/*`/resources/@${packageName}/${tourName}.js`*/, function (error) {
+				RED.tourGuide.run(tourUrl, function (error) {
 					if (error) {
 						console.error("Firebase tour: ", error);
-						RED.notify("Failed to load/run the Firebase tour", "error");
+						RED.notify("Failed to run the Firebase tour", "error");
 					}
 
 					RED.settings.set(settingName, true);
+					// Workaround until
+					// RED.tourGuide.run(url: string, done: (error?: Error, state: object) => void)
+					telemetry?.sendTelemetry(null, error);
 				});
 			}
 		};
 
-		tourGuide();
+		const telemetryUrl = "https://gogovega.github.io/firebase-tours/rtdb/telemetry.js";
+		RED.tourGuide.load(tourUrl, function (error, tour) {
+			FirebaseUI._telemetrySupported = true;
+			import(telemetryUrl).then(function (result) {
+				telemetry = result;
+				if (tour) {
+					telemetry.prepareTelemetry(tour);
+					tourGuide(tour);
+				}
+			}).finally(function () {
+				if (error) {
+					console.error("Failed to load the Firebase Tour: ", error);
+					telemetry?.sendTelemetry(null, error);
+				}
+			});
+		});
 	}
 
 	async function init() {
