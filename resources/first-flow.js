@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-let paletteFilter;
-
 /**
  * First Flow tour guide for creating a Firebase flow in Node-RED.
  *
@@ -42,13 +40,16 @@ const tour = {
 
 				const that = this;
 				const url = "https://gogovega.github.io/firebase-tours/rtdb/telemetry.js";
-				import(url).then(function (telemetry) {
-					telemetry.prepareTelemetry(tour);
-					// Send telemetry when the tour has finished
-					$(".red-ui-tourGuide-shade").one("remove", function () {
-						telemetry.sendTelemetry(that);
+				// TODO: Remove me
+				if (!FirebaseUI._telemetrySupported) {
+					import(url).then(function (telemetry) {
+						telemetry.prepareTelemetry(tour);
+						// Send telemetry when the tour has finished
+						$(".red-ui-tourGuide-shade").one("remove", function () {
+							telemetry.sendTelemetry(that);
+						});
 					});
-				});
+				}
 			}
 		},
 		{
@@ -62,7 +63,7 @@ const tour = {
 				// Show only the Firebase category - to avoid to freeze the workspace
 				// RED.palette doesn't allow to sort by category so it's a trick 🤫
 				const filter = $("#red-ui-palette-search input");
-				paletteFilter = filter.searchBox("value");
+				this.paletteFilter = filter.searchBox("value");
 				filter.searchBox("value", "");
 				setTimeout(function () {
 					$("#red-ui-palette .red-ui-palette-header").closest(".red-ui-palette-category").hide();
@@ -122,7 +123,7 @@ const tour = {
 			complete: function () {
 				// Clear the Firebase filter to returns to previous Palette state
 				$("#red-ui-palette-search input").searchBox("value", "pending");
-				$("#red-ui-palette-search input").searchBox("value", paletteFilter || "");
+				$("#red-ui-palette-search input").searchBox("value", this.paletteFilter || "");
 			}
 		},
 		{
