@@ -23,7 +23,7 @@ import { NodeAPI } from "node-red";
  *
  * @internal
  */
-const requiredVersion = [0, 2, 4];
+const requiredVersion = [0, 2, 5];
 
 /**
  * Cache system to not read files multiple times.
