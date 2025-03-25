@@ -23,12 +23,6 @@
 
 ![demo nodes](./assets/images/demo-flow.gif)
 
-> [!CAUTION]
-> **BREAKING CHANGES**: v0.7.0: the required version of Node.js is now >=18
-
-> [!CAUTION]
-> **BREAKING CHANGES**: If you are updating to v0.6, please read the [migration procedure](https://github.com/GogoVega/node-red-contrib-firebase-realtime-database/wiki/migration-wizard).
-
 ## What is it?
 
 This package is used to communicate with Firebase Realtime Databases.
