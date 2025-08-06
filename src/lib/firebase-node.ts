@@ -443,9 +443,9 @@ export class Firebase<Node extends FirebaseNode, Config extends FirebaseConfig =
 			topic: topic,
 		};
 
-		if (send) return send(msg2Send as NodeMessage);
+		if (send) return send(msg2Send as unknown as NodeMessage);
 
-		this.node.send(msg2Send as NodeMessage);
+		this.node.send(msg2Send as unknown as NodeMessage);
 	}
 
 	/**
