@@ -1,5 +1,16 @@
 # Change log
 
+## 0.8.0
+
+### Breaking Changes
+
+- Set required version of Node.js to >=20 (#99)
+
+### Changes
+
+- Bump `@gogovega/firebase-config-node` from 0.2.6 to 0.3.0 (#99)
+  - Bump dependencies to latest ([#33](https://github.com/GogoVega/Firebase-Config-Node/pull/33))
+
 ## 0.7.7
 
 ### Changes
