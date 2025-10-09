@@ -20,6 +20,7 @@
 	(function () {
 		const checker = function () {
 			RED.events.off("flows:loaded", checker);
+			RED.events.off("registry:node-type-added", checker);
 			$.getJSON("firebase/rtdb/config-node/status", function (result) {
 				if (!result.loaded) {
 					if (result.loadable) {
@@ -151,6 +152,29 @@
 										}]);
 									}
 								};
+							} else if (button === "Load Config Node") {
+								return {
+									text: button,
+									class: "pull-left",
+									click: (event) => {
+										if (!window.confirm("Are you really sure you want to do this?")) return;
+
+										const spinner = RED.utils.addSpinnerOverlay($(event.target));
+
+										$.ajax({
+											method: "PUT",
+											url: "firebase/rtdb/config-node/scripts",
+											data: { script: "load-config-node" },
+											success: function (resp) {
+												spinner.remove();
+												myNotification.close();
+												FirebaseUI._configNodeLoaded = true;
+												// Re-triggers the checker
+												RED.events.on("registry:node-type-added", checker);
+											}
+										});
+									}
+								};
 							} else {
 								console.error("Unknown button", button);
 								return {};
@@ -165,7 +189,7 @@
 			// Do not send notifications in slave mode
 			if (slaveMode) return;
 
-			const refreshMsg = `
+			const reloadMsg = `
 			<html>
 				<p>Welcome to Firebase Realtime Databases</p>
 				<p>Oops, it looks like your browser didn't load all Firebase nodes 😬</p>
@@ -180,6 +204,8 @@
 					<li>If you are running <strong>FlowFuse</strong>, suspend and then restart the instance.</li>
 				</ul>
 				<p>This step is necessary because Node-RED did not load the config node.</p>
+				<h4>⚠️ Experimental Alternative</h4>
+				<p>You can try loading the config node, but this method is still experimental and may not work in all cases.</p>
 				<p>👉 <a href="https://github.com/GogoVega/node-red-contrib-firebase-realtime-database/discussions/50" target="_blank">Learn more about this issue</a></p>
 			</html>`;
 			const restartAfterUpdateMsg = `
@@ -206,12 +232,12 @@
 			let msg;
 			let buttons = ["Close"];
 			switch (script) {
-				case "refresh":
-					msg = refreshMsg;
+				case "reload":
+					msg = reloadMsg;
 					break;
 				case "restart":
 					msg = restartMsg;
-					buttons = ["Close"];
+					buttons = ["Load Config Node", "Close"];
 					break;
 				case "restart-update":
 					msg = restartAfterUpdateMsg;
@@ -270,7 +296,12 @@
 					slaveMode = true;
 				}
 
-				RED.events.on("flows:loaded", checker);
+				if ($("#red-ui-loading-progress").css("display") === "none") {
+					// Palette installed by the Palette Manager
+					checker();
+				} else {
+					RED.events.on("flows:loaded", checker);
+				}
 			},
 			onremove: function () {
 				console.log("[rtdb:plugin]: RTDB Config Node Checker stopped");

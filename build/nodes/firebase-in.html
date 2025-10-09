@@ -22,6 +22,39 @@
 	"use strict";
 
 	(function () {
+		if (!RED.plugins.getPlugin("rtdb-config-node-checker")) {
+			const match = /([0-9]{1,2})\.([0-9]{1,3})\.([0-9]{1,3})/.exec(RED.settings.version || "0.0.0");
+			match?.shift();
+
+			// If NR < 4.1.1 load plugins manually to avoid reloading the browser. See NR#5277.
+			const [major, minor, patch] = match?.map((v) => parseInt(v, 10)) || [0, 0, 0];
+			if (major < 4 || (major === 4 && (minor < 1 || (minor === 1 && patch < 1)))) {
+				console.log("[rtdb:plugin]: loading plugins...");
+				$.ajax({
+					type: "PUT",
+					url: "/firebase/rtdb/config-node/scripts",
+					data: { script: "load-plugins" },
+					beforeSend: function (jqXHR) {
+						const authTokens = RED.settings.get("auth-tokens");
+						jqXHR.setRequestHeader("Authorization", `Bearer ${authTokens?.access_token}`);
+					},
+					success: () => console.log("[rtdb:plugin]: plugins loaded"),
+					error: (jqXHR, _textStatus, errorThrown) => console.error(`${errorThrown}: ${jqXHR.responseText}`),
+				});
+			} else {
+				console.warn("[rtdb:plugin]: Plugins not loaded");
+				console.warn("[rtdb:plugin]: Please report this issue with log details at:");
+				console.warn("https://github.com/GogoVega/node-red-contrib-firebase-realtime-database/issues/new?template=bug_report.yml&title=Plugins%20were%20not%20loaded%20into%20the%20editor");
+				RED.notify("Firebase Plugins not loaded! See logs.", "warning");
+			}
+		}
+	})();
+</script>
+
+<script type="text/javascript">
+	"use strict";
+
+	(function () {
 		const editableConstraintsList = FirebaseQueryConstraintsContainer.editableConstraintsList.create();
 		const { isConstraintsValid } = FirebaseQueryConstraintsContainer.validators;
 		const { typedPathField, validators } = FirebaseUI;
