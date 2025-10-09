@@ -2,7 +2,7 @@
   "name": "@gogovega/node-red-contrib-firebase-realtime-database",
   "version": "0.8.0",
   "description": "Node-RED nodes to communicate with Google Firebase Realtime Databases",
-  "main": "build/nodes/load-config.js",
+  "main": "build/nodes/firebase-in.js",
   "scripts": {
     "prebuild": "npm run clean",
     "build": "tsc",
@@ -42,7 +42,6 @@
   "homepage": "https://github.com/GogoVega/node-red-contrib-firebase-realtime-database#readme",
   "node-red": {
     "nodes": {
-      "load-config": "build/nodes/load-config.js",
       "firebase-in": "build/nodes/firebase-in.js",
       "firebase-get": "build/nodes/firebase-get.js",
       "firebase-out": "build/nodes/firebase-out.js",
