@@ -35,7 +35,7 @@ module.exports = function (RED: NodeAPI) {
 
 			const node = RED.nodes.getNode(id) as ConfigNode | null;
 
-			// Like database field not setted or new config-node not yet deployed
+			// Like database field not set or new config-node not yet deployed
 			if (!node) {
 				res.json([]);
 				return;
