@@ -22,7 +22,7 @@ var FirebaseQueryConstraintsContainer = FirebaseQueryConstraintsContainer || (fu
 	}
 
 	const i18n = function (key) {
-		return FirebaseUI._(key, "load-config", "query-constraints");
+		return FirebaseUI._(key, "firebase-in", "query-constraints");
 	};
 
 	const queryConstraintTypes = new Array("endAt", "endBefore", "equalTo", "limitToFirst", "limitToLast", "orderByChild", "orderByKey", "orderByPriority", "orderByValue", "startAfter", "startAt");
@@ -188,12 +188,12 @@ var FirebaseQueryConstraintsContainer = FirebaseQueryConstraintsContainer || (fu
 					validate: function (value, opt) {	// Missing tooltip NR#5051
 						constraintUsedTypes.delete(previousValue);
 						if (constraintUsedTypes.has(value))
-							return opt ? FirebaseUI._("errors.type-in-use", "load-config", "validator") : false;
+							return opt ? FirebaseUI._("errors.type-in-use", "firebase-in", "validator") : false;
 						if (/^(limitTo|orderBy)/.test(value)) {
 							const delim = value.substring(0, 7);
 							for (const type of constraintUsedTypes) {
 								if (type.startsWith(delim))
-									return opt ? FirebaseUI._(`errors.multiple-${value.substring(0, 5)}`, "load-config", "validator") : false;
+									return opt ? FirebaseUI._(`errors.multiple-${value.substring(0, 5)}`, "firebase-in", "validator") : false;
 							}
 						}
 						constraintUsedTypes.add(value);
@@ -248,7 +248,7 @@ var FirebaseQueryConstraintsContainer = FirebaseQueryConstraintsContainer || (fu
 			if (typeof constraints !== "object") return false;
 
 			for (const [k, v] of Object.entries(constraints)) {
-				opt.label = FirebaseUI._(`constraint.${k}`, "load-config", "query-constraints");
+				opt.label = FirebaseUI._(`constraint.${k}`, "firebase-in", "query-constraints");
 
 				switch (k) {
 					case "endAt":
@@ -256,9 +256,9 @@ var FirebaseQueryConstraintsContainer = FirebaseQueryConstraintsContainer || (fu
 					case "equalTo":
 					case "startAfter":
 					case "startAt": {
-						if (typeof v !== "object" || v === null) return FirebaseUI._("errors.no-object", "load-config", "validator");
+						if (typeof v !== "object" || v === null) return FirebaseUI._("errors.no-object", "firebase-in", "validator");
 
-						const valueFieldName = FirebaseUI._("placeholder.value", "load-config", "query-constraints");
+						const valueFieldName = FirebaseUI._("placeholder.value", "firebase-in", "query-constraints");
 						opt.label += ` (${valueFieldName})`;
 
 						const valueTypeValidation = FirebaseUI.validators.valueType()(v.types?.value, opt);
@@ -267,7 +267,7 @@ var FirebaseQueryConstraintsContainer = FirebaseQueryConstraintsContainer || (fu
 						const valueValidation = FirebaseUI.validators.typedInput({ type: v.types?.value })(v.value, opt);
 						if (valueValidation !== true) return valueValidation;
 
-						const childFieldName = FirebaseUI._("placeholder.child", "load-config", "query-constraints");
+						const childFieldName = FirebaseUI._("placeholder.child", "firebase-in", "query-constraints");
 						opt.label = opt.label.replace(/\(.*\)/, `(${childFieldName})`);
 
 						const childTypeValidation = FirebaseUI.validators.childType()(v.types?.child, opt);
@@ -305,7 +305,7 @@ var FirebaseQueryConstraintsContainer = FirebaseQueryConstraintsContainer || (fu
 						if (v !== null) return false;
 						break;
 					default:
-						return FirebaseUI._("errors.invalid-type-prop", "load-config", "validator", { prop: k });
+						return FirebaseUI._("errors.invalid-type-prop", "firebase-in", "validator", { prop: k });
 				}
 			}
 
