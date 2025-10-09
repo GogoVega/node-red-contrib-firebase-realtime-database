@@ -158,7 +158,7 @@ module.exports = function (RED: NodeAPI) {
 					// If the config node is placed in the correct directory, Node-RED will be able to load it automatically
 					// on the next restart. In that case, I could consider forcing its loading to avoid requiring a restart.
 					//
-					// If the config node is not directly loadable, I could still forcing its loading since I know all possible
+					// If the config node is not directly loadable, I could still force its loading since I know all possible
 					// directories where it may reside. However, before doing so, I would need to study how the registry works
 					// in detail to understand what risks this approach could introduce or potentially break.
 					if (!status.loaded && status.loadable) {
