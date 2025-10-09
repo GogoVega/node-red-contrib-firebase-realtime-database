@@ -14,11 +14,8 @@
  * limitations under the License.
  */
 
-import { existsSync } from "node:fs";
-import { join } from "node:path";
 import { NodeAPI } from "node-red";
 import { ConfigNode } from "@gogovega/firebase-config-node/types";
-import { runUpdateDependencies, versionIsSatisfied } from "../migration/config-node";
 
 /**
  * This fake node is used as:
@@ -31,71 +28,6 @@ import { runUpdateDependencies, versionIsSatisfied } from "../migration/config-n
  * from the runtime.
  */
 module.exports = function (RED: NodeAPI) {
-	let updateScriptCalled: boolean = false;
-
-	// Check if the Config Node version satisfies the require one
-	RED.httpAdmin.get("/firebase/rtdb/config-node/status", RED.auth.needsPermission("load-config.write"), (_req, res) => {
-		res.json({
-			status: {
-				versionIsSatisfied: versionIsSatisfied(),
-				updateScriptCalled: updateScriptCalled,
-			},
-		});
-	});
-
-	// Run the Update Script
-	RED.httpAdmin.post(
-		"/firebase/rtdb/config-node/scripts",
-		RED.auth.needsPermission("load-config.write"),
-		async (req, res) => {
-			try {
-				const scriptName = req.body.script;
-
-				if (scriptName === "update-dependencies") {
-					// To avoid a bad use - running the script multiple times
-					if (updateScriptCalled) throw new Error("Update Script already called");
-
-					updateScriptCalled = true;
-
-					if (!RED.settings.userDir) throw new Error("Node-RED 'userDir' Setting not available");
-
-					// @node-red/util.exec is not imported to NodeAPI, so it's a workaround to get it
-					// TODO: if there is a risk that the "require" fails, make a locally revisited copy
-					let utilPath = join(process.env.NODE_RED_HOME || ".", "node_modules", "@node-red/util");
-
-					if (!existsSync(utilPath)) {
-						// Some installations like FlowFuse use this path
-						utilPath = join(process.env.NODE_RED_HOME || ".", "../", "@node-red/util");
-					}
-
-					// eslint-disable-next-line @typescript-eslint/no-require-imports
-					const exec = require(utilPath).exec;
-
-					RED.log.info("Starting to update Node-RED dependencies...");
-
-					await runUpdateDependencies(RED, exec);
-
-					RED.log.info("Successfully updated Node-RED dependencies. Please restarts Node-RED.");
-				} else {
-					// Forbidden
-					res.sendStatus(403);
-					return;
-				}
-
-				res.json({ status: "success" });
-			} catch (error) {
-				const msg = error instanceof Error ? error.toString() : (error as Record<"stderr", string>).stderr;
-
-				RED.log.error("An error occured while updating Node-RED dependencies: " + msg);
-
-				res.json({
-					status: "error",
-					msg: msg,
-				});
-			}
-		}
-	);
-
 	// Get autocomplete options
 	RED.httpAdmin.get(
 		"/firebase/rtdb/autocomplete/:id?",
