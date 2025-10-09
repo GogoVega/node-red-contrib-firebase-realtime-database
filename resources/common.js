@@ -18,7 +18,7 @@ var FirebaseUI = FirebaseUI || (function () {
 	"use strict";
 
 	const i18n = function (key, tplStrs) {
-		return i18nFullOptions(key, "load-config", "validator", tplStrs);
+		return i18nFullOptions(key, "firebase-in", "validator", tplStrs);
 	};
 
 	const validators = {
