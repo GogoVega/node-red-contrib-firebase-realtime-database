@@ -73,7 +73,7 @@ module.exports = function (RED: NodeAPI) {
 					RED.log.error("[rtdb:plugin]: The Config Node version does not meet the requirements of this palette.");
 					RED.log.error("\tRequired Version: " + requiredVersion.join("."));
 					RED.log.error("\tCurrent Version:  " + status.version);
-					RED.log.error("\tPlease to resolve the issue run:\n\ncd ~/.node-red\nnpm update --omit=dev\n");
+					RED.log.error("\tTo resolve the issue, run:\n\ncd ~/.node-red\nnpm update --omit=dev\n");
 				}
 			} else {
 				RED.log.error("[rtdb:plugin]: Config node NOT registered");
@@ -138,7 +138,7 @@ module.exports = function (RED: NodeAPI) {
 					await runUpdateDependencies(RED, exec);
 
 					// TODO: Green with chalk
-					RED.log.info("[rtdb:plugin]: Successfully updated nodes dependencies. Please restarts Node-RED.");
+					RED.log.info("[rtdb:plugin]: Successfully updated nodes dependencies. Please restart Node-RED.");
 				} else if (scriptName === "load-plugins") {
 					// Plugins are not loaded into the editor after installation by Palette Manager. See NR#5277.
 					const { getModuleInfo } = loadInternalNRModule<Registry>("@node-red/registry");
