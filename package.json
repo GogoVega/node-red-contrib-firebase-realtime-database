@@ -48,6 +48,9 @@
       "firebase-out": "build/nodes/firebase-out.js",
       "on-disconnect": "build/nodes/on-disconnect.js"
     },
+    "plugins": {
+      "rtdb-migration-runner": "build/plugins/migration-runner.html"
+    },
     "version": ">=3"
   },
   "dependencies": {
