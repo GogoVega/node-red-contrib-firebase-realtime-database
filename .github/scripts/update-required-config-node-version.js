@@ -21,7 +21,7 @@ const { existsSync, readFileSync, writeFileSync } = require("node:fs");
 
 const filePath = "src/migration/config-node.ts";
 
-const versionRegex = /requiredVersion = \[([0-9], [0-9]+, [0-9]+)\]/;
+const versionRegex = /requiredVersion: \[number, number, number\] = \[([0-9], [0-9]+, [0-9]+)\]/;
 
 try {
 	console.log("Check if the required Config Node version is up to date...");
