@@ -291,6 +291,7 @@
 
 				console.log("[rtdb:plugin]: Firebase Config Node Checker started");
 
+				// TODO: Not optimal if statuses are different
 				if (RED.plugins.getPlugin("firestore-config-node-checker")) {
 					console.log("[rtdb:plugin]: RTDB Config Node Checker goes into slave mode");
 					slaveMode = true;
