@@ -139,6 +139,50 @@ module.exports = function (RED: NodeAPI) {
 
 					// TODO: Green with chalk
 					RED.log.info("[rtdb:plugin]: Successfully updated nodes dependencies. Please restart Node-RED.");
+				} else if (scriptName === "load-config-node") {
+					const { addModule } = loadInternalNRModule<Registry>("@node-red/registry");
+
+					RED.log.warn("[rtdb:plugin]: Starting to load the config node...");
+
+					// When Firebase nodes are installed from the Palette Manager, the process works as follows:
+					// - the runtime installs the package via NPM,
+					// - the registry locates the directory (based on package name) and reads the package.json,
+					// - the registry then loads all nodes defined by the package.json.
+					//
+					// The issue with the Firebase palette is that the config node is located inside a dependency.
+					// However, nothing in the package.json instructs the registry to load that dependency’s config node directly.
+					//
+					// Before suggesting a solution to the Node-RED team, my goal is to avoid the most common problem:
+					// having to restart Node-RED after installing from the Palette Manager.
+					//
+					// If the config node is placed in the correct directory, Node-RED will be able to load it automatically
+					// on the next restart. In that case, I could consider forcing its loading to avoid requiring a restart.
+					//
+					// If the config node is not directly loadable, I could still force its loading since I know all possible
+					// directories where it may reside. However, before doing so, I would need to study how the registry works
+					// in detail to understand what risks this approach could introduce or potentially break.
+					if (!status.loaded && status.loadable) {
+						const info = await addModule("@gogovega/firebase-config-node");
+
+						RED.log.info(RED._("runtime:server.added-types"));
+						RED.log.info(" - @gogovega/firebase-config-node:firebase-config");
+						RED.events.emit("runtime-event", { id: "node/added", retain: false, payload: info.nodes });
+
+						// Call the Config Node Checker
+						checker();
+
+						res.sendStatus(201);
+						return;
+					} else if (!status.loadable) {
+						res.json({
+							status: "error",
+							msg: "The config node is not loadable",
+						});
+						return;
+					} else {
+						res.sendStatus(204);
+						return;
+					}
 				} else if (scriptName === "load-plugins") {
 					// Plugins are not loaded into the editor after installation by Palette Manager. See NR#5277.
 					const { getModuleInfo } = loadInternalNRModule<Registry>("@node-red/registry");
@@ -160,6 +204,7 @@ module.exports = function (RED: NodeAPI) {
 				const msg = error instanceof Error ? error.toString() : (error as Record<"stderr", string>).stderr;
 				const action: Record<string, string> = {
 					"update-dependencies": "updating nodes dependencies",
+					"load-config-node": "loading the config node",
 					"load-plugins": "notifying the editor to load plugins",
 				};
 
