@@ -37,19 +37,6 @@ const tour = {
 			prepare: function () {
 				// Ensure all trays are closed
 				RED.tray.close();
-
-				const that = this;
-				const url = "https://gogovega.github.io/firebase-tours/rtdb/telemetry.js";
-				// TODO: Remove me
-				if (!FirebaseUI._telemetrySupported) {
-					import(url).then(function (telemetry) {
-						telemetry.prepareTelemetry(tour);
-						// Send telemetry when the tour has finished
-						$(".red-ui-tourGuide-shade").one("remove", function () {
-							telemetry.sendTelemetry(that);
-						});
-					});
-				}
 			}
 		},
 		{
