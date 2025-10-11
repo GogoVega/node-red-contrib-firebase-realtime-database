@@ -14,21 +14,40 @@
  * limitations under the License.
  */
 
-const helper = require("node-red-node-test-helper");
+const GH_BRANCH_REF = (process.env.BRANCH_REF || "").replace(/\//g, "-");
+const PATH_BASE_REF = `github-workflow/${GH_BRANCH_REF}/${process.version}/`;
+
+const knownTypes = [
+	"firebase-in",
+	"firebase-get",
+	"firebase-out",
+	"firebase-config",
+	"on-disconnect",
+	"inject",
+	"debug",
+];
 const flow = require("../examples/demo-flow.json")
-	.filter((node) =>
-		["firebase-in", "firebase-get", "firebase-out", "firebase-config", "on-disconnect", "inject", "debug"].includes(
-			node.type
-		)
-	)
+	.filter((node) => knownTypes.includes(node.type))
 	.map((node) => {
-		if (node.type === "debug") {
+		if (node.type === "inject" && node.topic) {
+			// Update the path to allow parallel unit tests
+			node.topic = PATH_BASE_REF + node.topic;
+		} else if (node.type === "debug") {
+			// To attach should to the node
 			node.type = "helper";
 		} else if (node.type === "firebase-config") {
+			// To force anonymous as auth method
 			node.authType = "anonymous";
+		} else if (node.type.startsWith("firebase-")) {
+			if (node.pathType === "str") {
+				// Update the path to allow parallel unit tests
+				node.path = PATH_BASE_REF + node.path;
+			}
 		}
 		return node;
 	});
+
+const helper = require("node-red-node-test-helper");
 const nodes = [
 	require("@gogovega/firebase-config-node"),
 	require("../build/nodes/firebase-in"),
@@ -89,7 +108,7 @@ describe("Demo Flow tests", function () {
 				const configNode = helper.getNode("e8796a1869e179bc");
 
 				await configNode.clientSignedIn();
-				await configNode.rtdb?.modify("remove", "timestampList");
+				await configNode.rtdb?.modify("remove", PATH_BASE_REF + "timestampList");
 				setTimeout(() => {
 					const inject = helper.getNode("ab41c49f03bf8362");
 					const debug = helper.getNode("7ae6239a6e476d5f");
@@ -122,7 +141,7 @@ describe("Demo Flow tests", function () {
 				const configNode = helper.getNode("e8796a1869e179bc");
 
 				await configNode.clientSignedIn();
-				await configNode.rtdb?.modify("remove", "users");
+				await configNode.rtdb?.modify("remove", PATH_BASE_REF + "users");
 				setTimeout(() => {
 					const inject = helper.getNode("ca1a112e5c6cbdb2");
 					const debug = helper.getNode("9acbf29beeba99c3");
@@ -272,7 +291,7 @@ describe("Demo Flow tests", function () {
 				const configNode = helper.getNode("e8796a1869e179bc");
 
 				await configNode.clientSignedIn();
-				await configNode.rtdb?.modify("set", "index", 0);
+				await configNode.rtdb?.modify("set", PATH_BASE_REF + "index", 0);
 
 				setTimeout(() => {
 					const inject = helper.getNode("5395c1e6288eedd1");
