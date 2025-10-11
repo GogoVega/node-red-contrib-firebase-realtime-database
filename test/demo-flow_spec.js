@@ -15,7 +15,7 @@
  */
 
 const GH_BRANCH_REF = (process.env.BRANCH_REF || "").replace(/\//g, "-");
-const PATH_BASE_REF = `github-workflow/${GH_BRANCH_REF}/${process.version}/`;
+const PATH_BASE_REF = `github-workflow/${GH_BRANCH_REF}/${process.version.split(".")[0]}/`;
 
 const knownTypes = [
 	"firebase-in",
