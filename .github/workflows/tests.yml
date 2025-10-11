@@ -4,11 +4,14 @@ on:
   push:
     paths-ignore:
       - 'docs/**'
-      - 'examples/**'
   pull_request:
     branches:
       - master
       - dev
+
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
 
 jobs:
   build:
@@ -39,3 +42,6 @@ jobs:
 
       - name: Run Tests
         run: npm run test
+        env:
+          API_KEY: ${{ secrets.API_KEY }}
+          RTDB_URL: ${{ secrets.RTDB_URL }}
