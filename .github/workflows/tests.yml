@@ -2,13 +2,12 @@ name: Tests
 
 on:
   push:
-    paths-ignore:
-      - 'docs/**'
-      - 'examples/**'
-  pull_request:
     branches:
       - master
       - dev
+    paths-ignore:
+      - 'assets/**'
+  pull_request:
 
 jobs:
   build:
