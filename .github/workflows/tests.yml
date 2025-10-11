@@ -9,10 +9,6 @@ on:
       - master
       - dev
 
-concurrency:
-  group: ${{ github.workflow }}
-  cancel-in-progress: false
-
 jobs:
   build:
     name: Build
@@ -20,6 +16,9 @@ jobs:
     permissions:
       actions: read
       contents: read
+    concurrency:
+      group: ${{ github.workflow }}
+      cancel-in-progress: false
     strategy:
       matrix:
         node-version: [20, 22]
