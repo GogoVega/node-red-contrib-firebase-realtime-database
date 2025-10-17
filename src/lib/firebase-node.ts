@@ -119,6 +119,13 @@ export class Firebase<Node extends FirebaseNode, Config extends FirebaseConfig =
 				node.database = null;
 			}
 		}
+
+		// Allow the node to be reloaded (not a full restart)
+		// @ts-expect-error unknown event
+		node.on("node-reload", () => {
+			node.database = RED.nodes.getNode(config.database) as ConfigNode | null;
+			this.attachStatusListener();
+		});
 	}
 
 	/**
@@ -570,6 +577,9 @@ export class FirebaseIn extends Firebase<FirebaseInNode> {
 
 		// No need to re-check all config - if the node has an input, the config is dynamic.
 		this.isDynamicConfig = this.node.config.inputs === 1;
+
+		// @ts-expect-error unknown event
+		node.on("node-reload", this.subscribe.bind(this));
 	}
 
 	/**

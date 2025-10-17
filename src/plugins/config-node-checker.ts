@@ -164,12 +164,24 @@ module.exports = function (RED: NodeAPI) {
 					if (!status.loaded && status.loadable) {
 						const info = await addModule("@gogovega/firebase-config-node");
 
+						// Call the Config Node Checker
+						checker();
+
+						const firebaseTypes = ["firebase-in", "firebase-get", "firebase-out", "on-disconnect"];
+						if (status.versionIsSatisfied) {
+							RED.nodes.eachNode((node) => {
+								if (firebaseTypes.includes(node.type)) {
+									// A flow containing Firebase nodes and without a Config Node loaded will be started
+									// in inactive mode before the checker is triggered.
+									RED.log.debug("[rtdb:plugin]: Emit 'node-reload' event for " + node.id);
+									RED.nodes.getNode(node.id)?.emit("node-reload");
+								}
+							});
+						}
+
 						RED.log.info(RED._("runtime:server.added-types"));
 						RED.log.info(" - @gogovega/firebase-config-node:firebase-config");
 						RED.events.emit("runtime-event", { id: "node/added", retain: false, payload: info.nodes });
-
-						// Call the Config Node Checker
-						checker();
 
 						res.sendStatus(201);
 						return;
