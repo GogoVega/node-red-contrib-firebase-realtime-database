@@ -36,8 +36,9 @@ const flow = require("../examples/demo-flow.json")
 			// To attach should to the node
 			node.type = "helper";
 		} else if (node.type === "firebase-config") {
-			// To force anonymous as auth method
-			node.authType = "anonymous";
+			// To force email/password as auth method
+			node.authType = "email";
+			node.createUser = true;
 		} else if (node.type.startsWith("firebase-")) {
 			if (node.pathType === "str") {
 				// Update the path to allow parallel unit tests
@@ -59,6 +60,9 @@ const nodes = [
 const creds = {
 	apiKey: process.env.API_KEY,
 	url: process.env.RTDB_URL,
+	// The goal here is to limit the creation of users; one per reference
+	email: `${GH_BRANCH_REF}@github-workflow.fake`,
+	password: "someAwesomePassword4gh-actions"
 };
 
 const { Firebase } = require("../build/lib/firebase-node");
