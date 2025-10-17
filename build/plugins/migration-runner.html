@@ -319,6 +319,12 @@
 			onadd: function () {
 				console.log("[rtdb:plugin]: RTDB Migration Runner started");
 
+				// NR#5276 - avoid to register twice - installation by the Palette Manager
+				if (RED.plugins.getPlugin("rtdb-migration-runner")) {
+					console.warn("[rtdb:plugin]: Firebase Migration Runner already registered");
+					RED.actions.remove("firebase:run-firebase-migration");
+				}
+
 				// Add the script to actions so the user can trigger it manually
 				RED.actions.add("firebase:run-firebase-migration", runMigration);
 
@@ -333,7 +339,7 @@
 			},
 		};
 
-		RED.plugins.registerPlugin("rtdb-tours-runner", plugin);
+		RED.plugins.registerPlugin("rtdb-migration-runner", plugin);
 	})();
 
 </script>
