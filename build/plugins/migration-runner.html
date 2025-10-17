@@ -320,6 +320,7 @@
 				console.log("[rtdb:plugin]: RTDB Migration Runner started");
 
 				// Add the script to actions so the user can trigger it manually
+				RED.actions.remove("firebase:run-firebase-migration");
 				RED.actions.add("firebase:run-firebase-migration", runMigration);
 
 				// Allow the config node checker to run the migration
@@ -333,7 +334,7 @@
 			},
 		};
 
-		RED.plugins.registerPlugin("rtdb-tours-runner", plugin);
+		RED.plugins.registerPlugin("rtdb-migration-runner", plugin);
 	})();
 
 </script>
