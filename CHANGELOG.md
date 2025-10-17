@@ -1,6 +1,6 @@
 # Change log
 
-## 0.8.1-beta.1
+## 0.8.1
 
 ### Changes
 
