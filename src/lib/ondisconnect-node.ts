@@ -47,6 +47,9 @@ export class OnDisconnect extends Firebase<OnDisconnectNode> {
 
 	constructor(node: OnDisconnectNode, config: OnDisconnectConfig, RED: NodeAPI) {
 		super(node, config, RED);
+
+		// @ts-expect-error unknown event
+		node.on("node-reload", this.setMsgSendHandler.bind(this));
 	}
 
 	/**
