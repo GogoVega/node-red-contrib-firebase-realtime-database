@@ -21,6 +21,10 @@ const flow = [
 	{ id: "h1", type: "helper" },
 ];
 
+const { Firebase } = require("../build/lib/firebase-node");
+
+Firebase.configNodeSatisfiesVersion = true;
+
 // TODO: Add more tests
 describe("Firebase IN Node", function () {
 	const firebase = require("../build/nodes/firebase-in");

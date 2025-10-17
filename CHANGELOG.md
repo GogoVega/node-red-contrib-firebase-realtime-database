@@ -1,5 +1,29 @@
 # Change log
 
+## 0.8.1-beta.1
+
+### Changes
+
+- Bump `@gogovega/firebase-config-node` from 0.3.0 to 0.3.1 (#104)
+  - Bump dependencies to latest
+- Move content from `load-config` messages to `firebase-in` messages (#106)
+- Remove the `load-config` node (#107)
+
+### Enhances
+
+- Experimental: Force load config node to avoid restarting NR (#108)
+
+### Fixes
+
+- Remove the config node module when uninstalling the Palette (#104)
+- Handle NR beta version (https://github.com/GogoVega/node-red-contrib-firebase-realtime-database/commit/bf1d43da2fcf02145518a61dcc254e7b44502b52)
+
+### Improves
+
+- Move the Migration Wizard to a plugin (#102)
+- Move the Tours Runner to a plugin (#103)
+- Move the Config Node Checker to a Plugin (#104)
+
 ## 0.8.0
 
 ### Breaking Changes

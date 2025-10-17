@@ -2,13 +2,16 @@ name: Tests
 
 on:
   push:
-    paths-ignore:
-      - 'docs/**'
-      - 'examples/**'
-  pull_request:
     branches:
       - master
       - dev
+    paths-ignore:
+      - 'assets/**'
+  pull_request:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
 
 jobs:
   build:
@@ -19,7 +22,7 @@ jobs:
       contents: read
     strategy:
       matrix:
-        node-version: [18, 20, 22]
+        node-version: [20, 22]
 
     steps:
       - uses: actions/checkout@v4
@@ -39,3 +42,7 @@ jobs:
 
       - name: Run Tests
         run: npm run test
+        env:
+          API_KEY: ${{ secrets.API_KEY }}
+          RTDB_URL: ${{ secrets.RTDB_URL }}
+          BRANCH_REF: ${{ github.ref }}

@@ -1,8 +1,8 @@
 {
   "name": "@gogovega/node-red-contrib-firebase-realtime-database",
-  "version": "0.8.0",
+  "version": "0.8.1-beta.1",
   "description": "Node-RED nodes to communicate with Google Firebase Realtime Databases",
-  "main": "build/nodes/load-config.js",
+  "main": "build/nodes/firebase-in.js",
   "scripts": {
     "prebuild": "npm run clean",
     "build": "tsc",
@@ -10,7 +10,7 @@
     "lint": "eslint . --ext .ts",
     "migrate": "bash scripts/migrate-script.sh",
     "format": "prettier --write \"**/*.{md,ts}\"",
-    "test": "mocha './test/**/*_spec.js' --exit"
+    "test": "mocha './test/**/*_spec.js' --exit --timeout 10000"
   },
   "repository": {
     "type": "git",
@@ -42,27 +42,31 @@
   "homepage": "https://github.com/GogoVega/node-red-contrib-firebase-realtime-database#readme",
   "node-red": {
     "nodes": {
-      "load-config": "build/nodes/load-config.js",
       "firebase-in": "build/nodes/firebase-in.js",
       "firebase-get": "build/nodes/firebase-get.js",
       "firebase-out": "build/nodes/firebase-out.js",
       "on-disconnect": "build/nodes/on-disconnect.js"
     },
+    "plugins": {
+      "rtdb-config-node-checker": "build/plugins/config-node-checker.js",
+      "rtdb-migration-runner": "build/plugins/migration-runner.html",
+      "rtdb-tours-runner": "build/plugins/tours-runner.html"
+    },
     "version": ">=3"
   },
   "dependencies": {
-    "@gogovega/firebase-config-node": "~0.3.0"
+    "@gogovega/firebase-config-node": "~0.3.1"
   },
   "devDependencies": {
     "@types/node-red": "^1.3.5",
-    "@typescript-eslint/eslint-plugin": "^8.42.0",
-    "@typescript-eslint/parser": "^8.42.0",
+    "@typescript-eslint/eslint-plugin": "^8.46.0",
+    "@typescript-eslint/parser": "^8.46.0",
     "eslint": "^8.57.1",
     "mocha": "^10.8.2",
     "node-red": "^4.1.0",
     "node-red-node-test-helper": "^0.3.5",
     "prettier": "^3.6.2",
-    "typescript": "^5.9.2"
+    "typescript": "^5.9.3"
   },
   "engines": {
     "node": ">=20"

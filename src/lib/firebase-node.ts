@@ -44,7 +44,6 @@ import {
 	QueryConstraintPropertySignature,
 } from "./types";
 import { checkPath, checkPriority, printEnumKeys } from "./utils";
-import { checkConfigNodeSatisfiesVersion } from "../migration/config-node";
 
 /**
  * Firebase Class
@@ -92,6 +91,12 @@ export class Firebase<Node extends FirebaseNode, Config extends FirebaseConfig =
 	 */
 	protected permissionDeniedStatus = false;
 
+	/**
+	 * This property is used to indicate whether the config node version meets the version required by this palette.
+	 * If this is not the case, the nodes in this palette will not be active.
+	 */
+	public static configNodeSatisfiesVersion = false;
+
 	constructor(
 		protected node: Node,
 		config: Config,
@@ -107,13 +112,20 @@ export class Firebase<Node extends FirebaseNode, Config extends FirebaseConfig =
 			if (!isFirebaseConfigNode(node.database))
 				throw new Error("The selected database is not compatible with this module, please check your config-node");
 
-			if (!checkConfigNodeSatisfiesVersion(RED, node.database.version)) {
+			if (!Firebase.configNodeSatisfiesVersion) {
 				node.status({ fill: "red", shape: "ring", text: "Invalid Database Version!" });
 
 				// To avoid initializing the database (avoid creating unhandled errors)
 				node.database = null;
 			}
 		}
+
+		// Allow the node to be reloaded (not a full restart)
+		// @ts-expect-error unknown event
+		node.on("node-reload", () => {
+			node.database = RED.nodes.getNode(config.database) as ConfigNode | null;
+			this.attachStatusListener();
+		});
 	}
 
 	/**
@@ -565,6 +577,9 @@ export class FirebaseIn extends Firebase<FirebaseInNode> {
 
 		// No need to re-check all config - if the node has an input, the config is dynamic.
 		this.isDynamicConfig = this.node.config.inputs === 1;
+
+		// @ts-expect-error unknown event
+		node.on("node-reload", this.subscribe.bind(this));
 	}
 
 	/**

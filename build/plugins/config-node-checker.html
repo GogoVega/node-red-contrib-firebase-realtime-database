@@ -1,0 +1,313 @@
+<!--
+  Copyright 2022-2025 Gauthier Dandele
+
+  Licensed under the MIT License,
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+  https://opensource.org/licenses/MIT.
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+
+<script type="text/javascript">
+	"use strict";
+
+	(function () {
+		const checker = function () {
+			RED.events.off("flows:loaded", checker);
+			RED.events.off("registry:node-type-added", checker);
+			$.getJSON("firebase/rtdb/config-node/status", function (result) {
+				if (!result.loaded) {
+					if (result.loadable) {
+						// Ask the user to restart NR
+						generateNotification("restart");
+					} else if (result.updateScriptCalled) {
+						// The user has triggered the Update script but not restarted NR
+						generateNotification("restart-update");
+					} else {
+						// Ask the user to trigger the Update script
+						generateNotification("not-loadable");
+					}
+				} else {
+					if (!RED.nodes.getType("firebase-config")) {
+						// Ask the user to reload the browser
+						generateNotification("reload");
+					} else if (result.updateScriptCalled) {
+						// The user has triggered the Update script but not restarted NR
+						generateNotification("restart-update");
+					} else if (!result.versionIsSatisfied) {
+						// Ask the user to trigger the Update script
+						generateNotification("update");
+					} else if (isOldConfigNodeStillInUse()) {
+						// Triggers the Migrate script if old Config Node still in use
+						const plugin = RED.plugins.getPlugin("rtdb-migration-runner");
+
+						if (plugin && typeof plugin.runner === "function") {
+							plugin.runner();
+						}
+					} else {
+						// All ready => run the 'First flow' guide
+						const plugin = RED.plugins.getPlugin("rtdb-tours-runner");
+
+						if (plugin && typeof plugin.runner === "function") {
+							plugin.runner();
+						}
+					}
+				}
+			});
+		};
+
+		const notify = function (notifications) {
+			if (!Array.isArray(notifications)) {
+				notifications = [notifications];
+			}
+
+			notifications.forEach((notification) => {
+				const { buttons, fixed, modal, msg, type } = notification;
+				const myNotification = RED.notify(msg, {
+					modal: modal,
+					fixed: fixed,
+					type: type,
+					buttons: (function () {
+						return buttons.map((button) => {
+							if (button === "Close" || button === "Cancel") {
+								return {
+									text: button,
+									class: "primary",
+									click: () => {
+										myNotification.close();
+									}
+								};
+							} else if (button === "View Log") {
+								return {
+									text: button,
+									class: "pull-left",
+									click: () => {
+										RED.actions.invoke("core:show-event-log");
+									}
+								};
+							} else if (button === "Confirm Update") {
+								return {
+									text: "Confirm",
+									click: (event) => {
+										const spinner = RED.utils.addSpinnerOverlay($(event.target));
+
+										// Start the event log panel
+										RED.eventLog.startEvent("[rtdb:plugin]: Updating nodes dependencies...");
+
+										$.ajax({
+											method: "PUT",
+											url: "firebase/rtdb/config-node/scripts",
+											data: { script: "update-dependencies" },
+											success: function (resp) {
+												spinner.remove();
+												myNotification.close();
+
+												if (resp.status === "success") {
+													notify({
+														msg: "<html><p>Update Successful!</p><p>Restarts now Node-RED and reload your browser</p></html>",
+														type: "success",
+														fixed: true,
+														buttons: ["Close"]
+													});
+												} else if (resp.status === "error") {
+													notify({
+														msg: `
+													<html>
+														<p>Update Failed!</p>
+														<p>Please raise an issue <a href="https://github.com/GogoVega/node-red-contrib-firebase-realtime-database/issues/new/choose">here</a> with log details:</p>
+														<pre>${resp.msg}</pre>
+													</html>`,
+														type: "error",
+														fixed: true,
+														buttons: ["Close"],
+													});
+												} else {
+													console.log("J'ai glissé chef!");
+												}
+											}
+										})
+									}
+								};
+							} else if (button === "Run Update") {
+								return {
+									text: button,
+									class: "pull-left",
+									click: () => {
+										myNotification.close();
+										notify([{
+											msg: `
+											<html>
+												<p>Are you really sure you want to do this?</p>
+												<p>The Update script will run <code>npm update</code> in your nodes directory to update dependencies.</p>
+												<p>If you have version constraints with one or more nodes, please check first the pinning of those versions.</p>
+												<p><strong>Tip</strong>: Click on <strong>View Log</strong> then <strong>Confirm</strong> and not the other way around 🤪</p>
+											</html>`,
+											modal: false, fixed: true, type: "warning", buttons: ["Confirm Update", "View Log", "Cancel"]
+										}]);
+									}
+								};
+							} else if (button === "Load Config Node") {
+								return {
+									text: button,
+									class: "pull-left",
+									click: (event) => {
+										if (!window.confirm("Are you really sure you want to do this?")) return;
+
+										const spinner = RED.utils.addSpinnerOverlay($(event.target));
+
+										$.ajax({
+											method: "PUT",
+											url: "firebase/rtdb/config-node/scripts",
+											data: { script: "load-config-node" },
+											success: function (resp) {
+												spinner.remove();
+												myNotification.close();
+												FirebaseUI._configNodeLoaded = true;
+												// Re-triggers the checker
+												RED.events.on("registry:node-type-added", checker);
+											}
+										});
+									}
+								};
+							} else {
+								console.error("Unknown button", button);
+								return {};
+							}
+						});
+					})(),
+				});
+			});
+		};
+
+		function generateNotification(script) {
+			// Do not send notifications in slave mode
+			if (slaveMode) return;
+
+			const reloadMsg = `
+			<html>
+				<p>Welcome to Firebase Realtime Databases</p>
+				<p>Oops, it looks like your browser didn't load all Firebase nodes 😬</p>
+				<p>Please reload your browser 😁</p>
+			</html>`;
+			const restartMsg = `
+			<html>
+				<h3>Welcome to Firebase Realtime Databases</h3>
+				<h4>🔄 Action Required</h4>
+				<p>To use this node palette, you need to restart <strong>Node-RED</strong>.</p>
+				<ul>
+					<li>If you are running <strong>FlowFuse</strong>, suspend and then restart the instance.</li>
+				</ul>
+				<p>This step is necessary because Node-RED did not load the config node.</p>
+				<h4>⚠️ Experimental Alternative</h4>
+				<p>You can try loading the config node, but this method is still experimental and may not work in all cases.</p>
+				<p>👉 <a href="https://github.com/GogoVega/node-red-contrib-firebase-realtime-database/discussions/50" target="_blank">Learn more about this issue</a></p>
+			</html>`;
+			const restartAfterUpdateMsg = `
+			<html>
+				<p>Don't forget to restart Node-RED!</p>
+				<p>It looks like you didn't restart Node-RED after running the Update script 🙄</p>
+			</html>`;
+			const updateMsg = `
+			<html>
+				<p>Welcome to Firebase Realtime Databases</p>
+				<p>The Config Node version don't meet the version required by the Firebase RTDB palette.</p>
+				<p>
+					Can happen when you use both RTDB and <a href="https://flows.nodered.org/node/@gogovega/node-red-contrib-cloud-firestore">Firestore</a> palettes.
+				</p>
+				<p>To solve this issue, please run the Update script.</p>
+			</html>`;
+			const notLoadableMsg = `
+			<html>
+				<p>Welcome to Firebase Realtime Databases</p>
+				<p>It seems that the config node could not be loaded by Node-RED</p>
+				<p>To solve this issue, please run the Update script.</p>
+			</html>`;
+
+			let msg;
+			let buttons = ["Close"];
+			switch (script) {
+				case "reload":
+					msg = reloadMsg;
+					break;
+				case "restart":
+					msg = restartMsg;
+					buttons = ["Load Config Node", "Close"];
+					break;
+				case "restart-update":
+					msg = restartAfterUpdateMsg;
+					break;
+				case "update":
+					msg = updateMsg;
+					buttons = ["Run Update", "Close"];
+					break;
+				case "not-loadable":
+					msg = notLoadableMsg;
+					buttons = ["Run Update", "Close"];
+					break;
+				default:
+					throw new Error("Unknown notification script: " + script);
+			}
+
+			notify([{
+				msg: msg,
+				type: "warning",
+				fixed: true,
+				modal: true,
+				buttons: buttons,
+			}]);
+		}
+
+		function isOldConfigNodeStillInUse() {
+			let inUse = false;
+
+			RED.nodes.eachConfig((node) => {
+				if (node.type === "unknown" && node.name === node._orig.type && node._orig.type === "database-config" && "authType" in node._orig) {
+					inUse = true;
+					// To break the loop
+					return true;
+				}
+			});
+
+			return inUse;
+		}
+
+		let slaveMode = false;
+		RED.plugins.registerPlugin("rtdb-config-node-checker", {
+			type: "firebase-config-node-checker",
+			name: "RTDB Config Node Checker",
+			description: "Checks if the Firebase config node satisfies the constraints of RTDB nodes",
+			onadd: function () {
+				// NR#5276 - avoid to register twice - installation by the Palette Manager
+				if (RED.plugins.getPlugin("rtdb-tours-runner")) {
+					console.warn("[rtdb:plugin]: Firebase Config Node Checker already registered");
+					return;
+				}
+
+				console.log("[rtdb:plugin]: Firebase Config Node Checker started");
+
+				// TODO: Not optimal if statuses are different
+				if (RED.plugins.getPlugin("firestore-config-node-checker")) {
+					console.log("[rtdb:plugin]: RTDB Config Node Checker goes into slave mode");
+					slaveMode = true;
+				}
+
+				if ($("#red-ui-loading-progress").css("display") === "none") {
+					// Palette installed by the Palette Manager
+					checker();
+				} else {
+					RED.events.on("flows:loaded", checker);
+				}
+			},
+			onremove: function () {
+				console.log("[rtdb:plugin]: RTDB Config Node Checker stopped");
+			},
+		});
+	})();
+
+</script>

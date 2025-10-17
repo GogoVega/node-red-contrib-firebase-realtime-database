@@ -1,0 +1,105 @@
+<!--
+  Copyright 2022-2025 Gauthier Dandele
+
+  Licensed under the MIT License,
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+  https://opensource.org/licenses/MIT.
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+
+<script type="text/javascript">
+	"use strict";
+
+	(function () {
+		// TODO: see with the NR team a guideline (#4965)
+		// To avoid lots of tours randomly popping up in the editor
+		function initTourGuide() {
+			const tourName = "first-flow";
+			const packageName = "gogovega/node-red-contrib-firebase-realtime-database";
+			const settingName = `editor.tours.${packageName}.${tourName}`;
+
+			// Skip if the tour has already been run
+			if (RED.settings.get(settingName, false) === true) return;
+
+			// TODO: At this stage, it's better to load the file from the repo
+			// to avoid publishing a new version for every change made to the tour.
+			const tourUrl = "https://gogovega.github.io/firebase-tours/rtdb/first-flow.js";
+			//const tourUrl = `/resources/@${packageName}/${tourName}.js`;
+
+			let telemetry;
+			const tourGuide = function (tour) {
+				// Skip if the tour has already been run
+				if (RED.settings.get(settingName, false) === true) return;
+
+				// Skip if a tour is running - concurrent calls are not yet protected
+				// Can happen with both Firestore and RTDB installed
+				const tourRunning = $(".red-ui-tourGuide-shade").length > 0;
+				if (tourRunning) {
+					// Listen to the event to run the tour once the current one has finished
+					$(".red-ui-tourGuide-shade").one("remove", () => setTimeout(() => tourGuide(tour), 1000));
+				} else {
+					telemetry?.prepareTelemetry(tour);
+					RED.tourGuide.run(tourUrl, function (error) {
+						if (error) {
+							console.error("Firebase tour: ", error);
+							RED.notify("Failed to run the RTDB tour", "error");
+						}
+
+						RED.settings.set(settingName, true);
+						// Workaround until
+						// RED.tourGuide.run(url: string, done: (error?: Error, state: object) => void)
+						telemetry?.sendTelemetry(null, error);
+					});
+				}
+			};
+
+			const telemetryUrl = "https://gogovega.github.io/firebase-tours/rtdb/telemetry.js";
+			RED.tourGuide.load(tourUrl, function (error, tour) {
+				import(telemetryUrl).then(function (result) {
+					telemetry = result;
+					if (tour) {
+						tourGuide(tour);
+					}
+				}).finally(function () {
+					if (error) {
+						console.error("Failed to load the RTDB Tour: ", error);
+						telemetry?.sendTelemetry(null, error);
+					}
+				});
+			});
+		}
+
+		const plugin = {
+			type: "firebase-tours-runner",
+			name: "RTDB Tours Runner",
+			description: "Runs RTDB tours to guide users through features and workflows",
+			onadd: function () {
+				console.log("[rtdb:plugin]: RTDB Tours Runner started");
+
+				// Skip if the user doesn't want tours
+				if (RED.settings.theme("tours") === false) {
+					console.log("[rtdb:plugin]: RTDB Tours disabled by user settings");
+					return;
+				}
+
+				// Allow the config node checker to run tours
+				plugin.runner = initTourGuide;
+			},
+			onremove: function () {
+				// Must clean the editor
+				delete plugin.runner;
+				console.log("[rtdb:plugin]: RTDB Tours Runner stopped");
+			},
+		};
+
+		RED.plugins.registerPlugin("rtdb-tours-runner", plugin);
+	})();
+
+</script>

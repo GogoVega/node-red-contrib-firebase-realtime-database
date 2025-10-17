@@ -43,6 +43,7 @@ jobs:
   # TODO: Use a webhook because sleep is not ideal
   update-library:
     needs: publish-npm
+    if: ${{ !contains(github.ref, '-alpha') && !contains(github.ref, '-beta') }}
     runs-on: ubuntu-latest
     steps:
       - name: Wait 5 minutes
