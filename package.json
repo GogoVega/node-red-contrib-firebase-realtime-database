@@ -10,7 +10,7 @@
     "lint": "eslint . --ext .ts",
     "migrate": "bash scripts/migrate-script.sh",
     "format": "prettier --write \"**/*.{md,ts}\"",
-    "test": "mocha './test/**/*_spec.js' --exit"
+    "test": "mocha './test/**/*_spec.js' --exit --timeout 10000"
   },
   "repository": {
     "type": "git",

@@ -1,6 +1,7 @@
 ### macOS ###
 # General
 .DS_Store
+.vscode
 
 ### Node ###
 # Dependency directories
