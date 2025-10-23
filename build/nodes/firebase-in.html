@@ -15,8 +15,10 @@
 -->
 
 <!-- Load Scripts -->
+<!--
 <script type="text/javascript" src="resources/@gogovega/node-red-contrib-firebase-realtime-database/common.js"></script>
 <script type="text/javascript" src="resources/@gogovega/node-red-contrib-firebase-realtime-database/constraints-container.js"></script>
+-->
 
 <script type="text/javascript">
 	"use strict";
@@ -55,69 +57,81 @@
 	"use strict";
 
 	(function () {
-		const editableConstraintsList = FirebaseQueryConstraintsContainer.editableConstraintsList.create();
-		const { isConstraintsValid } = FirebaseQueryConstraintsContainer.validators;
-		const { typedPathField, validators } = FirebaseUI;
-		const i18n = (key) => FirebaseUI._(key, "firebase-in");
+		const init = function () {
+			const editableConstraintsList = FirebaseQueryConstraintsContainer.editableConstraintsList.create();
+			const { isConstraintsValid } = FirebaseQueryConstraintsContainer.validators;
+			const { typedPathField, validators } = FirebaseUI;
+			const i18n = (key) => FirebaseUI._(key, "firebase-in");
 
-		const isDynamic = function (type = "str", value) {
-			return type === "msg" ? true : (type !== "str" && type !== "env")
-				? /\[msg/.test(value ?? "")
-				: false;
+			const isDynamic = function (type = "str", value) {
+				return type === "msg" ? true : (type !== "str" && type !== "env")
+					? /\[msg/.test(value ?? "")
+					: false;
+			};
+
+			RED.nodes.registerType("firebase-in", {
+				align: "left",
+				category: "Firebase",
+				color: "#e2a12b",
+				defaults: {
+					name: { value: "" },
+					constraint: {},	// Legacy Config
+					constraints: { value: {}, label: i18n("label.constraints"), validate: isConstraintsValid() },
+					database: { value: "", type: "firebase-config", required: true },
+					inputs: { value: 0 },
+					listenerType: { value: "value", label: i18n("label.listener"), validate: validators.listenerType() },
+					outputType: { value: "auto", label: i18n("label.output"), validate: validators.outputType() },
+					passThrough: { value: false, label: i18n("label.passThrough"), validate: validators.boolean() },
+					path: { value: "test/stream", label: i18n("label.path"), validate: validators.typedInput("pathType", { allowBlank: true }) },
+					pathType: { value: "str", label: i18n("label.path"), validate: validators.pathType() },
+					useConstraints: { value: false, label: i18n("label.sortData"), validate: validators.boolean() },
+					useConstraint: {},	// Legacy Config
+				},
+				inputs: 0,
+				outputs: 1,
+				icon: "firebase.svg",
+				paletteLabel: "Firebase in",
+				label: function () {
+					return this.name || this.path || "root";
+				},
+				labelStyle: function () {
+					return this.name ? "node_label_italic" : "";
+				},
+				oneditprepare: function () {
+					editableConstraintsList.build(this);
+
+					const pathField = typedPathField.create().allowBlank(true).enableAutoComplete();
+
+					pathField.build();
+				},
+				oneditsave: function () {
+					editableConstraintsList.saveItems();
+
+					const path = $("#node-input-path");
+					const listenerDynamic = $("#node-input-listenerType").val() === "none";
+					const pathDynamic = isDynamic(path.typedInput("type"), path.typedInput("value"));
+					const constraintDynamic = Object.values(this.constraints).some((v) => {
+						if (Object.keys(v).length > 2) {
+							if (isDynamic(v.types.child, v.key)) return true;
+						}
+						return isDynamic(v?.type ?? v?.types?.value, v?.value);
+					});
+					const inputs = (listenerDynamic || pathDynamic || constraintDynamic) ? 1 : 0;
+					$("#node-input-inputs").val(inputs);
+				},
+				oneditresize: (size) => editableConstraintsList.reSize(size),
+			});
 		};
 
-		RED.nodes.registerType("firebase-in", {
-			align: "left",
-			category: "Firebase",
-			color: "#e2a12b",
-			defaults: {
-				name: { value: "" },
-				constraint: {},	// Legacy Config
-				constraints: { value: {}, label: i18n("label.constraints"), validate: isConstraintsValid() },
-				database: { value: "", type: "firebase-config", required: true },
-				inputs: { value: 0 },
-				listenerType: { value: "value", label: i18n("label.listener"), validate: validators.listenerType() },
-				outputType: { value: "auto", label: i18n("label.output"), validate: validators.outputType() },
-				passThrough: { value: false, label: i18n("label.passThrough"), validate: validators.boolean() },
-				path: { value: "test/stream", label: i18n("label.path"), validate: validators.typedInput("pathType", { allowBlank: true }) },
-				pathType: { value: "str", label: i18n("label.path"), validate: validators.pathType() },
-				useConstraints: { value: false, label: i18n("label.sortData"), validate: validators.boolean() },
-				useConstraint: {},	// Legacy Config
-			},
-			inputs: 0,
-			outputs: 1,
-			icon: "firebase.svg",
-			paletteLabel: "Firebase in",
-			label: function () {
-				return this.name || this.path || "root";
-			},
-			labelStyle: function () {
-				return this.name ? "node_label_italic" : "";
-			},
-			oneditprepare: function () {
-				editableConstraintsList.build(this);
-
-				const pathField = typedPathField.create().allowBlank(true).enableAutoComplete();
-
-				pathField.build();
-			},
-			oneditsave: function () {
-				editableConstraintsList.saveItems();
-
-				const path = $("#node-input-path");
-				const listenerDynamic = $("#node-input-listenerType").val() === "none";
-				const pathDynamic = isDynamic(path.typedInput("type"), path.typedInput("value"));
-				const constraintDynamic = Object.values(this.constraints).some((v) => {
-					if (Object.keys(v).length > 2) {
-						if (isDynamic(v.types.child, v.key)) return true;
-					}
-					return isDynamic(v?.type ?? v?.types?.value, v?.value);
-				});
-				const inputs = (listenerDynamic || pathDynamic || constraintDynamic) ? 1 : 0;
-				$("#node-input-inputs").val(inputs);
-			},
-			oneditresize: (size) => editableConstraintsList.reSize(size),
-		});
+		// BUG: NR makes resource loading asynchronous
+		const resourcesURL = "resources/@gogovega/node-red-contrib-firebase-realtime-database/";
+		$.getScript(resourcesURL + "common.js")
+			.then(() => $.getScript(resourcesURL + "constraints-container.js"))
+			.then(init)
+			.fail((jqXHR, _textStatus, errorThrown) => {
+				console.error("[rtdb:firebase-in]: Failed to load editor scripts", errorThrown, jqXHR?.responseText);
+				RED.notify("Failed to load Firebase nodes. See logs.", "error");
+			});
 	})();
 </script>
 
