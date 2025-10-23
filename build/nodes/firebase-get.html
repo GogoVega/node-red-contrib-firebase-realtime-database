@@ -70,13 +70,8 @@
 		};
 
 		// BUG: NR makes resource loading asynchronous
-		(function waitForScripts() {
-			if (window.FirebaseUI && window.FirebaseQueryConstraintsContainer) {
-				init();
-			} else {
-				setTimeout(waitForScripts, 5);
-			}
-		})();
+		window.FirebaseNodes = window.FirebaseNodes || {};
+		window.FirebaseNodes["firebase-get"] = init;
 	})();
 </script>
 

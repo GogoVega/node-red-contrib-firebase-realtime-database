@@ -80,13 +80,8 @@
 		};
 
 		// BUG: NR makes resource loading asynchronous
-		(function waitForScripts() {
-			if (window.FirebaseUI) {
-				init();
-			} else {
-				setTimeout(waitForScripts, 5);
-			}
-		})();
+		window.FirebaseNodes = window.FirebaseNodes || {};
+		window.FirebaseNodes["on-disconnect"] = init;
 	})();
 </script>
 

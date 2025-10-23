@@ -123,11 +123,44 @@
 			});
 		};
 
+		// The editor receives statuses before node definitions are registered,
+		// which causes statuses to be dropped.
+		const statusCache = {};
+		const statusHandler = function (topic, msg) {
+			statusCache[topic] = msg;
+		};
+		const applyNodeStatus = function (topic, msg) {
+			const parts = topic.split("/");
+			const node = RED.nodes.node(parts[1]);
+			if (node) {
+				if (msg.hasOwnProperty("text") && msg.text !== null && /^[@a-zA-Z]/.test(msg.text)) {
+					msg.text = node._(msg.text.toString(), { defaultValue: msg.text.toString() });
+				}
+				node.status = msg;
+				node.dirtyStatus = true;
+				node.dirty = true;
+				RED.view.redrawStatus(node);
+			}
+		};
+
 		// BUG: NR makes resource loading asynchronous
 		const resourcesURL = "resources/@gogovega/node-red-contrib-firebase-realtime-database/";
+		RED.comms.subscribe("status/#", statusHandler);
 		$.getScript(resourcesURL + "common.js")
 			.then(() => $.getScript(resourcesURL + "constraints-container.js"))
 			.then(init)
+			.then(() => {
+				// Register nodes in order
+				FirebaseNodes["firebase-get"]();
+				FirebaseNodes["firebase-out"]();
+				FirebaseNodes["on-disconnect"]();
+
+				// Apply dropped status now all definitions are registered
+				RED.comms.unsubscribe("status/#", statusHandler);
+				for (const [topic, msg] of Object.entries(statusCache)) {
+					applyNodeStatus(topic, msg);
+				}
+			})
 			.fail((jqXHR, _textStatus, errorThrown) => {
 				console.error("[rtdb:firebase-in]: Failed to load editor scripts", errorThrown, jqXHR?.responseText);
 				RED.notify("Failed to load Firebase nodes. See logs.", "error");
