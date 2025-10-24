@@ -23,13 +23,12 @@ const flow = [
 
 const { Firebase } = require("../build/lib/firebase-node");
 
-Firebase.configNodeSatisfiesVersion = true;
-
 // TODO: Add more tests
 describe("Firebase GET Node", function () {
 	const firebase = require("../build/nodes/firebase-get");
 
 	before(function (done) {
+		Firebase.configNodeSatisfiesVersion = true;
 		helper.startServer(done);
 	});
 
