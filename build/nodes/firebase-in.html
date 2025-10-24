@@ -123,6 +123,12 @@
 			});
 		};
 
+		if (window.FirebaseUI && window.FirebaseQueryConstraintsContainer) {
+			// Scripts loaded; safe to register all node defs
+			init();
+			return;
+		}
+
 		// The editor receives statuses before node definitions are registered,
 		// which causes statuses to be dropped.
 		const statusCache = {};
@@ -144,22 +150,40 @@
 		};
 
 		// BUG: NR makes resource loading asynchronous
-		const resourcesURL = "resources/@gogovega/node-red-contrib-firebase-realtime-database/";
+		console.log("[firebase-in]: resources not loaded. Starting to load them...");
 		RED.comms.subscribe("status/#", statusHandler);
+		const resourcesURL = "resources/@gogovega/node-red-contrib-firebase-realtime-database/";
 		$.getScript(resourcesURL + "common.js")
 			.then(() => $.getScript(resourcesURL + "constraints-container.js"))
 			.then(init)
 			.then(() => {
-				// Register nodes in order
-				FirebaseNodes["firebase-get"]();
-				FirebaseNodes["firebase-out"]();
-				FirebaseNodes["on-disconnect"]();
+				console.log("[firebase-in]: resources loaded. Starting to register missing def of nodes...");
+
+				if (window.FirebaseNodes) {
+					// Register missing definition of nodes
+					window.FirebaseNodes.forEach((init) => init());
+				}
 
 				// Apply dropped status now all definitions are registered
+				// Note: unreliable due to NR#5314
+				console.log("[firebase-in]: Missing def of nodes registered. Apply dropped node status...", statusCache);
 				RED.comms.unsubscribe("status/#", statusHandler);
 				for (const [topic, msg] of Object.entries(statusCache)) {
 					applyNodeStatus(topic, msg);
 				}
+
+				// Ensure nodes are ordered correctly in the Palette
+				console.log("[firebase-in]: Order the Firebase Palette...");
+				const palette = $("#red-ui-palette-Firebase");
+				const nodes = palette.children(".red-ui-palette-node");
+
+				nodes.sort(function (a, b) {
+					const labelA = $(a).data("palette-label").toLowerCase();
+					const labelB = $(b).data("palette-label").toLowerCase();
+					return labelA.localeCompare(labelB);
+				});
+
+				palette.append(nodes);
 			})
 			.fail((jqXHR, _textStatus, errorThrown) => {
 				console.error("[rtdb:firebase-in]: Failed to load editor scripts", errorThrown, jqXHR?.responseText);

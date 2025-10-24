@@ -70,8 +70,14 @@
 		};
 
 		// BUG: NR makes resource loading asynchronous
-		window.FirebaseNodes = window.FirebaseNodes || {};
-		window.FirebaseNodes["firebase-get"] = init;
+		if (window.FirebaseUI && window.FirebaseQueryConstraintsContainer) {
+			// Scripts loaded; safe to register the node def
+			init();
+		} else {
+			// Node registration will be triggered once scripts are loaded
+			window.FirebaseNodes = window.FirebaseNodes || [];
+			window.FirebaseNodes.push(init);
+		}
 	})();
 </script>
 
