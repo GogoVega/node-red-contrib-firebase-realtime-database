@@ -15,65 +15,79 @@
 -->
 
 <!-- Load Script -->
+<!--
 <script type="text/javascript" src="resources/@gogovega/node-red-contrib-firebase-realtime-database/common.js"></script>
+-->
 
 <script type="text/javascript">
 	"use strict";
 
 	(function () {
-		const i18n = (key) => FirebaseUI._(key, "on-disconnect");
-		const sendMsgEventOption = ["onConnected", "onDisconnect"].map((fieldName) => ({ value: fieldName, label: i18n(`sendMsgEvent.${fieldName}`) }));
-		const { typedPathField, validators } = FirebaseUI;
+		const init = function () {
+			const i18n = (key) => FirebaseUI._(key, "on-disconnect");
+			const sendMsgEventOption = ["onConnected", "onDisconnect"].map((fieldName) => ({ value: fieldName, label: i18n(`sendMsgEvent.${fieldName}`) }));
+			const { typedPathField, validators } = FirebaseUI;
 
-		RED.nodes.registerType("on-disconnect", {
-			align: "left",
-			category: "Firebase",
-			color: "#e2a12b",
-			defaults: {
-				name: { value: "" },
-				database: { value: "", type: "firebase-config", required: true },
-				inputs: { value: 1 },
-				outputs: { value: 0 },
-				path: { value: "topic", label: i18n("label.path"), validate: validators.typedInput("pathType") },
-				pathType: { value: "msg", label: i18n("label.path"), validate: validators.pathType() },
-				sendMsgEvent: { value: "", label: i18n("label.sendMsgEvent"), validate: validators.sendMsgEvent() },
-				queryType: { value: "msg", label: i18n("label.query"), validate: validators.onDisconnectQueryType() },
-			},
-			inputs: 1,
-			outputs: 0,
-			outputLabels: function (index) {
-				const labelArray = !this.sendMsgEvent ? [""] : this.sendMsgEvent.split(",");
-				return labelArray[index];
-			},
-			icon: "firebase.svg",
-			paletteLabel: "On Disconnect",
-			label: function () {
-				const query = this.queryType?.match(/^(msg|none)$/) ? "" : this.queryType?.toUpperCase() || "";
-				const path = this.pathType === "msg" ? "" : this.path;
-				const name = query.concat(query ? " " : "", path);
-				return this.name || name || this.sendMsgEvent || "On Disconnect";
-			},
-			labelStyle: function () {
-				return this.name ? "node_label_italic" : "";
-			},
-			oneditprepare: function () {
-				const pathField = typedPathField.create().enableAutoComplete();
-				const queryType = $("#node-input-queryType");
+			RED.nodes.registerType("on-disconnect", {
+				align: "left",
+				category: "Firebase",
+				color: "#e2a12b",
+				defaults: {
+					name: { value: "" },
+					database: { value: "", type: "firebase-config", required: true },
+					inputs: { value: 1 },
+					outputs: { value: 0 },
+					path: { value: "topic", label: i18n("label.path"), validate: validators.typedInput("pathType") },
+					pathType: { value: "msg", label: i18n("label.path"), validate: validators.pathType() },
+					sendMsgEvent: { value: "", label: i18n("label.sendMsgEvent"), validate: validators.sendMsgEvent() },
+					queryType: { value: "msg", label: i18n("label.query"), validate: validators.onDisconnectQueryType() },
+				},
+				inputs: 1,
+				outputs: 0,
+				outputLabels: function (index) {
+					const labelArray = !this.sendMsgEvent ? [""] : this.sendMsgEvent.split(",");
+					return labelArray[index];
+				},
+				icon: "firebase.svg",
+				paletteLabel: "On Disconnect",
+				label: function () {
+					const query = this.queryType?.match(/^(msg|none)$/) ? "" : this.queryType?.toUpperCase() || "";
+					const path = this.pathType === "msg" ? "" : this.path;
+					const name = query.concat(query ? " " : "", path);
+					return this.name || name || this.sendMsgEvent || "On Disconnect";
+				},
+				labelStyle: function () {
+					return this.name ? "node_label_italic" : "";
+				},
+				oneditprepare: function () {
+					const pathField = typedPathField.create().enableAutoComplete();
+					const queryType = $("#node-input-queryType");
 
-				pathField.build();
+					pathField.build();
 
-				$("#node-input-sendMsgEvent").typedInput({ type: "event", types: [{ value: "event", multiple: true, options: sendMsgEventOption, validate: validators.sendMsgEvent() }] });
+					$("#node-input-sendMsgEvent").typedInput({ type: "event", types: [{ value: "event", multiple: true, options: sendMsgEventOption, validate: validators.sendMsgEvent() }] });
 
-				queryType.on("change", () => queryType.val() === "none" ? $(".form-row-path").hide() : $(".form-row-path").show());
-			},
-			oneditsave: function () {
-				const inputs = $("#node-input-queryType").val() === "none" ? 0 : 1;
-				$("#node-input-inputs").val(inputs);
-				const value = $("#node-input-sendMsgEvent").typedInput("value");
-				const array = !value ? [] : value.split(",");
-				$("#node-input-outputs").val(array.length);
-			}
-		});
+					queryType.on("change", () => queryType.val() === "none" ? $(".form-row-path").hide() : $(".form-row-path").show());
+				},
+				oneditsave: function () {
+					const inputs = $("#node-input-queryType").val() === "none" ? 0 : 1;
+					$("#node-input-inputs").val(inputs);
+					const value = $("#node-input-sendMsgEvent").typedInput("value");
+					const array = !value ? [] : value.split(",");
+					$("#node-input-outputs").val(array.length);
+				}
+			});
+		};
+
+		// BUG: NR makes resource loading asynchronous
+		if (window.FirebaseUI) {
+			// Scripts loaded; safe to register the node def
+			init();
+		} else {
+			// Node registration will be triggered once scripts are loaded
+			window.FirebaseNodes = window.FirebaseNodes || [];
+			window.FirebaseNodes.push(init);
+		}
 	})();
 </script>
 

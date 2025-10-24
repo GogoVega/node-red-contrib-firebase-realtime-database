@@ -15,55 +15,69 @@
 -->
 
 <!-- Load Scripts -->
+<!--
 <script type="text/javascript" src="resources/@gogovega/node-red-contrib-firebase-realtime-database/common.js"></script>
 <script type="text/javascript" src="resources/@gogovega/node-red-contrib-firebase-realtime-database/constraints-container.js"></script>
+-->
 
 <script type="text/javascript">
 	"use strict";
 
 	(function () {
-		const editableConstraintsList = FirebaseQueryConstraintsContainer.editableConstraintsList.create();
-		const { isConstraintsValid } = FirebaseQueryConstraintsContainer.validators;
-		const { typedPathField, validators } = FirebaseUI;
-		const i18n = (key) => FirebaseUI._(key, "firebase-get");
+		const init = function () {
+			const editableConstraintsList = FirebaseQueryConstraintsContainer.editableConstraintsList.create();
+			const { isConstraintsValid } = FirebaseQueryConstraintsContainer.validators;
+			const { typedPathField, validators } = FirebaseUI;
+			const i18n = (key) => FirebaseUI._(key, "firebase-get");
 
-		RED.nodes.registerType("firebase-get", {
-			align: "left",
-			category: "Firebase",
-			color: "#e2a12b",
-			defaults: {
-				name: { value: "" },
-				constraint: {},	// Legacy Config
-				constraints: { value: {}, label: i18n("label.constraints"), validate: isConstraintsValid() },
-				database: { value: "", type: "firebase-config", required: true },
-				outputType: { value: "auto", label: i18n("label.output"), validate: validators.outputType() },
-				passThrough: { value: false, label: i18n("label.passThrough"), validate: validators.boolean() },
-				path: { value: "topic", label: i18n("label.path"), validate: validators.typedInput("pathType", { allowBlank: true }) },
-				pathType: { value: "msg", label: i18n("label.path"), validate: validators.pathType() },
-				useConstraints: { value: false, label: i18n("label.sortData"), validate: validators.boolean() },
-				useConstraint: {},	// Legacy Config
-			},
-			inputs: 1,
-			outputs: 1,
-			icon: "firebase.svg",
-			paletteLabel: "Firebase get",
-			label: function () {
-				const path = this.pathType === "msg" ? "" : this.path || "root";
-				return this.name || path || "Firebase get";
-			},
-			labelStyle: function () {
-				return this.name ? "node_label_italic" : "";
-			},
-			oneditprepare: function () {
-				editableConstraintsList.build(this);
+			RED.nodes.registerType("firebase-get", {
+				align: "left",
+				category: "Firebase",
+				color: "#e2a12b",
+				defaults: {
+					name: { value: "" },
+					constraint: {},	// Legacy Config
+					constraints: { value: {}, label: i18n("label.constraints"), validate: isConstraintsValid() },
+					database: { value: "", type: "firebase-config", required: true },
+					outputType: { value: "auto", label: i18n("label.output"), validate: validators.outputType() },
+					passThrough: { value: false, label: i18n("label.passThrough"), validate: validators.boolean() },
+					path: { value: "topic", label: i18n("label.path"), validate: validators.typedInput("pathType", { allowBlank: true }) },
+					pathType: { value: "msg", label: i18n("label.path"), validate: validators.pathType() },
+					useConstraints: { value: false, label: i18n("label.sortData"), validate: validators.boolean() },
+					useConstraint: {},	// Legacy Config
+				},
+				inputs: 1,
+				outputs: 1,
+				icon: "firebase.svg",
+				paletteLabel: "Firebase get",
+				label: function () {
+					const path = this.pathType === "msg" ? "" : this.path || "root";
+					return this.name || path || "Firebase get";
+				},
+				labelStyle: function () {
+					return this.name ? "node_label_italic" : "";
+				},
+				oneditprepare: function () {
+					editableConstraintsList.build(this);
 
-				const pathField = typedPathField.create().allowBlank(true).enableAutoComplete();
+					const pathField = typedPathField.create().allowBlank(true).enableAutoComplete();
 
-				pathField.build();
-			},
-			oneditsave: () => editableConstraintsList.saveItems(),
-			oneditresize: (size) => editableConstraintsList.reSize(size),
-		});
+					pathField.build();
+				},
+				oneditsave: () => editableConstraintsList.saveItems(),
+				oneditresize: (size) => editableConstraintsList.reSize(size),
+			});
+		};
+
+		// BUG: NR makes resource loading asynchronous
+		if (window.FirebaseUI && window.FirebaseQueryConstraintsContainer) {
+			// Scripts loaded; safe to register the node def
+			init();
+		} else {
+			// Node registration will be triggered once scripts are loaded
+			window.FirebaseNodes = window.FirebaseNodes || [];
+			window.FirebaseNodes.push(init);
+		}
 	})();
 </script>
 
