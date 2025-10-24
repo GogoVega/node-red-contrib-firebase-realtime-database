@@ -67,10 +67,9 @@ const creds = {
 
 const { Firebase } = require("../build/lib/firebase-node");
 
-Firebase.configNodeSatisfiesVersion = true;
-
 describe("Demo Flow tests", function () {
 	before(function (done) {
+		Firebase.configNodeSatisfiesVersion = true;
 		helper.startServer(done);
 	});
 
