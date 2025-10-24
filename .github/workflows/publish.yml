@@ -7,21 +7,22 @@ on:
       - "v*.*.*"
 
 permissions:
+  actions: read
   contents: read
 
 jobs:
   publish-npm:
     runs-on: ubuntu-latest
     permissions:
-      contents: read
+      id-token: write
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Setup Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
-          node-version: 20
+          node-version: 24
 
       - name: Install Dependencies
         run: npm ci
@@ -34,11 +35,12 @@ jobs:
         run: npm run build
 
       - name: Publish package to public npm registry
-        uses: JS-DevTools/npm-publish@v3
+        uses: JS-DevTools/npm-publish@v4
         with:
           access: public
+          ignore-scripts: true
+          provenance: true
           tag: ${{ contains(github.ref, '-beta') && 'beta' || contains(github.ref, '-alpha') && 'alpha' || 'latest' }}
-          token: ${{ secrets.NPM_TOKEN }}
 
   # TODO: Use a webhook because sleep is not ideal
   update-library:
