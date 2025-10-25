@@ -22,10 +22,13 @@ const nodes = [
 	require("../build/plugins/config-node-checker"),
 ];
 
+// TODO: hard-coded for now
+const VERSION = "0.3.1";
+
 const configNode = require("@gogovega/firebase-config-node");
 const configNodeModule = {
 	name: "@gogovega/firebase-config-node",
-	version: "0.3.1",
+	version: VERSION,
 	local: true,
 	user: false,
 	nodes: {
@@ -46,7 +49,6 @@ const flow = [
 ];
 
 const { Firebase } = require("../build/lib/firebase-node");
-const VERSION = require("../package.json").dependencies["@gogovega/firebase-config-node"].substring(1);
 
 process.env.NODE_RED_HOME = process.cwd();
 
