@@ -1,5 +1,17 @@
 # Change log
 
+## 0.8.2
+
+### Changes
+
+- Bump `@gogovega/firebase-config-node` from 0.3.1 to 0.3.2 (#121)
+  - Bump dependencies to latest
+  - Several fixes and improvements (https://github.com/GogoVega/Firebase-Config-Node/releases/tag/v0.3.2)
+
+### Fixes
+
+- Node loading due to async resource loading (#117)
+
 ## 0.8.1
 
 ### Changes
