@@ -22,8 +22,7 @@ const nodes = [
 	require("../build/plugins/config-node-checker"),
 ];
 
-// TODO: hard-coded for now
-const VERSION = "0.3.1";
+const VERSION = require("../package.json").dependencies["@gogovega/firebase-config-node"].substring(1);
 
 const configNode = require("@gogovega/firebase-config-node");
 const configNodeModule = {
