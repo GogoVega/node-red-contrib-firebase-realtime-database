@@ -63,7 +63,7 @@
     "@typescript-eslint/parser": "^8.69.0",
     "eslint": "^8.57.1",
     "mocha": "^10.8.2",
-    "node-red": "^4.1.14",
+    "node-red": "^5.0.6",
     "node-red-node-test-helper": "github:GogoVega/node-red-node-test-helper#dev",
     "prettier": "^3.9.6",
     "typescript": "^5.9.3"
