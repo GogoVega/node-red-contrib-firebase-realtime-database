@@ -24,7 +24,7 @@
 ![demo nodes](./assets/images/demo-flow.gif)
 
 > [!CAUTION]
-> **BREAKING CHANGES**: v0.8: the required version of Node.js is now >=20
+> **BREAKING CHANGES**: v0.9: the required version of Node.js is now >=22
 
 ## What is it?
 
