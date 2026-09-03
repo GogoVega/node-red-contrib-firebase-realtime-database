@@ -31,7 +31,7 @@ import { Registry, Util } from "../lib/types/node-red";
  *
  * @internal
  */
-const requiredVersion: [number, number, number] = [0, 3, 2];
+const requiredVersion: [number, number, number] = [0, 4, 0];
 
 module.exports = function (RED: NodeAPI) {
 	const status = {
